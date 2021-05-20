@@ -12,7 +12,9 @@ import Combine
 public class CNProvider<T: Endpoint> {
 	public init() {}
 	
-	public func publisher<U: Decodable>(for request: T, receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error>? {
+	public func publisher<U: Decodable>(for request: T,
+										decoder: JSONDecoder = JSONDecoder(),
+										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error>? {
 		let url = request.baseURL.appendingPathComponent(request.path)
 		var urlRequest = URLRequest(url: url)
 		
@@ -38,7 +40,7 @@ public class CNProvider<T: Endpoint> {
 		
 		return URLSession.shared.dataTaskPublisher(for: urlRequest)
 			.map(\.data)
-			.decode(type: U.self, decoder: JSONDecoder())
+			.decode(type: U.self, decoder: decoder)
 			.receive(on: queue)
 			.eraseToAnyPublisher()
 	}

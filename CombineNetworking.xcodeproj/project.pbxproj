@@ -14,6 +14,12 @@
 		546280D82656CFA2001DAA43 /* EndpointData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D72656CFA2001DAA43 /* EndpointData.swift */; };
 		546280DA2656D02E001DAA43 /* CNProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D92656D02E001DAA43 /* CNProvider.swift */; };
 		546280DE2656D867001DAA43 /* Method.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280DD2656D867001DAA43 /* Method.swift */; };
+		54C3513C26570CC500FC9513 /* Todo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C3513B26570CC500FC9513 /* Todo.swift */; };
+		54C3514126570D8D00FC9513 /* CNProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D92656D02E001DAA43 /* CNProvider.swift */; };
+		54C3514226570D9100FC9513 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D52656CEE5001DAA43 /* Endpoint.swift */; };
+		54C3514326570D9C00FC9513 /* Method.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280DD2656D867001DAA43 /* Method.swift */; };
+		54C3514426570DAE00FC9513 /* EndpointData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D72656CFA2001DAA43 /* EndpointData.swift */; };
+		54C3514526570EB900FC9513 /* RemoteEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C3513D26570CEC00FC9513 /* RemoteEndpoint.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -37,6 +43,8 @@
 		546280D72656CFA2001DAA43 /* EndpointData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndpointData.swift; sourceTree = "<group>"; };
 		546280D92656D02E001DAA43 /* CNProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CNProvider.swift; sourceTree = "<group>"; };
 		546280DD2656D867001DAA43 /* Method.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Method.swift; sourceTree = "<group>"; };
+		54C3513B26570CC500FC9513 /* Todo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Todo.swift; sourceTree = "<group>"; };
+		54C3513D26570CEC00FC9513 /* RemoteEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteEndpoint.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -92,10 +100,20 @@
 		546280C62656CDA5001DAA43 /* CombineNetworkingTests */ = {
 			isa = PBXGroup;
 			children = (
+				54C3513A26570CB300FC9513 /* TestModels */,
 				546280C72656CDA5001DAA43 /* CombineNetworkingTests.swift */,
 				546280C92656CDA5001DAA43 /* Info.plist */,
 			);
 			path = CombineNetworkingTests;
+			sourceTree = "<group>";
+		};
+		54C3513A26570CB300FC9513 /* TestModels */ = {
+			isa = PBXGroup;
+			children = (
+				54C3513B26570CC500FC9513 /* Todo.swift */,
+				54C3513D26570CEC00FC9513 /* RemoteEndpoint.swift */,
+			);
+			path = TestModels;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -218,7 +236,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				54C3514426570DAE00FC9513 /* EndpointData.swift in Sources */,
 				546280C82656CDA5001DAA43 /* CombineNetworkingTests.swift in Sources */,
+				54C3514126570D8D00FC9513 /* CNProvider.swift in Sources */,
+				54C3514526570EB900FC9513 /* RemoteEndpoint.swift in Sources */,
+				54C3514226570D9100FC9513 /* Endpoint.swift in Sources */,
+				54C3514326570D9C00FC9513 /* Method.swift in Sources */,
+				54C3513C26570CC500FC9513 /* Todo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
