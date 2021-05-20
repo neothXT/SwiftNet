@@ -10,6 +10,10 @@
 		546280C32656CDA5001DAA43 /* CombineNetworking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 546280B92656CDA5001DAA43 /* CombineNetworking.framework */; };
 		546280C82656CDA5001DAA43 /* CombineNetworkingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280C72656CDA5001DAA43 /* CombineNetworkingTests.swift */; };
 		546280CA2656CDA5001DAA43 /* CombineNetworking.h in Headers */ = {isa = PBXBuildFile; fileRef = 546280BC2656CDA5001DAA43 /* CombineNetworking.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		546280D62656CEE5001DAA43 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D52656CEE5001DAA43 /* Endpoint.swift */; };
+		546280D82656CFA2001DAA43 /* EndpointData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D72656CFA2001DAA43 /* EndpointData.swift */; };
+		546280DA2656D02E001DAA43 /* CNProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D92656D02E001DAA43 /* CNProvider.swift */; };
+		546280DE2656D867001DAA43 /* Method.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280DD2656D867001DAA43 /* Method.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +33,10 @@
 		546280C22656CDA5001DAA43 /* CombineNetworkingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CombineNetworkingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		546280C72656CDA5001DAA43 /* CombineNetworkingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombineNetworkingTests.swift; sourceTree = "<group>"; };
 		546280C92656CDA5001DAA43 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		546280D52656CEE5001DAA43 /* Endpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Endpoint.swift; sourceTree = "<group>"; };
+		546280D72656CFA2001DAA43 /* EndpointData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndpointData.swift; sourceTree = "<group>"; };
+		546280D92656D02E001DAA43 /* CNProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CNProvider.swift; sourceTree = "<group>"; };
+		546280DD2656D867001DAA43 /* Method.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Method.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +81,10 @@
 			children = (
 				546280BC2656CDA5001DAA43 /* CombineNetworking.h */,
 				546280BD2656CDA5001DAA43 /* Info.plist */,
+				546280D52656CEE5001DAA43 /* Endpoint.swift */,
+				546280D72656CFA2001DAA43 /* EndpointData.swift */,
+				546280D92656D02E001DAA43 /* CNProvider.swift */,
+				546280DD2656D867001DAA43 /* Method.swift */,
 			);
 			path = CombineNetworking;
 			sourceTree = "<group>";
@@ -147,6 +159,7 @@
 				TargetAttributes = {
 					546280B82656CDA5001DAA43 = {
 						CreatedOnToolsVersion = 12.5;
+						LastSwiftMigration = 1250;
 					};
 					546280C12656CDA5001DAA43 = {
 						CreatedOnToolsVersion = 12.5;
@@ -194,6 +207,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				546280DE2656D867001DAA43 /* Method.swift in Sources */,
+				546280D62656CEE5001DAA43 /* Endpoint.swift in Sources */,
+				546280D82656CFA2001DAA43 /* EndpointData.swift in Sources */,
+				546280DA2656D02E001DAA43 /* CNProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -268,7 +285,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -326,7 +343,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -341,6 +358,7 @@
 		546280CE2656CDA5001DAA43 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = F9QDH8QJ3V;
@@ -357,6 +375,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.neoth.CombineNetworking;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -365,6 +384,7 @@
 		546280CF2656CDA5001DAA43 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = F9QDH8QJ3V;
@@ -389,6 +409,7 @@
 		546280D12656CDA5001DAA43 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = F9QDH8QJ3V;
 				INFOPLIST_FILE = CombineNetworkingTests/Info.plist;
@@ -407,6 +428,7 @@
 		546280D22656CDA5001DAA43 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = F9QDH8QJ3V;
 				INFOPLIST_FILE = CombineNetworkingTests/Info.plist;
