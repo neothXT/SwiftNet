@@ -21,11 +21,14 @@ class CombineNetworkingTests: XCTestCase {
 
 	func testFetch() throws {
 		let expectation = expectation(description: "Fetch first todo object")
-		let cancellable = CNProvider<RemoteEndpoint>().publisher(for: .todos)?
+		var subscriptions: Set<AnyCancellable> = []
+		
+		CNProvider<RemoteEndpoint>().publisher(for: .todos)?
 			.sink(receiveCompletion: { _ in
 			}) { (todos: Todo) in
 				expectation.fulfill()
 			}
+			.store(in: &subscriptions)
 		
 		wait(for: [expectation], timeout: 10)
 	}
