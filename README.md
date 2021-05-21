@@ -33,7 +33,7 @@ extension TodosEndpoint: Endpoint {
     switch self {
       case .todos(let id):
       return .queryParams(["id": id])
-      }
+    }
   }
 }
 ```
