@@ -1,6 +1,10 @@
 # CombineNetworking
 Easy approach on Networking using Combine
 
+### Installation (using CocoaPods)
+
+`pod 'CombineNetworking'`
+
 ### Usage
 
 #### Create an Endpoint to work with
