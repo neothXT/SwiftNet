@@ -9,6 +9,7 @@ import Foundation
 
 enum RemoteEndpoint {
 	case todos
+	case posts
 }
 
 extension RemoteEndpoint: Endpoint {
@@ -20,6 +21,8 @@ extension RemoteEndpoint: Endpoint {
 		switch self {
 		case .todos:
 			return "todos/1"
+		case .posts:
+			return "CNErrorExample"
 		}
 	}
 	

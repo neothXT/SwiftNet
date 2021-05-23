@@ -19,7 +19,7 @@ class CombineNetworkingTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-	func testFetch() throws {
+	func testSuccsessfulFetch() throws {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
@@ -33,4 +33,21 @@ class CombineNetworkingTests: XCTestCase {
 		wait(for: [expectation], timeout: 10)
 	}
 
+	func testBadResponseFetch() throws {
+		let expectation = expectation(description: "Fetch first todo object")
+		var subscriptions: Set<AnyCancellable> = []
+		
+		CNProvider<RemoteEndpoint>().publisher(for: .posts)?
+			.catch { error -> Just<Todo?> in
+				if let responseError = error as? CNError, case .badResponse(let response) = responseError,
+				   response.statusCode == 404 {
+					expectation.fulfill()
+				}
+				return Just(nil)
+			}
+			.sink { _ in }
+			.store(in: &subscriptions)
+		
+		wait(for: [expectation], timeout: 10)
+	}
 }

@@ -14,6 +14,7 @@
 		546280D82656CFA2001DAA43 /* EndpointData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D72656CFA2001DAA43 /* EndpointData.swift */; };
 		546280DA2656D02E001DAA43 /* CNProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D92656D02E001DAA43 /* CNProvider.swift */; };
 		546280DE2656D867001DAA43 /* Method.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280DD2656D867001DAA43 /* Method.swift */; };
+		548E2311265AAEB900249711 /* CNError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C7409B265A521000A37013 /* CNError.swift */; };
 		54C3513C26570CC500FC9513 /* Todo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C3513B26570CC500FC9513 /* Todo.swift */; };
 		54C3514126570D8D00FC9513 /* CNProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D92656D02E001DAA43 /* CNProvider.swift */; };
 		54C3514226570D9100FC9513 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D52656CEE5001DAA43 /* Endpoint.swift */; };
@@ -243,6 +244,7 @@
 				54C3514426570DAE00FC9513 /* EndpointData.swift in Sources */,
 				546280C82656CDA5001DAA43 /* CombineNetworkingTests.swift in Sources */,
 				54C3514126570D8D00FC9513 /* CNProvider.swift in Sources */,
+				548E2311265AAEB900249711 /* CNError.swift in Sources */,
 				54C3514526570EB900FC9513 /* RemoteEndpoint.swift in Sources */,
 				54C3514226570D9100FC9513 /* Endpoint.swift in Sources */,
 				54C3514326570D9C00FC9513 /* Method.swift in Sources */,
