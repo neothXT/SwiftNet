@@ -49,7 +49,7 @@ extension TodosEndpoint: Endpoint {
 - `.dataParams([String: Any])` - takes `Dictionary` and parses it into `Data` to send in request's body
 - `.jsonModel(Encodable)` - similar to `.dataParams` except this one takes `Encodable` and parses it into `Data` to send in request's body
 
-#### Subscribe to provider
+#### Subscribe to publisher
 
 ```Swift
 private var subscriptions: Set<AnyCancellable> = []
