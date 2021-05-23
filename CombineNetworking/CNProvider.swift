@@ -14,7 +14,7 @@ public class CNProvider<T: Endpoint> {
 	
 	public func publisher<U: Decodable>(for request: T,
 										retries: Int = 0,
-										expectedStatusCodes: [Int] = [200],
+										expectedStatusCodes: [Int] = [200, 201, 204],
 										decoder: JSONDecoder = JSONDecoder(),
 										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error>? {
 		let url = request.baseURL.appendingPathComponent(request.path)
@@ -34,7 +34,7 @@ public class CNProvider<T: Endpoint> {
 		case .dataParams(let params):
 			urlRequest.httpBody = try? JSONSerialization.data(withJSONObject: params, options: [])
 		case .jsonModel(let model):
-			let jsonModel = try? JSONSerialization.data(withJSONObject: model, options: [])
+			let jsonModel = try? model.toJson()
 			urlRequest.httpBody = try? JSONEncoder().encode(jsonModel)
 		case .plain:
 			break

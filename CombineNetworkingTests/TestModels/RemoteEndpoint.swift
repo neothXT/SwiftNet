@@ -10,6 +10,9 @@ import Foundation
 enum RemoteEndpoint {
 	case todos
 	case posts
+	case post(Post)
+	case dictPost([String: Any])
+	case dictGet([String: Any])
 }
 
 extension RemoteEndpoint: Endpoint {
@@ -19,15 +22,25 @@ extension RemoteEndpoint: Endpoint {
 	
 	var path: String {
 		switch self {
+		case .dictGet:
+			return "comments"
 		case .todos:
 			return "todos/1"
 		case .posts:
 			return "CNErrorExample"
+			
+		case .post, .dictPost:
+			return "posts"
 		}
 	}
 	
 	var method: RequestMethod {
-		.get
+		switch self {
+		case .post, .dictPost:
+			return .post
+		default:
+			return .get
+		}
 	}
 	
 	var headers: [String : Any]? {
@@ -35,7 +48,16 @@ extension RemoteEndpoint: Endpoint {
 	}
 	
 	var data: EndpointData {
-		.plain
+		switch self {
+		case .post(let post):
+			return .jsonModel(post)
+		case .dictPost(let dict):
+			return .dataParams(dict)
+		case .dictGet(let dict):
+			return .queryParams(dict)
+		default:
+			return .plain
+		}
 	}
 	
 }

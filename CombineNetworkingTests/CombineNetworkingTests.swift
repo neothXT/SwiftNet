@@ -19,20 +19,6 @@ class CombineNetworkingTests: XCTestCase {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
-	func testSuccsessfulFetch() throws {
-		let expectation = expectation(description: "Fetch first todo object")
-		var subscriptions: Set<AnyCancellable> = []
-		
-		CNProvider<RemoteEndpoint>().publisher(for: .todos)?
-			.sink(receiveCompletion: { _ in
-			}) { (todos: Todo) in
-				expectation.fulfill()
-			}
-			.store(in: &subscriptions)
-		
-		wait(for: [expectation], timeout: 10)
-	}
-
 	func testBadResponseFetch() throws {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
@@ -46,6 +32,63 @@ class CombineNetworkingTests: XCTestCase {
 				return Just(nil)
 			}
 			.sink { _ in }
+			.store(in: &subscriptions)
+		
+		wait(for: [expectation], timeout: 10)
+	}
+	
+	func testPlain() throws {
+		let expectation = expectation(description: "Fetch first todo object")
+		var subscriptions: Set<AnyCancellable> = []
+		
+		CNProvider<RemoteEndpoint>().publisher(for: .todos)?
+			.sink(receiveCompletion: { _ in
+			}) { (todos: Todo) in
+				expectation.fulfill()
+			}
+			.store(in: &subscriptions)
+		
+		wait(for: [expectation], timeout: 10)
+	}
+
+	func testQeryParams() throws {
+		let expectation = expectation(description: "Fetch first todo object")
+		var subscriptions: Set<AnyCancellable> = []
+		
+		CNProvider<RemoteEndpoint>().publisher(for: .dictGet(["postId": 1]))?
+			.sink(receiveCompletion: { _ in
+				expectation.fulfill()
+			}) { (_: Post) in }
+			.store(in: &subscriptions)
+		
+		wait(for: [expectation], timeout: 10)
+	}
+	
+	func testPostWithJsonModel() throws {
+		let post = Post(userId: 123, id: nil, title: "SampleTitle", body: "SampleBody")
+		
+		let expectation = expectation(description: "Fetch first todo object")
+		var subscriptions: Set<AnyCancellable> = []
+		
+		CNProvider<RemoteEndpoint>().publisher(for: .post(post))?
+			.sink(receiveCompletion: { _ in
+				expectation.fulfill()
+			}) { (_: Post) in }
+			.store(in: &subscriptions)
+		
+		wait(for: [expectation], timeout: 10)
+	}
+	
+	func testPostWithDictionary() throws {
+		let expectation = expectation(description: "Fetch first todo object")
+		var subscriptions: Set<AnyCancellable> = []
+		
+		let dict = ["userId": "1231", "title": "Title", "body": "Body"]
+		
+		CNProvider<RemoteEndpoint>().publisher(for: .dictPost(dict))?
+			.sink(receiveCompletion: { _ in
+				expectation.fulfill()
+			}) { (_: Post) in }
 			.store(in: &subscriptions)
 		
 		wait(for: [expectation], timeout: 10)

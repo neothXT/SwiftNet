@@ -22,6 +22,10 @@
 		54C3514426570DAE00FC9513 /* EndpointData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D72656CFA2001DAA43 /* EndpointData.swift */; };
 		54C3514526570EB900FC9513 /* RemoteEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C3513D26570CEC00FC9513 /* RemoteEndpoint.swift */; };
 		54C7409C265A521000A37013 /* CNError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C7409B265A521000A37013 /* CNError.swift */; };
+		54F67BBF265B019900574C0A /* Post.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54F67BBE265B019900574C0A /* Post.swift */; };
+		54F67BC1265B063800574C0A /* Encodable + toJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54F67BC0265B063800574C0A /* Encodable + toJson.swift */; };
+		54F67BC3265B06B900574C0A /* Decodable + fromJson.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54F67BC2265B06B900574C0A /* Decodable + fromJson.swift */; };
+		54F67BC5265B0A1300574C0A /* Comment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54F67BC4265B0A1300574C0A /* Comment.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +52,10 @@
 		54C3513B26570CC500FC9513 /* Todo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Todo.swift; sourceTree = "<group>"; };
 		54C3513D26570CEC00FC9513 /* RemoteEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteEndpoint.swift; sourceTree = "<group>"; };
 		54C7409B265A521000A37013 /* CNError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CNError.swift; sourceTree = "<group>"; };
+		54F67BBE265B019900574C0A /* Post.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Post.swift; sourceTree = "<group>"; };
+		54F67BC0265B063800574C0A /* Encodable + toJson.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Encodable + toJson.swift"; sourceTree = "<group>"; };
+		54F67BC2265B06B900574C0A /* Decodable + fromJson.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Decodable + fromJson.swift"; sourceTree = "<group>"; };
+		54F67BC4265B0A1300574C0A /* Comment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Comment.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,6 +105,8 @@
 				546280D92656D02E001DAA43 /* CNProvider.swift */,
 				546280DD2656D867001DAA43 /* Method.swift */,
 				54C7409B265A521000A37013 /* CNError.swift */,
+				54F67BC0265B063800574C0A /* Encodable + toJson.swift */,
+				54F67BC2265B06B900574C0A /* Decodable + fromJson.swift */,
 			);
 			path = CombineNetworking;
 			sourceTree = "<group>";
@@ -116,6 +126,8 @@
 			children = (
 				54C3513B26570CC500FC9513 /* Todo.swift */,
 				54C3513D26570CEC00FC9513 /* RemoteEndpoint.swift */,
+				54F67BBE265B019900574C0A /* Post.swift */,
+				54F67BC4265B0A1300574C0A /* Comment.swift */,
 			);
 			path = TestModels;
 			sourceTree = "<group>";
@@ -229,6 +241,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				54F67BC3265B06B900574C0A /* Decodable + fromJson.swift in Sources */,
+				54F67BC1265B063800574C0A /* Encodable + toJson.swift in Sources */,
 				546280DE2656D867001DAA43 /* Method.swift in Sources */,
 				546280D62656CEE5001DAA43 /* Endpoint.swift in Sources */,
 				54C7409C265A521000A37013 /* CNError.swift in Sources */,
@@ -246,7 +260,9 @@
 				54C3514126570D8D00FC9513 /* CNProvider.swift in Sources */,
 				548E2311265AAEB900249711 /* CNError.swift in Sources */,
 				54C3514526570EB900FC9513 /* RemoteEndpoint.swift in Sources */,
+				54F67BC5265B0A1300574C0A /* Comment.swift in Sources */,
 				54C3514226570D9100FC9513 /* Endpoint.swift in Sources */,
+				54F67BBF265B019900574C0A /* Post.swift in Sources */,
 				54C3514326570D9C00FC9513 /* Method.swift in Sources */,
 				54C3513C26570CC500FC9513 /* Todo.swift in Sources */,
 			);
