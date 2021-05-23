@@ -20,6 +20,7 @@
 		54C3514326570D9C00FC9513 /* Method.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280DD2656D867001DAA43 /* Method.swift */; };
 		54C3514426570DAE00FC9513 /* EndpointData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D72656CFA2001DAA43 /* EndpointData.swift */; };
 		54C3514526570EB900FC9513 /* RemoteEndpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C3513D26570CEC00FC9513 /* RemoteEndpoint.swift */; };
+		54C7409C265A521000A37013 /* CNError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C7409B265A521000A37013 /* CNError.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +46,7 @@
 		546280DD2656D867001DAA43 /* Method.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Method.swift; sourceTree = "<group>"; };
 		54C3513B26570CC500FC9513 /* Todo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Todo.swift; sourceTree = "<group>"; };
 		54C3513D26570CEC00FC9513 /* RemoteEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteEndpoint.swift; sourceTree = "<group>"; };
+		54C7409B265A521000A37013 /* CNError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CNError.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,6 +95,7 @@
 				546280D72656CFA2001DAA43 /* EndpointData.swift */,
 				546280D92656D02E001DAA43 /* CNProvider.swift */,
 				546280DD2656D867001DAA43 /* Method.swift */,
+				54C7409B265A521000A37013 /* CNError.swift */,
 			);
 			path = CombineNetworking;
 			sourceTree = "<group>";
@@ -227,6 +230,7 @@
 			files = (
 				546280DE2656D867001DAA43 /* Method.swift in Sources */,
 				546280D62656CEE5001DAA43 /* Endpoint.swift in Sources */,
+				54C7409C265A521000A37013 /* CNError.swift in Sources */,
 				546280D82656CFA2001DAA43 /* EndpointData.swift in Sources */,
 				546280DA2656D02E001DAA43 /* CNProvider.swift in Sources */,
 			);

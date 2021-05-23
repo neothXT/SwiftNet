@@ -13,6 +13,8 @@ public class CNProvider<T: Endpoint> {
 	public init() {}
 	
 	public func publisher<U: Decodable>(for request: T,
+										retries: Int = 0,
+										expectedStatusCodes: [Int] = [200],
 										decoder: JSONDecoder = JSONDecoder(),
 										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error>? {
 		let url = request.baseURL.appendingPathComponent(request.path)
@@ -39,7 +41,22 @@ public class CNProvider<T: Endpoint> {
 		}
 		
 		return URLSession.shared.dataTaskPublisher(for: urlRequest)
-			.map(\.data)
+			.retry(retries)
+			.tryMap { output in
+				guard let response = output.response as? HTTPURLResponse else {
+					throw CNError.failedToMapResponse
+				}
+				
+				guard expectedStatusCodes.contains(response.statusCode) else {
+					let error = CNErrorResponse(statusCode: response.statusCode,
+												localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
+												url: response.url,
+												mimeType: response.mimeType)
+					throw CNError.badResponse(error)
+				}
+				
+				return output.data
+			}
 			.decode(type: U.self, decoder: decoder)
 			.receive(on: queue)
 			.eraseToAnyPublisher()
