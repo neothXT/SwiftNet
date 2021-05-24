@@ -34,8 +34,7 @@ public class CNProvider<T: Endpoint> {
 		case .dataParams(let params):
 			urlRequest.httpBody = try? JSONSerialization.data(withJSONObject: params, options: [])
 		case .jsonModel(let model):
-			let jsonModel = try? model.toJson()
-			urlRequest.httpBody = try? JSONEncoder().encode(jsonModel)
+			urlRequest.httpBody = try? model.toJson()
 		case .plain:
 			break
 		}
