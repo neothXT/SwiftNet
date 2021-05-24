@@ -42,7 +42,7 @@ extension TodosEndpoint: Endpoint {
 }
 ```
 
-`RequestMethod` is an enum with following options: `.get`, `.post`, `.put`, `.delete`
+`RequestMethod` is an enum with following options: `.get`, `.post`, `.put`, `.delete`.
 `EndpointData` is also an enum with following options: 
 - `.plain`
 - `.queryParams([String: Any])`
