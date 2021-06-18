@@ -12,33 +12,13 @@ import Combine
 public class CNProvider<T: Endpoint> {
 	public init() {}
 	
-	public func publisher<U: Decodable>(for request: T,
+	public func publisher<U: Decodable>(for endpoint: T,
 										retries: Int = 0,
 										expectedStatusCodes: [Int] = [200, 201, 204],
 										decoder: JSONDecoder = JSONDecoder(),
 										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error>? {
-		let url = request.baseURL.appendingPathComponent(request.path)
-		var urlRequest = URLRequest(url: url)
 		
-		request.headers?.forEach { key, value in
-			urlRequest.addValue("\(value)", forHTTPHeaderField: key)
-		}
-		
-		urlRequest.httpMethod = request.method.rawValue
-		
-		switch request.data {
-		case .queryParams(let params):
-			var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: true)
-			urlComponents?.queryItems = params.map { URLQueryItem(name: $0, value: "\($1)") }
-			urlRequest.url = urlComponents?.url
-		case .dataParams(let params):
-			urlRequest.httpBody = try? JSONSerialization.data(withJSONObject: params, options: [])
-		case .jsonModel(let model):
-			urlRequest.httpBody = try? model.toJson()
-		case .plain:
-			break
-		}
-		
+		guard let urlRequest = prepareRequest(for: endpoint) else { return nil }
 		return URLSession.shared.dataTaskPublisher(for: urlRequest)
 			.retry(retries)
 			.tryMap { output in
@@ -51,7 +31,7 @@ public class CNProvider<T: Endpoint> {
 												localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
 												url: response.url,
 												mimeType: response.mimeType)
-					throw CNError.badResponse(error)
+					throw CNError.unexpectedResponse(error)
 				}
 				
 				return output.data
@@ -59,5 +39,36 @@ public class CNProvider<T: Endpoint> {
 			.decode(type: U.self, decoder: decoder)
 			.receive(on: queue)
 			.eraseToAnyPublisher()
+	}
+	
+	private func prepareRequest(for endpoint: Endpoint) -> URLRequest? {
+		guard let url = endpoint.baseURL?.appendingPathComponent(endpoint.path) else { return nil }
+		var request = URLRequest(url: url)
+		prepareHeadersAndMethod(endpoint: endpoint, request: &request)
+		prepareBody(endpointData: endpoint.data, request: &request)
+		return request
+	}
+	
+	private func prepareHeadersAndMethod(endpoint: Endpoint, request: inout URLRequest) {
+		endpoint.headers?.forEach { key, value in
+			request.addValue("\(value)", forHTTPHeaderField: key)
+		}
+		request.httpMethod = endpoint.method.rawValue
+	}
+	
+	private func prepareBody(endpointData: EndpointData, request: inout URLRequest) {
+		switch endpointData {
+		case .queryParams(let params):
+			guard let url = request.url else { return }
+			var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: true)
+			urlComponents?.queryItems = params.map { URLQueryItem(name: $0, value: "\($1)") }
+			request.url = urlComponents?.url
+		case .dataParams(let params):
+			request.httpBody = try? JSONSerialization.data(withJSONObject: params, options: [])
+		case .jsonModel(let model):
+			request.httpBody = try? model.toJson()
+		case .plain:
+			break
+		}
 	}
 }

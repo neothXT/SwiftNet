@@ -25,7 +25,7 @@ class CombineNetworkingTests: XCTestCase {
 		
 		CNProvider<RemoteEndpoint>().publisher(for: .posts)?
 			.catch { error -> Just<Todo?> in
-				if let responseError = error as? CNError, case .badResponse(let response) = responseError,
+				if let responseError = error as? CNError, case .unexpectedResponse(let response) = responseError,
 				   response.statusCode == 404 {
 					expectation.fulfill()
 				}

@@ -8,7 +8,7 @@
 import Foundation
 
 public enum CNError: Error {
-	case failedToMapResponse, badResponse(CNErrorResponse)
+	case failedToMapResponse, unexpectedResponse(CNErrorResponse)
 }
 
 public struct CNErrorResponse {

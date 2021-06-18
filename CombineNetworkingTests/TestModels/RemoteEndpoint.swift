@@ -16,8 +16,8 @@ enum RemoteEndpoint {
 }
 
 extension RemoteEndpoint: Endpoint {
-	var baseURL: URL {
-		URL(string: "https://jsonplaceholder.typicode.com/")!
+	var baseURL: URL? {
+		URL(string: "https://jsonplaceholder.typicode.com/")
 	}
 	
 	var path: String {
