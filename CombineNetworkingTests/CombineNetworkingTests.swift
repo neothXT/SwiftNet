@@ -26,7 +26,7 @@ class CombineNetworkingTests: XCTestCase {
 		CNProvider<RemoteEndpoint>().publisher(for: .posts)?
 			.catch { error -> Just<Todo?> in
 				if let responseError = error as? CNError, case .unexpectedResponse(let response) = responseError,
-				   response.statusCode == 404 {
+				   response.statusCode == -1003 {
 					expectation.fulfill()
 				}
 				return Just(nil)
@@ -51,7 +51,7 @@ class CombineNetworkingTests: XCTestCase {
 		wait(for: [expectation], timeout: 10)
 	}
 
-	func testQeryParams() throws {
+	func testQueryParams() throws {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		

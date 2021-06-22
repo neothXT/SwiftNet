@@ -19,7 +19,14 @@ public class CNProvider<T: Endpoint> {
 										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error>? {
 		
 		guard let urlRequest = prepareRequest(for: endpoint) else { return nil }
-		return URLSession.shared.dataTaskPublisher(for: urlRequest)
+		return getSession().dataTaskPublisher(for: urlRequest)
+			.mapError { urlError -> Error in
+				let error = CNErrorResponse(statusCode: urlError.errorCode,
+											localizedString: urlError.localizedDescription,
+											url: urlError.failingURL,
+											mimeType: nil)
+				return CNError.unexpectedResponse(error)
+			}
 			.retry(retries)
 			.tryMap { output in
 				guard let response = output.response as? HTTPURLResponse else {
@@ -39,6 +46,19 @@ public class CNProvider<T: Endpoint> {
 			.decode(type: U.self, decoder: decoder)
 			.receive(on: queue)
 			.eraseToAnyPublisher()
+	}
+	
+	private func getSession() -> URLSession {
+		if CNConfig.pinningModes.rawValue == 0 { return .shared }
+		
+		let operationQueue = OperationQueue()
+		operationQueue.qualityOfService = .utility
+		
+		let delegate = CNSessionDelegate(mode: CNConfig.pinningModes,
+										 certNames: CNConfig.certificateNames,
+										 SSLKeys: CNConfig.SSLKeys)
+
+		return URLSession(configuration: .default, delegate: delegate, delegateQueue: operationQueue)
 	}
 	
 	private func prepareRequest(for endpoint: Endpoint) -> URLRequest? {
