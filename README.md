@@ -1,13 +1,13 @@
 # CombineNetworking
 Easy approach on Networking using Combine
 
-### Installation (using CocoaPods)
+## Installation (using CocoaPods)
 
 `pod 'CombineNetworking'`
 
-### Usage
+## Usage
 
-#### Create an Endpoint to work with
+### Create an Endpoint to work with
 ```Swift
 enum TodosEndpoint {
   case .todos(Int)
@@ -49,7 +49,22 @@ extension TodosEndpoint: Endpoint {
 - `.dataParams([String: Any])` - takes `Dictionary` and parses it into `Data` to send in request's body
 - `.jsonModel(Encodable)` - similar to `.dataParams` except this one takes `Encodable` and parses it into `Data` to send in request's body
 
-#### Subscribe to a publisher
+### Enable SSL and/or Certificate pinning (optional)
+
+```Swift
+//First - turn pinning on
+CNConfig.pinningModes = [.ssl, .certificate]
+
+//Second - specify certificate names (mandatory for certificate pinning, optional for ssl pinning)
+CNConfig.certificateNames = ["MyCert"]
+
+//Third - provide list of acceptable public keys (optional if you've provided certificate names)
+CNConfig.SSLKeys = [myKey]
+```
+
+Please remember that for `.ssl` option it is required to provide either SSLKey or the name of a certificate attached to the project to resolve SSL public key from.
+
+### Subscribe to a publisher
 
 ```Swift
 private var subscriptions: Set<AnyCancellable> = []
