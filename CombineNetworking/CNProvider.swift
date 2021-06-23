@@ -20,6 +20,7 @@ public class CNProvider<T: Endpoint> {
 		
 		guard let urlRequest = prepareRequest(for: endpoint) else { return nil }
 		return getSession().dataTaskPublisher(for: urlRequest)
+			.retry(retries)
 			.mapError { urlError -> Error in
 				let error = CNErrorResponse(statusCode: urlError.errorCode,
 											localizedString: urlError.localizedDescription,
@@ -27,7 +28,6 @@ public class CNProvider<T: Endpoint> {
 											mimeType: nil)
 				return CNError.unexpectedResponse(error)
 			}
-			.retry(retries)
 			.tryMap { output in
 				guard let response = output.response as? HTTPURLResponse else {
 					throw CNError.failedToMapResponse
