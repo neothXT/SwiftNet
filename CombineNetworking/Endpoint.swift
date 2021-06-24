@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 public protocol Endpoint {
 	var baseURL: URL? { get }
@@ -13,4 +14,10 @@ public protocol Endpoint {
     var method: RequestMethod { get }
     var headers: [String: Any]? { get }
     var data: EndpointData { get }
+	
+	var authenticationPublisher: AnyPublisher<CNAccessToken?, Error>? { get }
+}
+
+extension Endpoint {
+	var authenticationPublisher: AnyPublisher<CNAccessToken?, Error>? { nil }
 }

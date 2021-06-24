@@ -8,6 +8,21 @@
 import Foundation
 import Combine
 
+public class CNConfig {
+	static public let shared = CNConfig()
+	
+	var pinningModes: PinningMode = PinningMode(rawValue: 0)
+	var certificateNames: [String] = []
+	var SSLKeys: [SecKey]? = nil
+	private(set) var accessToken: [String: CNAccessToken] = [:]
+	
+	private init() {}
+	
+	fileprivate func setToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
+		guard let token = token else { return }
+		accessToken[endpoint.identifier] = token
+	}
+}
 
 public class CNProvider<T: Endpoint> {
 	public init() {}
@@ -20,7 +35,6 @@ public class CNProvider<T: Endpoint> {
 		
 		guard let urlRequest = prepareRequest(for: endpoint) else { return nil }
 		return getSession().dataTaskPublisher(for: urlRequest)
-			.retry(retries)
 			.mapError { urlError -> Error in
 				let error = CNErrorResponse(statusCode: urlError.errorCode,
 											localizedString: urlError.localizedDescription,
@@ -28,9 +42,16 @@ public class CNProvider<T: Endpoint> {
 											mimeType: nil)
 				return CNError.unexpectedResponse(error)
 			}
-			.tryMap { output in
+			.flatMap { output -> AnyPublisher<Data, Error> in
 				guard let response = output.response as? HTTPURLResponse else {
-					throw CNError.failedToMapResponse
+					return Fail(error: CNError.failedToMapResponse).eraseToAnyPublisher()
+				}
+				
+				if response.statusCode == 401, let publisher = endpoint.authenticationPublisher {
+					return publisher.flatMap { token -> AnyPublisher<Data, Error> in
+						CNConfig.shared.setToken(token, for: endpoint)
+						return Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
+					}.eraseToAnyPublisher()
 				}
 				
 				guard expectedStatusCodes.contains(response.statusCode) else {
@@ -38,26 +59,26 @@ public class CNProvider<T: Endpoint> {
 												localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
 												url: response.url,
 												mimeType: response.mimeType)
-					throw CNError.unexpectedResponse(error)
+					return Fail(error: CNError.unexpectedResponse(error)).eraseToAnyPublisher()
 				}
-				
-				return output.data
+				return Result.success(output.data).publisher.eraseToAnyPublisher()
 			}
+			.retry(retries)
 			.decode(type: U.self, decoder: decoder)
 			.receive(on: queue)
 			.eraseToAnyPublisher()
 	}
 	
 	private func getSession() -> URLSession {
-		if CNConfig.pinningModes.rawValue == 0 { return .shared }
+		if CNConfig.shared.pinningModes.rawValue == 0 { return .shared }
 		
 		let operationQueue = OperationQueue()
 		operationQueue.qualityOfService = .utility
 		
-		let delegate = CNSessionDelegate(mode: CNConfig.pinningModes,
-										 certNames: CNConfig.certificateNames,
-										 SSLKeys: CNConfig.SSLKeys)
-
+		let delegate = CNSessionDelegate(mode: CNConfig.shared.pinningModes,
+										 certNames: CNConfig.shared.certificateNames,
+										 SSLKeys: CNConfig.shared.SSLKeys)
+		
 		return URLSession(configuration: .default, delegate: delegate, delegateQueue: operationQueue)
 	}
 	
@@ -91,4 +112,8 @@ public class CNProvider<T: Endpoint> {
 			break
 		}
 	}
+}
+
+extension Endpoint {
+	fileprivate var identifier: String { String(describing: self) }
 }

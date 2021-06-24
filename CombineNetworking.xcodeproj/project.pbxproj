@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		542C32412682970800D9BC46 /* PinningMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54B590B4268284E8008A63A5 /* PinningMode.swift */; };
 		542C32422682970D00D9BC46 /* CNSessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54B590B2268282C9008A63A5 /* CNSessionDelegate.swift */; };
+		544089CC26850D5000EEC857 /* CNAccessToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 547DA8A32683C68900DBD457 /* CNAccessToken.swift */; };
 		546280C32656CDA5001DAA43 /* CombineNetworking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 546280B92656CDA5001DAA43 /* CombineNetworking.framework */; };
 		546280C82656CDA5001DAA43 /* CombineNetworkingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280C72656CDA5001DAA43 /* CombineNetworkingTests.swift */; };
 		546280CA2656CDA5001DAA43 /* CombineNetworking.h in Headers */ = {isa = PBXBuildFile; fileRef = 546280BC2656CDA5001DAA43 /* CombineNetworking.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -16,11 +17,10 @@
 		546280D82656CFA2001DAA43 /* EndpointData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D72656CFA2001DAA43 /* EndpointData.swift */; };
 		546280DA2656D02E001DAA43 /* CNProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D92656D02E001DAA43 /* CNProvider.swift */; };
 		546280DE2656D867001DAA43 /* Method.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280DD2656D867001DAA43 /* Method.swift */; };
+		547DA8A42683C68900DBD457 /* CNAccessToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 547DA8A32683C68900DBD457 /* CNAccessToken.swift */; };
 		548E2311265AAEB900249711 /* CNError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C7409B265A521000A37013 /* CNError.swift */; };
 		54B590B3268282C9008A63A5 /* CNSessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54B590B2268282C9008A63A5 /* CNSessionDelegate.swift */; };
 		54B590B5268284E8008A63A5 /* PinningMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54B590B4268284E8008A63A5 /* PinningMode.swift */; };
-		54B590B926828F5B008A63A5 /* CNConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54B590B826828F5B008A63A5 /* CNConfig.swift */; };
-		54B590BA26829257008A63A5 /* CNConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54B590B826828F5B008A63A5 /* CNConfig.swift */; };
 		54C3513C26570CC500FC9513 /* Todo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54C3513B26570CC500FC9513 /* Todo.swift */; };
 		54C3514126570D8D00FC9513 /* CNProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D92656D02E001DAA43 /* CNProvider.swift */; };
 		54C3514226570D9100FC9513 /* Endpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 546280D52656CEE5001DAA43 /* Endpoint.swift */; };
@@ -54,9 +54,9 @@
 		546280D72656CFA2001DAA43 /* EndpointData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndpointData.swift; sourceTree = "<group>"; };
 		546280D92656D02E001DAA43 /* CNProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CNProvider.swift; sourceTree = "<group>"; };
 		546280DD2656D867001DAA43 /* Method.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Method.swift; sourceTree = "<group>"; };
+		547DA8A32683C68900DBD457 /* CNAccessToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CNAccessToken.swift; sourceTree = "<group>"; };
 		54B590B2268282C9008A63A5 /* CNSessionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CNSessionDelegate.swift; sourceTree = "<group>"; };
 		54B590B4268284E8008A63A5 /* PinningMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinningMode.swift; sourceTree = "<group>"; };
-		54B590B826828F5B008A63A5 /* CNConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CNConfig.swift; sourceTree = "<group>"; };
 		54C3513B26570CC500FC9513 /* Todo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Todo.swift; sourceTree = "<group>"; };
 		54C3513D26570CEC00FC9513 /* RemoteEndpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteEndpoint.swift; sourceTree = "<group>"; };
 		54C7409B265A521000A37013 /* CNError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CNError.swift; sourceTree = "<group>"; };
@@ -107,6 +107,7 @@
 			children = (
 				546280BC2656CDA5001DAA43 /* CombineNetworking.h */,
 				546280BD2656CDA5001DAA43 /* Info.plist */,
+				547DA8A32683C68900DBD457 /* CNAccessToken.swift */,
 				546280D52656CEE5001DAA43 /* Endpoint.swift */,
 				546280D72656CFA2001DAA43 /* EndpointData.swift */,
 				546280D92656D02E001DAA43 /* CNProvider.swift */,
@@ -115,7 +116,6 @@
 				54F67BC0265B063800574C0A /* Encodable + toJson.swift */,
 				54B590B2268282C9008A63A5 /* CNSessionDelegate.swift */,
 				54B590B4268284E8008A63A5 /* PinningMode.swift */,
-				54B590B826828F5B008A63A5 /* CNConfig.swift */,
 			);
 			path = CombineNetworking;
 			sourceTree = "<group>";
@@ -256,7 +256,7 @@
 				546280D62656CEE5001DAA43 /* Endpoint.swift in Sources */,
 				54B590B5268284E8008A63A5 /* PinningMode.swift in Sources */,
 				54C7409C265A521000A37013 /* CNError.swift in Sources */,
-				54B590B926828F5B008A63A5 /* CNConfig.swift in Sources */,
+				547DA8A42683C68900DBD457 /* CNAccessToken.swift in Sources */,
 				546280D82656CFA2001DAA43 /* EndpointData.swift in Sources */,
 				546280DA2656D02E001DAA43 /* CNProvider.swift in Sources */,
 			);
@@ -266,6 +266,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				544089CC26850D5000EEC857 /* CNAccessToken.swift in Sources */,
 				54C3514426570DAE00FC9513 /* EndpointData.swift in Sources */,
 				546280C82656CDA5001DAA43 /* CombineNetworkingTests.swift in Sources */,
 				54C3514126570D8D00FC9513 /* CNProvider.swift in Sources */,
@@ -276,7 +277,6 @@
 				54F67BBF265B019900574C0A /* Post.swift in Sources */,
 				542C32412682970800D9BC46 /* PinningMode.swift in Sources */,
 				54C3514326570D9C00FC9513 /* Method.swift in Sources */,
-				54B590BA26829257008A63A5 /* CNConfig.swift in Sources */,
 				542C32422682970D00D9BC46 /* CNSessionDelegate.swift in Sources */,
 				54C3513C26570CC500FC9513 /* Todo.swift in Sources */,
 			);
