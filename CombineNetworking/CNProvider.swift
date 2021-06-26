@@ -9,14 +9,12 @@ import Foundation
 import Combine
 
 public class CNConfig {
-	static public let shared = CNConfig()
-	
 	var pinningModes: PinningMode = PinningMode(rawValue: 0)
 	var certificateNames: [String] = []
 	var SSLKeys: [SecKey]? = nil
 	private(set) var accessToken: [String: CNAccessToken] = [:]
 	
-	private init() {}
+	fileprivate init() {}
 	
 	fileprivate func setToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
 		guard let token = token else { return }
@@ -24,9 +22,13 @@ public class CNConfig {
 	}
 }
 
-public class CNProvider<T: Endpoint> {
-	public init() {}
+public class CNProviderBase {
+	static let config = CNConfig()
 	
+	public init() {}
+}
+
+public class CNProvider<T: Endpoint>: CNProviderBase {
 	public func publisher<U: Decodable>(for endpoint: T,
 										retries: Int = 0,
 										expectedStatusCodes: [Int] = [200, 201, 204],
@@ -47,9 +49,9 @@ public class CNProvider<T: Endpoint> {
 					return Fail(error: CNError.failedToMapResponse).eraseToAnyPublisher()
 				}
 				
-				if response.statusCode == 401, let publisher = endpoint.authenticationPublisher {
+				if response.statusCode == 401, let publisher = endpoint.callbackPublisher {
 					return publisher.flatMap { token -> AnyPublisher<Data, Error> in
-						CNConfig.shared.setToken(token, for: endpoint)
+						CNProvider.config.setToken(token, for: endpoint)
 						return Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 					}.eraseToAnyPublisher()
 				}
@@ -70,14 +72,14 @@ public class CNProvider<T: Endpoint> {
 	}
 	
 	private func getSession() -> URLSession {
-		if CNConfig.shared.pinningModes.rawValue == 0 { return .shared }
+		if CNProvider.config.pinningModes.rawValue == 0 { return .shared }
 		
 		let operationQueue = OperationQueue()
 		operationQueue.qualityOfService = .utility
 		
-		let delegate = CNSessionDelegate(mode: CNConfig.shared.pinningModes,
-										 certNames: CNConfig.shared.certificateNames,
-										 SSLKeys: CNConfig.shared.SSLKeys)
+		let delegate = CNSessionDelegate(mode: CNProvider.config.pinningModes,
+										 certNames: CNProvider.config.certificateNames,
+										 SSLKeys: CNProvider.config.SSLKeys)
 		
 		return URLSession(configuration: .default, delegate: delegate, delegateQueue: operationQueue)
 	}
@@ -93,6 +95,10 @@ public class CNProvider<T: Endpoint> {
 	private func prepareHeadersAndMethod(endpoint: Endpoint, request: inout URLRequest) {
 		endpoint.headers?.forEach { key, value in
 			request.addValue("\(value)", forHTTPHeaderField: key)
+		}
+		if endpoint.requiresAccessToken {
+			let token = CNProvider.config.accessToken[endpoint.identifier]?.access_token ?? ""
+			request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 		}
 		request.httpMethod = endpoint.method.rawValue
 	}

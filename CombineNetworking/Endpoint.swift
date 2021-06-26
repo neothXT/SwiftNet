@@ -12,12 +12,15 @@ public protocol Endpoint {
 	var baseURL: URL? { get }
     var path: String { get }
     var method: RequestMethod { get }
+	var requiresAccessToken: Bool { get }
     var headers: [String: Any]? { get }
     var data: EndpointData { get }
 	
-	var authenticationPublisher: AnyPublisher<CNAccessToken?, Error>? { get }
+	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? { get }
 }
 
 extension Endpoint {
-	var authenticationPublisher: AnyPublisher<CNAccessToken?, Error>? { nil }
+	var requiresAccessToken: Bool { false }
+	
+	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? { nil }
 }

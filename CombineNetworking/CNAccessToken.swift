@@ -8,9 +8,9 @@
 import Foundation
 
 public struct CNAccessToken: Codable {
-	let accessToken: String
-	let tokenType: String
-	let expiresIn: Int?
-	let refreshToken: String?
+	let access_token: String
+	let token_type: String
+	let expires_in: Int?
+	let refresh_token: String?
 	let scope: String?
 }
