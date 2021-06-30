@@ -15,12 +15,10 @@ public protocol Endpoint {
 	var requiresAccessToken: Bool { get }
     var headers: [String: Any]? { get }
     var data: EndpointData { get }
-	
 	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? { get }
 }
 
 extension Endpoint {
 	var requiresAccessToken: Bool { false }
-	
 	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? { nil }
 }

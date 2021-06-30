@@ -23,7 +23,7 @@ class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .posts)?
+		CNProvider<RemoteEndpoint>().publisher(for: .posts, responseType: Todo?.self)?
 			.catch { error -> Just<Todo?> in
 				if let responseError = error as? CNError, case .unexpectedResponse(let response) = responseError,
 				   response.statusCode == -1003 {
@@ -41,7 +41,7 @@ class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .todos)?
+		CNProvider<RemoteEndpoint>().publisher(for: .todos, responseType: Todo.self)?
 			.sink(receiveCompletion: { _ in
 			}) { (todos: Todo) in
 				expectation.fulfill()
@@ -55,7 +55,7 @@ class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .dictGet(["postId": 1]))?
+		CNProvider<RemoteEndpoint>().publisher(for: .dictGet(["postId": 1]), responseType: Post.self)?
 			.sink(receiveCompletion: { _ in
 				expectation.fulfill()
 			}) { (_: Post) in }
@@ -70,7 +70,7 @@ class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .post(post))?
+		CNProvider<RemoteEndpoint>().publisher(for: .post(post), responseType: Post.self)?
 			.sink(receiveCompletion: { _ in
 				expectation.fulfill()
 			}) { (_: Post) in }
@@ -85,7 +85,7 @@ class CombineNetworkingTests: XCTestCase {
 		
 		let dict = ["userId": "1231", "title": "Title", "body": "Body"]
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .dictPost(dict))?
+		CNProvider<RemoteEndpoint>().publisher(for: .dictPost(dict), responseType: Post.self)?
 			.sink(receiveCompletion: { _ in
 				expectation.fulfill()
 			}) { (_: Post) in }

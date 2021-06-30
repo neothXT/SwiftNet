@@ -30,29 +30,21 @@ public class CNProviderBase {
 
 public class CNProvider<T: Endpoint>: CNProviderBase {
 	public func publisher<U: Decodable>(for endpoint: T,
+										responseType: U.Type,
 										retries: Int = 0,
 										expectedStatusCodes: [Int] = [200, 201, 204],
 										decoder: JSONDecoder = JSONDecoder(),
 										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error>? {
-		
-		guard let urlRequest = prepareRequest(for: endpoint) else { return nil }
-		return getSession().dataTaskPublisher(for: urlRequest)
-			.mapError { urlError -> Error in
-				let error = CNErrorResponse(statusCode: urlError.errorCode,
-											localizedString: urlError.localizedDescription,
-											url: urlError.failingURL,
-											mimeType: nil)
-				return CNError.unexpectedResponse(error)
-			}
+		return prepPublisher(for: endpoint)?
 			.flatMap { output -> AnyPublisher<Data, Error> in
 				guard let response = output.response as? HTTPURLResponse else {
 					return Fail(error: CNError.failedToMapResponse).eraseToAnyPublisher()
 				}
 				
 				if response.statusCode == 401, let publisher = endpoint.callbackPublisher {
-					return publisher.flatMap { token -> AnyPublisher<Data, Error> in
+					return publisher.flatMap { [weak self] token -> AnyPublisher<Data, Error> in
 						CNProvider.config.setToken(token, for: endpoint)
-						return Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
+						return self?.prepPublisher(for: endpoint)?.map(\.data).eraseToAnyPublisher() ?? Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 					}.eraseToAnyPublisher()
 				}
 				
@@ -65,8 +57,8 @@ public class CNProvider<T: Endpoint>: CNProviderBase {
 				}
 				return Result.success(output.data).publisher.eraseToAnyPublisher()
 			}
-			.retry(retries)
 			.decode(type: U.self, decoder: decoder)
+			.retry(retries)
 			.receive(on: queue)
 			.eraseToAnyPublisher()
 	}
@@ -110,13 +102,37 @@ public class CNProvider<T: Endpoint>: CNProviderBase {
 			var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: true)
 			urlComponents?.queryItems = params.map { URLQueryItem(name: $0, value: "\($1)") }
 			request.url = urlComponents?.url
-		case .dataParams(let params):
+			
+		case .bodyParams(let params):
 			request.httpBody = try? JSONSerialization.data(withJSONObject: params, options: [])
+			
 		case .jsonModel(let model):
 			request.httpBody = try? model.toJson()
+			
+		case .urlEncoded(let params):
+			let data = params.reduce([]) { $0 + ["\($1.key)=\($1.value)"] }
+				.joined(separator: ",")
+				.data(using: .utf8)
+			
+			request.httpBody = data
+			
 		case .plain:
 			break
 		}
+	}
+	
+	private func prepPublisher(for endpoint: T) -> AnyPublisher<URLSession.DataTaskPublisher.Output, Error>? {
+		guard let urlRequest = prepareRequest(for: endpoint) else { return nil }
+		
+		return getSession().dataTaskPublisher(for: urlRequest)
+			.mapError { urlError -> Error in
+				let error = CNErrorResponse(statusCode: urlError.errorCode,
+											localizedString: urlError.localizedDescription,
+											url: urlError.failingURL,
+											mimeType: nil)
+				return CNError.unexpectedResponse(error)
+			}
+			.eraseToAnyPublisher()
 	}
 }
 

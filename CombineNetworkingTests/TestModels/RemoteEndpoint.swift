@@ -57,7 +57,7 @@ extension RemoteEndpoint: Endpoint {
 		case .post(let post):
 			return .jsonModel(post)
 		case .dictPost(let dict):
-			return .dataParams(dict)
+			return .bodyParams(dict)
 		case .dictGet(let dict):
 			return .queryParams(dict)
 		default:
