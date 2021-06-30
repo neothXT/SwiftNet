@@ -9,9 +9,9 @@ import Foundation
 import Combine
 
 public class CNConfig {
-	var pinningModes: PinningMode = PinningMode(rawValue: 0)
-	var certificateNames: [String] = []
-	var SSLKeys: [SecKey]? = nil
+	static var pinningModes: PinningMode = PinningMode(rawValue: 0)
+	static var certificateNames: [String] = []
+	static var SSLKeys: [SecKey]? = nil
 	private(set) var accessToken: [String: CNAccessToken] = [:]
 	
 	fileprivate init() {}
@@ -64,14 +64,14 @@ public class CNProvider<T: Endpoint>: CNProviderBase {
 	}
 	
 	private func getSession() -> URLSession {
-		if CNProvider.config.pinningModes.rawValue == 0 { return .shared }
+		if CNConfig.pinningModes.rawValue == 0 { return .shared }
 		
 		let operationQueue = OperationQueue()
 		operationQueue.qualityOfService = .utility
 		
-		let delegate = CNSessionDelegate(mode: CNProvider.config.pinningModes,
-										 certNames: CNProvider.config.certificateNames,
-										 SSLKeys: CNProvider.config.SSLKeys)
+		let delegate = CNSessionDelegate(mode: CNConfig.pinningModes,
+										 certNames: CNConfig.certificateNames,
+										 SSLKeys: CNConfig.SSLKeys)
 		
 		return URLSession(configuration: .default, delegate: delegate, delegateQueue: operationQueue)
 	}
