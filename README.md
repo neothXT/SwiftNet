@@ -10,7 +10,7 @@ Easy approach on Networking using Combine
 ### Create an Endpoint to work with
 ```Swift
 enum TodosEndpoint {
-  case .todos(Int)
+  case todos(Int)
 }
 
 extension TodosEndpoint: Endpoint {
@@ -46,7 +46,8 @@ extension TodosEndpoint: Endpoint {
 `EndpointData` is also an enum with following options: 
 - `.plain`
 - `.queryParams([String: Any])`
-- `.dataParams([String: Any])` - takes `Dictionary` and parses it into `Data` to send in request's body
+- `.bodyParams([String: Any])` - takes `Dictionary` and parses it into `Data` to send in request's body
+- `.urlEncoded([String: Any])` - takes `Dictionary` and parses it into `String` and then `Data` to send in request's body (to use with `Content-Type: application/x-www-form-urlencoded`)
 - `.jsonModel(Encodable)` - similar to `.dataParams` except this one takes `Encodable` and parses it into `Data` to send in request's body
 
 ### Enable SSL and/or Certificate pinning (optional)
@@ -64,6 +65,40 @@ CNConfig.SSLKeys = [myKey]
 
 Please remember that for `.ssl` option it is required to provide either SSLKey or the name of a certificate attached to the project to resolve SSL public key from.
 
+### Automatic authorization mechanism
+
+Handling authorization callbacks with CombineNetworking is ridiculously easy. To use it with your `Endpoint` all you have to do is the following:
+
+```Swift
+
+enum TodosEndpoint {
+  case token
+  case todos(Int)
+}
+
+extension TodosEndpoint: Endpoint {
+  //Setup all the required properties like baseURL, path, etc...
+		
+  //... then determine which of your endpoints require authorization...
+  var requiresAccessToken: Bool {
+    switch self {
+    case .token:
+      return false
+     
+    default:
+      return true
+    }
+  }
+	
+  //... and prepare callbackPublisher to handle authorization callbacks
+  var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? {
+    CNProvider<TodosEndpoint>().publisher(for: .token, responseType: CNAccessToken?.self)
+  }
+}
+```
+
+See? Easy peasy!
+
 ### Subscribe to a publisher
 
 ```Swift
@@ -71,7 +106,7 @@ private var subscriptions: Set<AnyCancellable> = []
 var todo: Todo?
 
 func subscribeForTodos() {
-  CNProvider<TodosEndpoint>().publisher(for: .todos(1))?
+  CNProvider<TodosEndpoint>().publisher(for: .todos(1), responseType: Todo?.self)?
     .catch { (error) -> Just<Todo?> in
       print(error)
       return Just(nil)
