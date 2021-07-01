@@ -1,9 +1,12 @@
 # CombineNetworking
-Easy approach on Networking using Combine
+Meet CombineNetworking. Super lightweight and crazy easy to use framework to help you create and handle your network requests in a convenient way.
+Besides basic network requests, CombineNetworking allows you to easily send your requests securely with a simple SSL and Certificate pinning mechanisms. But that's not all. With CombineNetworking you can also effortlessly handle authorization tokens with built-in automatic authorization mechanism.
 
 ## Installation (using CocoaPods)
 
 `pod 'CombineNetworking'`
+
+##### Note that in order to use CombineNetworking, your iOS Deployment Target has to be 13.0 or newer
 
 ## Usage
 
