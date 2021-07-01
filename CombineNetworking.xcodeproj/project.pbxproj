@@ -123,22 +123,14 @@
 		546280C62656CDA5001DAA43 /* CombineNetworkingTests */ = {
 			isa = PBXGroup;
 			children = (
-				54C3513A26570CB300FC9513 /* TestModels */,
 				546280C72656CDA5001DAA43 /* CombineNetworkingTests.swift */,
-				546280C92656CDA5001DAA43 /* Info.plist */,
-			);
-			path = CombineNetworkingTests;
-			sourceTree = "<group>";
-		};
-		54C3513A26570CB300FC9513 /* TestModels */ = {
-			isa = PBXGroup;
-			children = (
 				54C3513B26570CC500FC9513 /* Todo.swift */,
 				54C3513D26570CEC00FC9513 /* RemoteEndpoint.swift */,
 				54F67BBE265B019900574C0A /* Post.swift */,
 				54F67BC4265B0A1300574C0A /* Comment.swift */,
+				546280C92656CDA5001DAA43 /* Info.plist */,
 			);
-			path = TestModels;
+			path = CombineNetworkingTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

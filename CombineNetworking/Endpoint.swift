@@ -18,7 +18,7 @@ public protocol Endpoint {
 	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? { get }
 }
 
-extension Endpoint {
+public extension Endpoint {
 	var requiresAccessToken: Bool { false }
 	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? { nil }
 }
