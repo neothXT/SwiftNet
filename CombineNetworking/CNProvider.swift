@@ -12,23 +12,17 @@ public class CNConfig {
 	static var pinningModes: PinningMode = PinningMode(rawValue: 0)
 	static var certificateNames: [String] = []
 	static var SSLKeys: [SecKey]? = nil
-	private(set) var accessToken: [String: CNAccessToken] = [:]
+	static private(set) var accessToken: [String: CNAccessToken] = [:]
 	
-	fileprivate init() {}
+	private init() {}
 	
-	fileprivate func setToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
+	static fileprivate func setToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
 		guard let token = token else { return }
 		accessToken[endpoint.identifier] = token
 	}
 }
 
-public class CNProviderBase {
-	static let config = CNConfig()
-	
-	public init() {}
-}
-
-public class CNProvider<T: Endpoint>: CNProviderBase {
+public class CNProvider<T: Endpoint> {
 	public func publisher<U: Decodable>(for endpoint: T,
 										responseType: U.Type,
 										retries: Int = 0,
@@ -43,7 +37,7 @@ public class CNProvider<T: Endpoint>: CNProviderBase {
 				
 				if response.statusCode == 401, let publisher = endpoint.callbackPublisher {
 					return publisher.flatMap { [weak self] token -> AnyPublisher<Data, Error> in
-						CNProvider.config.setToken(token, for: endpoint)
+						CNConfig.setToken(token, for: endpoint)
 						return self?.prepPublisher(for: endpoint)?.map(\.data).eraseToAnyPublisher() ?? Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 					}.eraseToAnyPublisher()
 				}
@@ -89,7 +83,7 @@ public class CNProvider<T: Endpoint>: CNProviderBase {
 			request.addValue("\(value)", forHTTPHeaderField: key)
 		}
 		if endpoint.requiresAccessToken {
-			let token = CNProvider.config.accessToken[endpoint.identifier]?.access_token ?? ""
+			let token = CNConfig.accessToken[endpoint.identifier]?.access_token ?? ""
 			request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 		}
 		request.httpMethod = endpoint.method.rawValue
