@@ -40,6 +40,8 @@ public class CNProvider<T: Endpoint> {
 						CNConfig.setToken(token, for: endpoint)
 						return self?.prepPublisher(for: endpoint)?.map(\.data).eraseToAnyPublisher() ?? Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 					}.eraseToAnyPublisher()
+				} else if response.statusCode == 401 {
+					return Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 				}
 				
 				guard expectedStatusCodes.contains(response.statusCode) else {
