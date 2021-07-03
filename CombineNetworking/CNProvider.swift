@@ -23,6 +23,8 @@ public class CNConfig {
 }
 
 public class CNProvider<T: Endpoint> {
+	public init() {}
+	
 	public func publisher<U: Decodable>(for endpoint: T,
 										responseType: U.Type,
 										retries: Int = 0,
