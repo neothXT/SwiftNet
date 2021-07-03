@@ -9,10 +9,10 @@ import Foundation
 import Combine
 
 public class CNConfig {
-	static var pinningModes: PinningMode = PinningMode(rawValue: 0)
-	static var certificateNames: [String] = []
-	static var SSLKeys: [SecKey]? = nil
-	static private(set) var accessToken: [String: CNAccessToken] = [:]
+	public static var pinningModes: PinningMode = PinningMode(rawValue: 0)
+	public static var certificateNames: [String] = []
+	public static var SSLKeys: [SecKey]? = nil
+	private(set) static var accessToken: [String: CNAccessToken] = [:]
 	
 	private init() {}
 	
