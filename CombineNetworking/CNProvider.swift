@@ -39,6 +39,9 @@ public class CNProvider<T: Endpoint> {
 				
 				if response.statusCode == 401, let publisher = endpoint.callbackPublisher {
 					return publisher.flatMap { [weak self] token -> AnyPublisher<Data, Error> in
+						guard let token = token else {
+							return Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
+						}
 						CNConfig.setToken(token, for: endpoint)
 						return self?.prepPublisher(for: endpoint)?.map(\.data).eraseToAnyPublisher() ?? Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 					}.eraseToAnyPublisher()
