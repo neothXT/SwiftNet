@@ -12,7 +12,7 @@ public class CNConfig {
 	public static var pinningModes: PinningMode = PinningMode(rawValue: 0)
 	public static var certificateNames: [String] = []
 	public static var SSLKeys: [SecKey]? = nil
-	private(set) static var accessToken: [String: CNAccessToken] = [:]
+	fileprivate static var accessToken: [String: CNAccessToken] = [:]
 	
 	private init() {}
 	
@@ -23,6 +23,8 @@ public class CNConfig {
 }
 
 public class CNProvider<T: Endpoint> {
+	private var didRetry = false
+	
 	public init() {}
 	
 	public func publisher<U: Decodable>(for endpoint: T,
@@ -31,13 +33,17 @@ public class CNProvider<T: Endpoint> {
 										expectedStatusCodes: [Int] = [200, 201, 204],
 										decoder: JSONDecoder = JSONDecoder(),
 										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error>? {
+		let logger = CNDebugInfo(for: endpoint)
+		logger.log("Request sent", mode: .start)
 		return prepPublisher(for: endpoint)?
-			.flatMap { output -> AnyPublisher<Data, Error> in
+			.flatMap { [weak self] output -> AnyPublisher<Data, Error> in
 				guard let response = output.response as? HTTPURLResponse else {
+					logger.log(CNError.failedToMapResponse.localizedDescription, mode: .stop)
 					return Fail(error: CNError.failedToMapResponse).eraseToAnyPublisher()
 				}
 				
-				if response.statusCode == 401, let publisher = endpoint.callbackPublisher {
+				if response.statusCode == 401 && !(self?.didRetry ?? true), let publisher = endpoint.callbackPublisher {
+					self?.didRetry = true
 					return publisher.flatMap { [weak self] token -> AnyPublisher<Data, Error> in
 						guard let token = token else {
 							return Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
@@ -46,6 +52,8 @@ public class CNProvider<T: Endpoint> {
 						return self?.prepPublisher(for: endpoint)?.map(\.data).eraseToAnyPublisher() ?? Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 					}.eraseToAnyPublisher()
 				} else if response.statusCode == 401 {
+					self?.didRetry = false
+					logger.log(CNError.authenticationFailed.localizedDescription, mode: .stop)
 					return Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 				}
 				
@@ -54,8 +62,10 @@ public class CNProvider<T: Endpoint> {
 												localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
 												url: response.url,
 												mimeType: response.mimeType)
+					logger.log(CNError.unexpectedResponse(error).localizedDescription, mode: .stop)
 					return Fail(error: CNError.unexpectedResponse(error)).eraseToAnyPublisher()
 				}
+				logger.log("Success", mode: .stop)
 				return Result.success(output.data).publisher.eraseToAnyPublisher()
 			}
 			.decode(type: U.self, decoder: decoder)
@@ -135,8 +145,4 @@ public class CNProvider<T: Endpoint> {
 			}
 			.eraseToAnyPublisher()
 	}
-}
-
-extension Endpoint {
-	fileprivate var identifier: String { String(describing: self) }
 }

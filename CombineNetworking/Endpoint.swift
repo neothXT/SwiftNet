@@ -21,4 +21,6 @@ public protocol Endpoint {
 public extension Endpoint {
 	var requiresAccessToken: Bool { false }
 	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? { nil }
+	
+	var identifier: String { "\(self)" }
 }
