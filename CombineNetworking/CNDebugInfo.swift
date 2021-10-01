@@ -42,7 +42,7 @@ public class CNDebugInfo {
 		}
 		let baseUrl = endpoint.baseURL?.absoluteString ?? (endpoint.path.hasPrefix("/") ? "<UNKNOWN>" : "<UNKNOWN>/")
 		let url = baseUrl + endpoint.path
-		let output = "\n[\(fileString)][\(endpoint.method.rawValue.uppercased())]\n\(modeString): \(url)\n\(message)\(timeString)\n"
+		let output = "\n[\(fileString)][\(endpoint.identifier)][\(endpoint.method.rawValue.uppercased())]\n\(modeString): \(url)\n\(message)\(timeString)\n"
 		print(output)
 		#endif
 	}
