@@ -40,10 +40,29 @@ public class CNDebugInfo {
 		if let subString = file.split(separator: "/").last {
 			fileString = String(subString)
 		}
-		let baseUrl = endpoint.baseURL?.absoluteString ?? (endpoint.path.hasPrefix("/") ? "<UNKNOWN>" : "<UNKNOWN>/")
-		let url = baseUrl + endpoint.path
-		let output = "\n[\(fileString)][\(endpoint.identifier)][\(endpoint.method.rawValue.uppercased())]\n\(modeString): \(url)\n\(message)\(timeString)\n"
+		let output = "\n[\(fileString)][\(endpoint.identifier)][\(endpoint.method.rawValue.uppercased())]\n\(modeString): \(endpoint.fullURL())\n\(message)\(timeString)\n"
 		print(output)
 		#endif
+	}
+}
+
+extension Endpoint {
+	fileprivate func fullURL() -> String {
+		var url = baseURL?.absoluteString ?? (path.hasPrefix("/") ? "<UNKNOWN>" : "<UNKNOWN>/")
+		
+		url += path
+		
+		switch data {
+		case .queryParams(let params):
+			guard let requestURL = URL(string: url) else { return url }
+			var urlComponents = URLComponents(url: requestURL, resolvingAgainstBaseURL: true)
+			urlComponents?.queryItems = params.map { URLQueryItem(name: $0, value: "\($1)") }
+			url = urlComponents?.url?.absoluteString ?? url
+			
+		default:
+			break
+		}
+		
+		return url
 	}
 }
