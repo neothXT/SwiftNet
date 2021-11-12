@@ -118,7 +118,7 @@ public class CNProvider<T: Endpoint> {
 			request.httpBody = try? JSONSerialization.data(withJSONObject: params, options: [])
 			
 		case .jsonModel(let model):
-			request.httpBody = try? model.toJson()
+			request.httpBody = try? model.toJsonData()
 			
 		case .urlEncoded(let params):
 			let data = params.reduce([]) { $0 + ["\($1.key)=\($1.value)"] }
