@@ -12,6 +12,7 @@ public class CNConfig {
 	public static var pinningModes: PinningMode = PinningMode(rawValue: 0)
 	public static var certificateNames: [String] = []
 	public static var SSLKeys: [SecKey]? = nil
+	public static var jsonDecoder: JSONDecoder? = nil
 	fileprivate static var accessToken: [String: CNAccessToken] = [:]
 	
 	private init() {}
@@ -31,7 +32,7 @@ public class CNProvider<T: Endpoint> {
 										responseType: U.Type,
 										retries: Int = 0,
 										expectedStatusCodes: [Int] = [200, 201, 204],
-										decoder: JSONDecoder = JSONDecoder(),
+										decoder: JSONDecoder? = nil,
 										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error>? {
 		let logger = CNDebugInfo(for: endpoint)
 		logger.log("Request sent", mode: .start)
@@ -68,7 +69,7 @@ public class CNProvider<T: Endpoint> {
 				logger.log("Success", mode: .stop)
 				return Result.success(output.data).publisher.eraseToAnyPublisher()
 			}
-			.decode(type: U.self, decoder: decoder)
+			.decode(type: U.self, decoder: CNConfig.jsonDecoder ?? decoder ?? JSONDecoder())
 			.retry(retries)
 			.receive(on: queue)
 			.eraseToAnyPublisher()
