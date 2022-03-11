@@ -24,13 +24,10 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "CombineNetworking",
-			dependencies: [],
-			path: "./CombineNetworking",
-			exclude: ["Info.plist", "CombineNetworking.h"]),
+            dependencies: []),
         .testTarget(
             name: "CombineNetworkingTests",
-			dependencies: ["CombineNetworking"],
-			path: "./CombineNetworkingTests",
-			exclude: ["Info.plist"])
-    ]
+            dependencies: ["CombineNetworking"]),
+    ],
+	swiftLanguageVersions: [.v5]
 )

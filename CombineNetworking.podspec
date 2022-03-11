@@ -16,7 +16,7 @@ Pod::Spec.new do |spec|
   #
 
   spec.name         = "CombineNetworking"
-  spec.version      = "0.6.0"
+  spec.version      = "0.5.0"
   spec.summary      = "Easy approach on Networking using Combine"
 
   # This description is used to generate tags and improve search results.
@@ -69,6 +69,8 @@ Pod::Spec.new do |spec|
    spec.osx.deployment_target = "10.15"
   # spec.watchos.deployment_target = "2.0"
   # spec.tvos.deployment_target = "9.0"
+  
+  spec.swift_version = '5.0'
 
   # ――― Source Location ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
   #
@@ -87,8 +89,8 @@ Pod::Spec.new do |spec|
   #  Not including the public_header_files will make all headers public.
   #
 
-  spec.source_files = '**/*.swift', '*.swift'
-  spec.exclude_files = 'CombineNetworkingTests/*'
+  spec.source_files = 'Sources/**/*.swift'
+  spec.exclude_files = 'Tests/CombineNetworkingTests/*'
   # spec.public_header_files = "Classes/**/*.h"
 
 
