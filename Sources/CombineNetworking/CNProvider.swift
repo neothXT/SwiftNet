@@ -7,19 +7,23 @@
 
 import Foundation
 import Combine
+import KeychainAccess
 
 public class CNConfig {
 	public static var pinningModes: PinningMode = PinningMode(rawValue: 0)
 	public static var certificateNames: [String] = []
 	public static var SSLKeys: [SecKey]? = nil
 	public static var jsonDecoder: JSONDecoder? = nil
-	fileprivate static var accessToken: [String: CNAccessToken] = [:]
+	fileprivate static func accessToken(for endpoint: Endpoint) -> CNAccessToken? {
+		guard let data = Keychain(service: endpoint.identifier)[data: "accessToken"] else { return nil }
+		return try? JSONDecoder().decode(CNAccessToken.self, from: data)
+	}
 	
 	private init() {}
 	
 	static fileprivate func setToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
 		guard let token = token else { return }
-		accessToken[endpoint.identifier] = token
+		Keychain(service: endpoint.identifier)[data: "accessToken"] = try? token.toJsonData()
 	}
 }
 
@@ -44,7 +48,7 @@ public class CNProvider<T: Endpoint> {
 					return Fail(error: CNError.failedToMapResponse).eraseToAnyPublisher()
 				}
 				
-				if response.statusCode == 401 && !(self?.didRetry ?? true), let publisher = endpoint.callbackPublisher {
+				if response.statusCode == 401 && !(self?.didRetry ?? true), let publisher = endpoint.refreshTokenPublisher ?? endpoint.callbackPublisher {
 					self?.didRetry = true
 					return publisher.flatMap { [weak self] token -> AnyPublisher<Data, Error> in
 						guard let token = token else {
@@ -102,8 +106,8 @@ public class CNProvider<T: Endpoint> {
 			request.addValue("\(value)", forHTTPHeaderField: key)
 		}
 		if endpoint.requiresAccessToken {
-			let token = CNConfig.accessToken[endpoint.identifier]?.access_token ?? ""
-			request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+			let token = CNConfig.accessToken(for: endpoint)?.access_token
+			request.addValue("Bearer \(token ?? "")", forHTTPHeaderField: "Authorization")
 		}
 		request.httpMethod = endpoint.method.rawValue
 	}

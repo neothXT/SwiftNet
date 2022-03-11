@@ -17,12 +17,14 @@ public protocol Endpoint {
     var headers: [String: Any]? { get }
     var data: EndpointData { get }
 	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? { get }
+	var refreshTokenPublisher: AnyPublisher<CNAccessToken?, Error>? { get }
 }
 
 @available(macOS 10.15, *)
 public extension Endpoint {
 	var requiresAccessToken: Bool { false }
 	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? { nil }
+	var refreshTokenPublisher: AnyPublisher<CNAccessToken?, Error>? { nil }
 	
 	var identifier: String { "\(type(of: self))" }
 }
