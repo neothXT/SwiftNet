@@ -25,10 +25,12 @@ let package = Package(
         .target(
             name: "CombineNetworking",
 			dependencies: [],
-			path: "./CombineNetworking"),
+			path: "./CombineNetworking",
+			exclude: ["Info.plist", "CombineNetworking.h"]),
         .testTarget(
             name: "CombineNetworkingTests",
 			dependencies: ["CombineNetworking"],
-			path: "./CombineNetworkingTests"),
+			path: "./CombineNetworkingTests",
+			exclude: ["Info.plist"])
     ]
 )
