@@ -16,6 +16,7 @@ public protocol Endpoint {
 	var requiresAccessToken: Bool { get }
     var headers: [String: Any]? { get }
     var data: EndpointData { get }
+	var useGlobalAccessToken: Bool { get }
 	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? { get }
 	var refreshTokenPublisher: AnyPublisher<CNAccessToken?, Error>? { get }
 }
@@ -23,6 +24,7 @@ public protocol Endpoint {
 @available(macOS 10.15, *)
 public extension Endpoint {
 	var requiresAccessToken: Bool { false }
+	var useGlobalAccessToken: Bool { false }
 	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? { nil }
 	var refreshTokenPublisher: AnyPublisher<CNAccessToken?, Error>? { nil }
 	

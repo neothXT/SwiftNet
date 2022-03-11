@@ -15,7 +15,8 @@ public class CNConfig {
 	public static var SSLKeys: [SecKey]? = nil
 	public static var jsonDecoder: JSONDecoder? = nil
 	fileprivate static func accessToken(for endpoint: Endpoint) -> CNAccessToken? {
-		guard let data = Keychain(service: endpoint.identifier)[data: "accessToken"] else { return nil }
+		let key = endpoint.useGlobalAccessToken ? "com.neothXT.CombineNetworking" : endpoint.identifier
+		guard let data = Keychain(service: key)[data: "accessToken"] else { return nil }
 		return try? JSONDecoder().decode(CNAccessToken.self, from: data)
 	}
 	
@@ -23,7 +24,8 @@ public class CNConfig {
 	
 	static fileprivate func setToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
 		guard let token = token else { return }
-		Keychain(service: endpoint.identifier)[data: "accessToken"] = try? token.toJsonData()
+		let key = endpoint.useGlobalAccessToken ? "com.neothXT.CombineNetworking" : endpoint.identifier
+		Keychain(service: key)[data: "accessToken"] = try? token.toJsonData()
 	}
 }
 
