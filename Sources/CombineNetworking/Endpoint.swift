@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+@available(macOS 10.15, *)
 public protocol Endpoint {
 	var baseURL: URL? { get }
     var path: String { get }
@@ -18,6 +19,7 @@ public protocol Endpoint {
 	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? { get }
 }
 
+@available(macOS 10.15, *)
 public extension Endpoint {
 	var requiresAccessToken: Bool { false }
 	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? { nil }
