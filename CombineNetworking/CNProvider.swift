@@ -23,6 +23,7 @@ public class CNConfig {
 	}
 }
 
+@available(macOS 10.15, *)
 public class CNProvider<T: Endpoint> {
 	private var didRetry = false
 	

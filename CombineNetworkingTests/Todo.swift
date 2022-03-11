@@ -1,6 +1,6 @@
 //
 //  Todo.swift
-//  SwiftUITraining
+//  CombineNetworkingTests
 //
 //  Created by Maciej Burdzicki on 20/05/2021.
 //

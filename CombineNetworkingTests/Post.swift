@@ -1,6 +1,6 @@
 //
 //  Post.swift
-//  SwiftUITraining
+//  CombineNetworkingTests
 //
 //  Created by Maciej Burdzicki on 23/05/2021.
 //
