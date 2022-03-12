@@ -14,8 +14,9 @@ public class CNConfig {
 	public static var certificateNames: [String] = []
 	public static var SSLKeys: [SecKey]? = nil
 	public static var jsonDecoder: JSONDecoder? = nil
+	public static var defaultAccessTokenStoringStrategy: AccessTokenStrategy = .default
 	fileprivate static func accessToken(for endpoint: Endpoint) -> CNAccessToken? {
-		let key = endpoint.useGlobalAccessToken ? "com.neothXT.CombineNetworking" : endpoint.identifier
+		let key = endpoint.accessTokenType.storingLabel ?? endpoint.identifier
 		guard let data = Keychain(service: key)[data: "accessToken"] else { return nil }
 		return try? JSONDecoder().decode(CNAccessToken.self, from: data)
 	}
@@ -24,8 +25,21 @@ public class CNConfig {
 	
 	static fileprivate func setToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
 		guard let token = token else { return }
-		let key = endpoint.useGlobalAccessToken ? "com.neothXT.CombineNetworking" : endpoint.identifier
+		let key = endpoint.accessTokenType.storingLabel ?? endpoint.identifier
 		Keychain(service: key)[data: "accessToken"] = try? token.toJsonData()
+	}
+	
+	static func getSession(ignorePinning: Bool = false) -> URLSession {
+		if ignorePinning || pinningModes.rawValue == 0 { return .shared }
+		
+		let operationQueue = OperationQueue()
+		operationQueue.qualityOfService = .utility
+		
+		let delegate = CNSessionDelegate(mode: pinningModes,
+										 certNames: certificateNames,
+										 SSLKeys: SSLKeys)
+		
+		return URLSession(configuration: .default, delegate: delegate, delegateQueue: operationQueue)
 	}
 }
 
@@ -40,10 +54,11 @@ public class CNProvider<T: Endpoint> {
 										retries: Int = 0,
 										expectedStatusCodes: [Int] = [200, 201, 204],
 										decoder: JSONDecoder? = nil,
+										ignorePinning: Bool = false,
 										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error>? {
 		let logger = CNDebugInfo(for: endpoint)
 		logger.log("Request sent", mode: .start)
-		return prepPublisher(for: endpoint)?
+		return prepPublisher(for: endpoint, ignorePinning: ignorePinning)?
 			.flatMap { [weak self] output -> AnyPublisher<Data, Error> in
 				guard let response = output.response as? HTTPURLResponse else {
 					logger.log(CNError.failedToMapResponse.localizedDescription, mode: .stop)
@@ -57,7 +72,7 @@ public class CNProvider<T: Endpoint> {
 							return Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 						}
 						CNConfig.setToken(token, for: endpoint)
-						return self?.prepPublisher(for: endpoint)?.map(\.data).eraseToAnyPublisher() ?? Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
+						return self?.prepPublisher(for: endpoint, ignorePinning: ignorePinning)?.map(\.data).eraseToAnyPublisher() ?? Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 					}.eraseToAnyPublisher()
 				} else if response.statusCode == 401 {
 					self?.didRetry = false
@@ -81,19 +96,7 @@ public class CNProvider<T: Endpoint> {
 			.receive(on: queue)
 			.eraseToAnyPublisher()
 	}
-	
-	private func getSession() -> URLSession {
-		if CNConfig.pinningModes.rawValue == 0 { return .shared }
-		
-		let operationQueue = OperationQueue()
-		operationQueue.qualityOfService = .utility
-		
-		let delegate = CNSessionDelegate(mode: CNConfig.pinningModes,
-										 certNames: CNConfig.certificateNames,
-										 SSLKeys: CNConfig.SSLKeys)
-		
-		return URLSession(configuration: .default, delegate: delegate, delegateQueue: operationQueue)
-	}
+
 	
 	private func prepareRequest(for endpoint: Endpoint) -> URLRequest? {
 		guard let url = endpoint.baseURL?.appendingPathComponent(endpoint.path) else { return nil }
@@ -140,10 +143,10 @@ public class CNProvider<T: Endpoint> {
 		}
 	}
 	
-	private func prepPublisher(for endpoint: T) -> AnyPublisher<URLSession.DataTaskPublisher.Output, Error>? {
+	private func prepPublisher(for endpoint: T, ignorePinning: Bool) -> AnyPublisher<URLSession.DataTaskPublisher.Output, Error>? {
 		guard let urlRequest = prepareRequest(for: endpoint) else { return nil }
 		
-		return getSession().dataTaskPublisher(for: urlRequest)
+		return CNConfig.getSession(ignorePinning: ignorePinning).dataTaskPublisher(for: urlRequest)
 			.mapError { urlError -> Error in
 				let error = CNErrorResponse(statusCode: urlError.errorCode,
 											localizedString: urlError.localizedDescription,

@@ -6,7 +6,15 @@ Besides basic network requests, CombineNetworking allows you to easily send your
 
 `pod 'CombineNetworking'`
 
-##### Note that in order to use CombineNetworking, your iOS Deployment Target has to be 13.0 or newer
+##### Note that in order to use CombineNetworking, your iOS Deployment Target has to be 13.0 or newer. If you code for macOS, your Deployment Target has to be 10.15 or newer.
+
+## Key functionalities
+- Sending requests easily using `Endpoint` models
+- SSL and Certificate pinning with just 2 lines of code
+- WebSocket connection support with `CNWebSocket`
+- Secure access token storage with KeyChain (thanks to KeychainAccess framework)
+- Access token storing strategy - configure `global`, `endpoint specific` (`default`) or `custom` strategy for all or just some endpoints
+- Automated refresh token/callback requests
 
 ## Usage
 

@@ -77,4 +77,34 @@ final class CombineNetworkingTests: XCTestCase {
 		
 		wait(for: [expectation], timeout: 10)
 	}
+	
+	func testWebSocketConnection() throws {
+		let expectation = expectation(description: "Establish WebSocket connection")
+		
+		let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
+		webSocket.onConnectionEstablished = {
+			webSocket.disconnect()
+			expectation.fulfill()
+		}
+		
+		webSocket.connect()
+		wait(for: [expectation], timeout: 10)
+	}
+	
+	func testWebSocketMessage() throws {
+		let expectation = expectation(description: "Establish WebSocket connection")
+		
+		let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
+		webSocket.connect()
+		webSocket.listen { result in
+			switch result {
+			case .success:
+				webSocket.disconnect()
+				expectation.fulfill()
+			default:
+				return
+			}
+		}
+		wait(for: [expectation], timeout: 10)
+	}
 }
