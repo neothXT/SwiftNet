@@ -19,6 +19,15 @@ class CNWebSocket: NSObject {
 	
 	init(socket: URLSessionWebSocketTask, ignorePinning: Bool = false) {
 		webSocket = socket
+		super.init()
+
+		if #available(iOS 15.0, macOS 12.0, *) {
+			webSocket.delegate = self
+		} else {
+			#if DEBUG
+			print("Cannot assign delegate. Feature available only in iOS 15.0 or newer")
+			#endif
+		}
 	}
 	
 	convenience init(url: URL, protocols: [String] = [], ignorePinning: Bool = false) {
@@ -36,21 +45,13 @@ class CNWebSocket: NSObject {
 	public func connect() {
 		webSocket.resume()
 		isConnecting = true
-		ping(onSuccess: {
-			[weak self] in
+		ping(onSuccess: { [weak self] in self?.isConnecting = false }) { [weak self] _ in
 			self?.isConnecting = false
-			self?.isConnected = true
-			self?.onConnectionEstablished?()
-		}) { [weak self] _ in
-			self?.isConnecting = false
-			self?.isConnected = false
 		}
 	}
 	
 	public func disconnect() {
 		webSocket.cancel(with: .goingAway, reason: nil)
-		isConnected = false
-		onConnectionClosed?()
 	}
 	
 	public func send(_ message: URLSessionWebSocketTask.Message, completion: @escaping (Error?) -> Void) {
@@ -88,13 +89,24 @@ class CNWebSocket: NSObject {
 				}
 			}
 			
-			onSuccess?()
-			
 			if let interval = interval {
 				DispatchQueue.main.asyncAfter(deadline: interval) { [weak self] in
 					self?.ping(withTimeInterval: interval, onError: onError)
 				}
 			}
 		}
+	}
+}
+
+extension CNWebSocket: URLSessionWebSocketDelegate {
+	func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
+		isConnected = true
+		onConnectionEstablished?()
+	}
+
+	
+	func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
+		isConnected = false
+		onConnectionClosed?()
 	}
 }
