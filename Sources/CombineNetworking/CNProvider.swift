@@ -152,7 +152,8 @@ public class CNProvider<T: Endpoint> {
 				let error = CNErrorResponse(statusCode: urlError.errorCode,
 											localizedString: urlError.localizedDescription,
 											url: urlError.failingURL,
-											mimeType: nil)
+											mimeType: nil,
+											data: nil)
 				return CNError.unexpectedResponse(error)
 			}
 			.eraseToAnyPublisher()

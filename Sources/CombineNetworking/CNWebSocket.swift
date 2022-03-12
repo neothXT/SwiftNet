@@ -55,6 +55,21 @@ class CNWebSocket: NSObject {
 	}
 	
 	public func send(_ message: URLSessionWebSocketTask.Message, completion: @escaping (Error?) -> Void) {
+		if !isConnected {
+			if isConnecting {
+				DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+					self?.send(message, completion: completion)
+				}
+				return
+			}
+			
+			#if DEBUG
+			print("Connect to WebSocket before subscribing for messages!")
+			#endif
+			completion(CNError.notConnected)
+			return
+		}
+		
 		webSocket.send(message, completionHandler: completion)
 	}
 	

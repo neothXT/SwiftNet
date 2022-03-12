@@ -91,11 +91,26 @@ final class CombineNetworkingTests: XCTestCase {
 		wait(for: [expectation], timeout: 10)
 	}
 	
-	func testWebSocketMessage() throws {
-		let expectation = expectation(description: "Establish WebSocket connection")
+	func testWebSoketSendMessage() throws {
+		let expectation = expectation(description: "Establish WebSocket connection and send a message")
+		let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
+		webSocket.connect()
+		webSocket.send(URLSessionWebSocketTask.Message.string("Test message")) {
+			if let _ = $0 {
+				return
+			}
+			expectation.fulfill()
+		}
+		
+		wait(for: [expectation], timeout: 10)
+	}
+	
+	func testWebSocketReceiveMessage() throws {
+		let expectation = expectation(description: "Establish WebSocket connection and receive a message")
 		
 		let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
 		webSocket.connect()
+		webSocket.send(URLSessionWebSocketTask.Message.string("Test message"), completion: { _ in })
 		webSocket.listen { result in
 			switch result {
 			case .success:
@@ -105,6 +120,6 @@ final class CombineNetworkingTests: XCTestCase {
 				return
 			}
 		}
-		wait(for: [expectation], timeout: 10)
+		wait(for: [expectation], timeout: 30)
 	}
 }
