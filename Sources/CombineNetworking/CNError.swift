@@ -26,4 +26,13 @@ public struct CNErrorResponse {
 	let url: URL?
 	let mimeType: String?
 	let data: Data?
+	
+	public init(statusCode: Int, localizedString: String, url: URL?, mimeType: String?, data: Data?) {
+		self.statusCode = statusCode
+		self.localizedString = localizedString
+		self.url = url
+		self.mimeType = mimeType
+		self.data = data
+	}
+	
 }
