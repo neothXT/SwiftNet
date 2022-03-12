@@ -23,7 +23,7 @@ public class CNConfig {
 	
 	private init() {}
 	
-	static fileprivate func setToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
+	static func setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
 		guard let token = token else { return }
 		let key = endpoint.accessTokenType.storingLabel ?? endpoint.identifier
 		Keychain(service: key)[data: "accessToken"] = try? token.toJsonData()
@@ -71,7 +71,7 @@ public class CNProvider<T: Endpoint> {
 						guard let token = token else {
 							return Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 						}
-						CNConfig.setToken(token, for: endpoint)
+						CNConfig.setAccessToken(token, for: endpoint)
 						return self?.prepPublisher(for: endpoint, ignorePinning: ignorePinning)?.map(\.data).eraseToAnyPublisher() ?? Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 					}.eraseToAnyPublisher()
 				} else if response.statusCode == 401 {
