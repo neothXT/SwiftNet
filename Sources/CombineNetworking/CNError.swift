@@ -16,4 +16,5 @@ public struct CNErrorResponse {
 	let localizedString: String
 	let url: URL?
 	let mimeType: String?
+	let data: Data?
 }

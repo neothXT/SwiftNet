@@ -84,7 +84,8 @@ public class CNProvider<T: Endpoint> {
 					let error = CNErrorResponse(statusCode: response.statusCode,
 												localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
 												url: response.url,
-												mimeType: response.mimeType)
+												mimeType: response.mimeType,
+												data: output.data)
 					logger.log(CNError.unexpectedResponse(error).localizedDescription, mode: .stop)
 					return Fail(error: CNError.unexpectedResponse(error)).eraseToAnyPublisher()
 				}
