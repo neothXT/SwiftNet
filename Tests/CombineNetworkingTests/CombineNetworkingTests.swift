@@ -109,17 +109,21 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Establish WebSocket connection and receive a message")
 		
 		let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
-		webSocket.connect()
-		webSocket.send(URLSessionWebSocketTask.Message.string("Test message"), completion: { _ in })
-		webSocket.listen { result in
+		let receiverWebSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
+		receiverWebSocket.connect()
+		receiverWebSocket.listen { result in
 			switch result {
 			case .success:
-				webSocket.disconnect()
+				receiverWebSocket.disconnect()
 				expectation.fulfill()
 			default:
 				return
 			}
 		}
+		
+		webSocket.connect()
+		webSocket.send(URLSessionWebSocketTask.Message.string("Test message"), completion: { _ in webSocket.disconnect() })
+		
 		wait(for: [expectation], timeout: 30)
 	}
 }
