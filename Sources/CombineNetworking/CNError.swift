@@ -9,6 +9,15 @@ import Foundation
 
 public enum CNError: Error {
 	case failedToMapResponse, unexpectedResponse(CNErrorResponse), authenticationFailed, notConnected
+	
+	public var detailedResponse: CNErrorResponse? {
+		switch self {
+		case .unexpectedResponse(let response):
+			return response
+		default:
+			return nil
+		}
+	}
 }
 
 public struct CNErrorResponse {
