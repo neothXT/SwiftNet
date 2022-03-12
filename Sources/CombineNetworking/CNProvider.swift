@@ -23,7 +23,7 @@ public class CNConfig {
 	
 	private init() {}
 	
-	static func setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
+	public static func setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
 		guard let token = token else { return }
 		let key = endpoint.accessTokenType.storingLabel ?? endpoint.identifier
 		Keychain(service: key)[data: "accessToken"] = try? token.toJsonData()
