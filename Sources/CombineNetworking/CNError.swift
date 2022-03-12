@@ -21,11 +21,11 @@ public enum CNError: Error {
 }
 
 public struct CNErrorResponse {
-	let statusCode: Int
-	let localizedString: String
-	let url: URL?
-	let mimeType: String?
-	let data: Data?
+	public let statusCode: Int
+	public let localizedString: String
+	public let url: URL?
+	public let mimeType: String?
+	public let data: Data?
 	
 	public init(statusCode: Int, localizedString: String, url: URL?, mimeType: String?, data: Data?) {
 		self.statusCode = statusCode
