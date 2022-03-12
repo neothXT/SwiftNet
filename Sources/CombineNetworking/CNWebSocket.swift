@@ -21,7 +21,7 @@ class CNWebSocket: NSObject {
 		webSocket = socket
 		super.init()
 
-		if #available(macOS 12.0, *) {
+		if #available(macOS 12.0, iOS 15.0, *) {
 			webSocket.delegate = self
 		}
 	}
