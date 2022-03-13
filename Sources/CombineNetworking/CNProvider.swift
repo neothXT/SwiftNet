@@ -13,10 +13,10 @@ public class CNConfig {
 	public static var pinningModes: PinningMode = PinningMode(rawValue: 0)
 	public static var certificateNames: [String] = []
 	public static var SSLKeys: [SecKey]? = nil
-	public static var jsonDecoder: JSONDecoder? = nil
+	public static var defaultJSONDecoder: JSONDecoder = .init()
 	public static var defaultAccessTokenStoringStrategy: AccessTokenStrategy = .default
 	fileprivate static func accessToken(for endpoint: Endpoint) -> CNAccessToken? {
-		let key = endpoint.accessTokenType.storingLabel ?? endpoint.identifier
+		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.identifier
 		guard let data = Keychain(service: key)[data: "accessToken"] else { return nil }
 		return try? JSONDecoder().decode(CNAccessToken.self, from: data)
 	}
@@ -25,7 +25,7 @@ public class CNConfig {
 	
 	public static func setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
 		guard let token = token else { return }
-		let key = endpoint.accessTokenType.storingLabel ?? endpoint.identifier
+		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.identifier
 		Keychain(service: key)[data: "accessToken"] = try? token.toJsonData()
 	}
 	
@@ -53,7 +53,6 @@ public class CNProvider<T: Endpoint> {
 										responseType: U.Type,
 										retries: Int = 0,
 										expectedStatusCodes: [Int] = [200, 201, 204],
-										decoder: JSONDecoder? = nil,
 										ignorePinning: Bool = false,
 										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error>? {
 		CNDebugInfo.createLogger(for: endpoint)
@@ -94,7 +93,7 @@ public class CNProvider<T: Endpoint> {
 				CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
 				return Result.success(output.data).publisher.eraseToAnyPublisher()
 			}
-			.decode(type: U.self, decoder: CNConfig.jsonDecoder ?? decoder ?? JSONDecoder())
+			.decode(type: U.self, decoder: endpoint.jsonDecoder)
 			.retry(retries)
 			.receive(on: queue)
 			.eraseToAnyPublisher()
