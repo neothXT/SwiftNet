@@ -56,12 +56,12 @@ public class CNProvider<T: Endpoint> {
 										decoder: JSONDecoder? = nil,
 										ignorePinning: Bool = false,
 										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error>? {
-		let logger = CNDebugInfo(for: endpoint)
-		logger.log("Request sent", mode: .start)
+		CNDebugInfo.createLogger(for: endpoint)
 		return prepPublisher(for: endpoint, ignorePinning: ignorePinning)?
 			.flatMap { [weak self] output -> AnyPublisher<Data, Error> in
 				guard let response = output.response as? HTTPURLResponse else {
-					logger.log(CNError.failedToMapResponse.localizedDescription, mode: .stop)
+					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.failedToMapResponse.localizedDescription, mode: .stop)
+					CNDebugInfo.deleteLoger(for: endpoint)
 					return Fail(error: CNError.failedToMapResponse).eraseToAnyPublisher()
 				}
 				
@@ -76,7 +76,8 @@ public class CNProvider<T: Endpoint> {
 					}.eraseToAnyPublisher()
 				} else if response.statusCode == 401 {
 					self?.didRetry = false
-					logger.log(CNError.authenticationFailed.localizedDescription, mode: .stop)
+					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.authenticationFailed.localizedDescription, mode: .stop)
+					CNDebugInfo.deleteLoger(for: endpoint)
 					return Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 				}
 				
@@ -86,10 +87,11 @@ public class CNProvider<T: Endpoint> {
 												url: response.url,
 												mimeType: response.mimeType,
 												data: output.data)
-					logger.log(CNError.unexpectedResponse(error).localizedDescription, mode: .stop)
+					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.unexpectedResponse(error).localizedDescription, mode: .stop)
+					CNDebugInfo.deleteLoger(for: endpoint)
 					return Fail(error: CNError.unexpectedResponse(error)).eraseToAnyPublisher()
 				}
-				logger.log("Success", mode: .stop)
+				CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
 				return Result.success(output.data).publisher.eraseToAnyPublisher()
 			}
 			.decode(type: U.self, decoder: CNConfig.jsonDecoder ?? decoder ?? JSONDecoder())
@@ -104,6 +106,7 @@ public class CNProvider<T: Endpoint> {
 		var request = URLRequest(url: url)
 		prepareHeadersAndMethod(endpoint: endpoint, request: &request)
 		prepareBody(endpointData: endpoint.data, request: &request)
+		CNDebugInfo.getLogger(for: endpoint)?.log("\n" + request.cURL(pretty: true), mode: .start)
 		return request
 	}
 	

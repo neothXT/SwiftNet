@@ -8,18 +8,44 @@
 import Foundation
 
 public enum CNDebugInfoLogMode {
-	case start, stop
+	case start, stop, message
 }
 
 public class CNDebugInfo {
+	private static var loggers: [String: CNLogger] = [:]
+	
+	private init() {}
+	
+	@discardableResult
+	public static func createLogger(for endpoint: Endpoint) -> CNLogger {
+		loggers[endpoint.identifier] = CNLogger(for: endpoint)
+		return loggers[endpoint.identifier]!
+	}
+	
+	public static func getLogger(for endpoint: Endpoint) -> CNLogger? {
+		#if DEBUG
+		if !Array(loggers.keys).contains(endpoint.identifier) {
+			print("Logger for \(endpoint.identifier) was not found!")
+		}
+		#endif
+		
+		return loggers[endpoint.identifier]
+	}
+	
+	public static func deleteLoger(for endpoint: Endpoint) {
+		loggers.removeValue(forKey: endpoint.identifier)
+	}
+}
+
+public class CNLogger {
 	private let endpoint: Endpoint
 	private var timestamp: Date = Date()
 	
-	init(for endpoint: Endpoint) {
+	fileprivate init(for endpoint: Endpoint) {
 		self.endpoint = endpoint
 	}
 	
-	func log(_ message: String,
+	public func log(_ message: String? = nil,
 			 mode: CNDebugInfoLogMode = .start,
 			 file: String = #file) {
 		#if DEBUG
@@ -33,6 +59,8 @@ public class CNDebugInfo {
 			modeString += "Received"
 			let timeValue = Double(Date().timeIntervalSince(timestamp)) * 1000
 			timeString = " (" + String(format: "%.3f", timeValue) + " milliseconds)"
+		case .message:
+			modeString += "Message"
 		}
 		
 		var fileString = file
@@ -40,7 +68,19 @@ public class CNDebugInfo {
 		if let subString = file.split(separator: "/").last {
 			fileString = String(subString)
 		}
-		let output = "\n[\(fileString)][\(endpoint.identifier)][\(endpoint.method.rawValue.uppercased())]\n\(modeString): \(endpoint.fullURL())\n\(message)\(timeString)\n"
+		var output = "\n[\(fileString)][\(endpoint.identifier)][\(endpoint.method.rawValue.uppercased())]\n\(modeString): \(endpoint.fullURL())\n"
+		
+		if let message = message {
+			output += "\(message)"
+			if timeString == "" {
+				output += "\n"
+			}
+		}
+		
+		if timeString != "" {
+			output += "\(timeString)\n"
+		}
+		
 		print(output)
 		#endif
 	}
