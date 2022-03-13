@@ -139,6 +139,9 @@ public class CNProvider<T: Endpoint> {
 			
 			request.httpBody = data
 			
+		case .bodyData(let data):
+			request.httpBody = data
+			
 		case .plain:
 			break
 		}

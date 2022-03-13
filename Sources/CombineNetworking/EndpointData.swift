@@ -13,4 +13,5 @@ public enum EndpointData {
 	case bodyParams([String: Any])
 	case urlEncoded([String: Any])
 	case jsonModel(Encodable)
+	case bodyData(Data)
 }
