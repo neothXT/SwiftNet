@@ -19,6 +19,7 @@ public class CNProvider<T: Endpoint> {
 	
 	public func publisher<U: Decodable>(for endpoint: T,
 										responseType: U.Type,
+										decoder: JSONDecoder? = nil,
 										retries: Int = 0,
 										expectedStatusCodes: [Int] = [200, 201, 204],
 										ignorePinning: Bool = false,
@@ -66,7 +67,7 @@ public class CNProvider<T: Endpoint> {
 				CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
 				return Result.success(output.data).publisher.eraseToAnyPublisher()
 			}
-			.decode(type: U.self, decoder: endpoint.jsonDecoder)
+			.decode(type: U.self, decoder: decoder ?? endpoint.jsonDecoder)
 			.retry(retries)
 			.receive(on: queue)
 			.eraseToAnyPublisher()
