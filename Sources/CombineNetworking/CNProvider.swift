@@ -90,6 +90,7 @@ public class CNProvider<T: Endpoint> {
 			let token = CNConfig.accessToken(for: endpoint)?.access_token
 			request.addValue("Bearer \(token ?? "")", forHTTPHeaderField: "Authorization")
 		}
+		request.addValue("Safari/CombineNetworking", forHTTPHeaderField: "User-Agent")
 		request.httpMethod = endpoint.method.rawValue
 	}
 	
