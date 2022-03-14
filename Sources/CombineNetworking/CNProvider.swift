@@ -9,7 +9,7 @@ import Foundation
 import Combine
 import KeychainAccess
 
-typealias EmptyArrayResponse = [String?]
+public typealias EmptyArrayResponse = [String?]
 
 @available(macOS 10.15, *)
 public class CNProvider<T: Endpoint> {
