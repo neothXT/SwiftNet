@@ -8,7 +8,7 @@
 import Foundation
 
 public enum CNError: Error {
-	case failedToMapResponse, unexpectedResponse(CNErrorResponse), authenticationFailed, notConnected
+	case failedToMapResponse, unexpectedResponse(CNErrorResponse), authenticationFailed, notConnected, emptyResponse
 	
 	public var detailedResponse: CNErrorResponse? {
 		switch self {

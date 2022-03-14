@@ -57,6 +57,7 @@ public class CNProvider<T: Endpoint> {
 					return Fail(error: CNError.unexpectedResponse(error)).eraseToAnyPublisher()
 				}
 				CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
+				print(String(data: output.data, encoding: .utf8))
 				return Result.success(output.data).publisher.eraseToAnyPublisher()
 			}
 			.decode(type: U.self, decoder: endpoint.jsonDecoder)
