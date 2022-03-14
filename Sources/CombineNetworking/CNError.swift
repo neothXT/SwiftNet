@@ -20,6 +20,27 @@ public enum CNError: Error {
 	}
 }
 
+extension CNError: LocalizedError {
+	public var errorDescription: String? {
+		switch self {
+		case .failedToMapResponse:
+			return "Failed to map response"
+			
+		case .unexpectedResponse:
+			return "Unexpected response"
+			
+		case .authenticationFailed:
+			return "Authentication failed"
+			
+		case .notConnected:
+			return "There's no active WebSocket connection"
+			
+		case .emptyResponse:
+			return "Empty response"
+		}
+	}
+}
+
 public struct CNErrorResponse {
 	public let statusCode: Int
 	public let localizedString: String
