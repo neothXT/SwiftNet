@@ -9,6 +9,8 @@ import Foundation
 import Combine
 import KeychainAccess
 
+typealias EmptyArrayResponse = [String?]
+
 @available(macOS 10.15, *)
 public class CNProvider<T: Endpoint> {
 	private var didRetry = false
