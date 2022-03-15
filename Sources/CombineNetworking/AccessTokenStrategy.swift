@@ -13,7 +13,7 @@ public enum AccessTokenStrategy {
 	var storingLabel: String? {
 		switch self {
 		case .global:
-			return "com.neothxt.combinenetworking"
+			return "CombineNetworking"
 		case .custom(let label):
 			return label
 		default:

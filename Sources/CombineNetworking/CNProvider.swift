@@ -141,9 +141,40 @@ public class CNProvider<T: Endpoint> {
 }
 
 extension CNConfig {
+	fileprivate static var accessTokens: [String: CNAccessToken] = [:]
+	
+	public static func setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
+		guard let token = token else { return }
+		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.identifier
+		guard storeTokensInKeychain else {
+			accessTokens[key] = token
+			return
+		}
+		guard let serviceKey = keychainServiceKey else {
+			#if DEBUG
+			print("Cannot store access token in keychain. Please provide keychain service key!")
+			#endif
+			return
+		}
+		
+		Keychain(service: serviceKey)[data: "accessToken_\(key)"] = try? token.toJsonData()
+	}
+	
 	fileprivate static func accessToken(for endpoint: Endpoint) -> CNAccessToken? {
 		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.identifier
-		guard let data = Keychain(service: key)[data: "accessToken"] else { return nil }
+		
+		guard storeTokensInKeychain else {
+			return accessTokens[key]
+		}
+		
+		guard let serviceKey = keychainServiceKey else {
+			#if DEBUG
+			print("Cannot store access token in keychain. Please provide keychain service key!")
+			#endif
+			return nil
+		}
+		
+		guard let data = Keychain(service: serviceKey)[data: "accessToken_\(key)"] else { return nil }
 		return try? JSONDecoder().decode(CNAccessToken.self, from: data)
 	}
 }

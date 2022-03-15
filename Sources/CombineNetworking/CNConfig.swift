@@ -14,14 +14,10 @@ public class CNConfig {
 	public static var SSLKeys: [SecKey]? = nil
 	public static var defaultJSONDecoder: JSONDecoder = .init()
 	public static var defaultAccessTokenStoringStrategy: AccessTokenStrategy = .default
+	public static var storeTokensInKeychain: Bool = true
+	public static var keychainServiceKey: String?
 	
 	private init() {}
-	
-	public static func setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
-		guard let token = token else { return }
-		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.identifier
-		Keychain(service: key)[data: "accessToken"] = try? token.toJsonData()
-	}
 	
 	static func getSession(ignorePinning: Bool = false) -> URLSession {
 		if ignorePinning || pinningModes.rawValue == 0 { return .shared }
