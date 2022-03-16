@@ -33,7 +33,7 @@ public class CNProvider<T: Endpoint> {
 					return Fail(error: CNError.failedToMapResponse).eraseToAnyPublisher()
 				}
 				
-				if response.statusCode == 401 && !(self?.didRetry ?? true), let publisher = endpoint.refreshTokenPublisher ?? endpoint.callbackPublisher {
+				if response.statusCode == 401 && !(self?.didRetry ?? true), let publisher = CNConfig.accessToken(for: endpoint) == nil ? endpoint.callbackPublisher : (endpoint.refreshTokenPublisher ?? endpoint.callbackPublisher) {
 					self?.didRetry = true
 					return publisher.flatMap { [weak self] token -> AnyPublisher<Data, Error> in
 						guard let token = token else {
@@ -150,7 +150,7 @@ extension CNConfig {
 			accessTokens[key] = token
 			return
 		}
-		guard let serviceKey = keychainServiceKey else {
+		guard let serviceKey = keychainServiceLabel else {
 			#if DEBUG
 			print("Cannot store access token in keychain. Please provide keychain service key!")
 			#endif
@@ -167,7 +167,7 @@ extension CNConfig {
 			return accessTokens[key]
 		}
 		
-		guard let serviceKey = keychainServiceKey else {
+		guard let serviceKey = keychainServiceLabel else {
 			#if DEBUG
 			print("Cannot store access token in keychain. Please provide keychain service key!")
 			#endif

@@ -13,9 +13,9 @@ public class CNConfig {
 	public static var certificateNames: [String] = []
 	public static var SSLKeys: [SecKey]? = nil
 	public static var defaultJSONDecoder: JSONDecoder = .init()
-	public static var defaultAccessTokenStoringStrategy: AccessTokenStrategy = .default
+	public static var defaultAccessTokenStrategy: AccessTokenStrategy = .default
 	public static var storeTokensInKeychain: Bool = true
-	public static var keychainServiceKey: String?
+	public static var keychainServiceLabel: String?
 	
 	private init() {}
 	

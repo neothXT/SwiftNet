@@ -8,6 +8,8 @@ Besides basic network requests, CombineNetworking allows you to easily send your
 
 ##### Note that in order to use CombineNetworking, your iOS Deployment Target has to be 13.0 or newer. If you code for macOS, your Deployment Target has to be 10.15 or newer.
 
+#### CombineNetworking is also available via SPM (Swift Package Manager)
+
 ## Key functionalities
 - Sending requests easily using `Endpoint` models
 - SSL and Certificate pinning with just 2 lines of code
@@ -108,7 +110,53 @@ extension TodosEndpoint: Endpoint {
 }
 ```
 
+If you want to have different publishers for initial callback and further token refresh actions, you can define both `callbackPublisher` and `refreshTokenPublisher`. If you don't provide `refreshTokenPublisher`, CombineNetworking will always call for `callbackPublisher` (if exists) when needed.
+
 See? Easy peasy!
+
+### Access Token Strategies
+
+CombineNetworking allows you to specify access token strategies globally as well as individually for each endpoint. You can specify your strategy by setting it for `CNConfig.defaultAccessTokenStrategy` or inside your `Endpoint` by setting value for field `accessTokenStrategy`.
+Available options are:
+- `.global` - uses global label to store access token
+- `.default` - uses endpoint identifiers as labels to store access tokens
+- `.custom` - with this option you can specify your own label to store access token and use it among as many endpoints as you wish
+
+Thanks to access token strategy being set both globally (via `CNConfig`) and individually (inside `Endpoint`), you can mix different strategies in your app!
+
+### Safe storage using Keychain
+
+CombineNetworking allows you to store your access tokens in keychain. This feature is turned on by default. You can provide your keychain service label using `CNConfig.keychainServiceLabel`.
+Safe storage using keychain can be disabled by toggling `CNConfig.storeTokensInKeychain` option.
+
+### WebSockets
+
+CombineNetworking also allows you to connect with WebSockets effortlessly. Simply use `CNWebSocket` like this:
+
+```Swift
+let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
+webSocket.connect()
+webSocket.listen { result in
+	switch result {
+	case .success(let message):
+		switch message {
+		case .data(let data):
+			print("Received binary: \(data)")
+		case .string(let string):
+			print("Received string: \(string)")
+		}
+	default:
+		return
+	}
+}
+webSocket.send(URLSessionWebSocketTask.Message.string("Test message")) {
+	if let error = $0 {
+		log(error.localizedDescription)
+	}
+}
+```
+
+If you want to close connection, just call `webSocket.disconnect()`.
 
 ### Subscribe to a publisher
 

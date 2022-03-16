@@ -26,7 +26,7 @@ public protocol Endpoint {
 public extension Endpoint {
 	var requiresAccessToken: Bool { false }
 	var jsonDecoder: JSONDecoder { .init() }
-	var accessTokenStrategy: AccessTokenStrategy { CNConfig.defaultAccessTokenStoringStrategy }
+	var accessTokenStrategy: AccessTokenStrategy { CNConfig.defaultAccessTokenStrategy }
 	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? { nil }
 	var refreshTokenPublisher: AnyPublisher<CNAccessToken?, Error>? { nil }
 	
