@@ -114,6 +114,8 @@ If you want to have different publishers for initial callback and further token 
 
 See? Easy peasy!
 
+PS: You can also store access tokens manually using `CNConfig.setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint)`
+
 ### Access Token Strategies
 
 CombineNetworking allows you to specify access token strategies globally as well as individually for each endpoint. You can specify your strategy by setting it for `CNConfig.defaultAccessTokenStrategy` or inside your `Endpoint` by setting value for field `accessTokenStrategy`.
