@@ -45,8 +45,16 @@ public class CNWebSocket: NSObject {
 	public func connect() {
 		webSocket.resume()
 		isConnecting = true
-		ping(onSuccess: { [weak self] in self?.isConnecting = false }) { [weak self] _ in
+		ping(onSuccess: { [weak self] in
 			self?.isConnecting = false
+			if #unavailable(iOS 15.0, macOS 12.0) {
+				self?.isConnected = true
+			}
+		}) { [weak self] _ in
+			self?.isConnecting = false
+			if #unavailable(iOS 15.0, macOS 12.0) {
+				self?.isConnected = false
+			}
 		}
 	}
 	
