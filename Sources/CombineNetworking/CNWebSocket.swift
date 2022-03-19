@@ -8,16 +8,16 @@
 import Foundation
 import Combine
 
-class CNWebSocket: NSObject {
+public class CNWebSocket: NSObject {
 	private let webSocket: URLSessionWebSocketTask
 	private var isConnected: Bool = false
 	private var isConnecting: Bool = false
 	private var failedToConnect: Bool = false
 	
-	var onConnectionEstablished: (() -> Void)?
-	var onConnectionClosed: (() -> Void)?
+	public var onConnectionEstablished: (() -> Void)?
+	public var onConnectionClosed: (() -> Void)?
 	
-	init(socket: URLSessionWebSocketTask, ignorePinning: Bool = false) {
+	public init(socket: URLSessionWebSocketTask, ignorePinning: Bool = false) {
 		webSocket = socket
 		super.init()
 
@@ -30,13 +30,13 @@ class CNWebSocket: NSObject {
 		}
 	}
 	
-	convenience init(url: URL, protocols: [String] = [], ignorePinning: Bool = false) {
+	public convenience init(url: URL, protocols: [String] = [], ignorePinning: Bool = false) {
 		let session = CNConfig.getSession(ignorePinning: ignorePinning)
 		let webSocket = protocols.count > 0 ? session.webSocketTask(with: url, protocols: protocols) : session.webSocketTask(with: url)
 		self.init(socket: webSocket, ignorePinning: ignorePinning)
 	}
 	
-	convenience init(request: URLRequest, ignorePinning: Bool = false) {
+	public convenience init(request: URLRequest, ignorePinning: Bool = false) {
 		let session = CNConfig.getSession(ignorePinning: ignorePinning)
 		let webSocket = session.webSocketTask(with: request)
 		self.init(socket: webSocket, ignorePinning: ignorePinning)
