@@ -114,13 +114,13 @@ public class CNWebSocket: NSObject {
 }
 
 extension CNWebSocket: URLSessionWebSocketDelegate {
-	func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
+	public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
 		isConnected = true
 		onConnectionEstablished?()
 	}
 
 	
-	func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
+	public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
 		isConnected = false
 		onConnectionClosed?()
 	}
