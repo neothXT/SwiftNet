@@ -27,8 +27,14 @@ public extension Endpoint {
 	var requiresAccessToken: Bool { false }
 	var jsonDecoder: JSONDecoder { .init() }
 	var accessTokenStrategy: AccessTokenStrategy { CNConfig.defaultAccessTokenStrategy }
-	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? { nil }
-	var refreshTokenPublisher: AnyPublisher<CNAccessToken?, Error>? { nil }
+	
+	var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? {
+		accessTokenStrategy == .global ? CNConfig.globalCallbackPublisher : nil
+	}
+	
+	var refreshTokenPublisher: AnyPublisher<CNAccessToken?, Error>? {
+		accessTokenStrategy == .global ? CNConfig.globalRefreshTokenPublisher : nil
+	}
 	
 	var identifier: String { "\(type(of: self))" }
 }

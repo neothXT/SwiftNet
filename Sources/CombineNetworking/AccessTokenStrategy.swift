@@ -21,3 +21,18 @@ public enum AccessTokenStrategy {
 		}
 	}
 }
+
+extension AccessTokenStrategy: Equatable {
+	public static func == (lhs: Self, rhs: Self) -> Bool {
+		switch (lhs, rhs) {
+		case (.global, .global), (.default, .default):
+			return true
+			
+		case (.custom(let lCustom), .custom(let rCustom)):
+			return lCustom == rCustom
+			
+		default:
+			return false
+		}
+	}
+}

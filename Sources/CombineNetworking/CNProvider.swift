@@ -160,7 +160,7 @@ extension CNConfig {
 		Keychain(service: serviceKey)[data: "accessToken_\(key)"] = try? token.toJsonData()
 	}
 	
-	fileprivate static func accessToken(for endpoint: Endpoint) -> CNAccessToken? {
+	public static func accessToken(for endpoint: Endpoint) -> CNAccessToken? {
 		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.identifier
 		
 		guard storeTokensInKeychain else {
