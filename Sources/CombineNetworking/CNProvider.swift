@@ -36,7 +36,7 @@ public class CNProvider<T: Endpoint> {
 				if response.statusCode == 401 && !(self?.didRetry ?? true), let publisher = endpoint.callbackPublisher {
 					self?.didRetry = true
 					return publisher.flatMap { [weak self] response -> AnyPublisher<Data, Error> in
-						guard let token = (response as? CNAccessToken) ?? response?.convert() else {
+						guard let token = (response as? CNAccessToken) ?? response.convert() else {
 							return Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 						}
 						CNConfig.setAccessToken(token, for: endpoint)

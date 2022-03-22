@@ -18,7 +18,7 @@ public protocol Endpoint {
     var data: EndpointData { get }
 	var jsonDecoder: JSONDecoder { get }
 	var accessTokenStrategy: AccessTokenStrategy { get }
-	var callbackPublisher: AnyPublisher<AccessTokenConvertible?, Error>? { get }
+	var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { get }
 }
 
 @available(macOS 10.15, *)
@@ -26,7 +26,7 @@ public extension Endpoint {
 	var requiresAccessToken: Bool { false }
 	var jsonDecoder: JSONDecoder { .init() }
 	var accessTokenStrategy: AccessTokenStrategy { CNConfig.defaultAccessTokenStrategy }
-	var callbackPublisher: AnyPublisher<AccessTokenConvertible?, Error>? { nil }
+	var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { nil }
 	
 	var identifier: String { "\(type(of: self))" }
 }
