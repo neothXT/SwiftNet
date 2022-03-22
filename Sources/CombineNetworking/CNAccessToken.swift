@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct CNAccessToken: Codable {
+public struct CNAccessToken: AccessTokenConvertible {
 	public let access_token: String
 	public let token_type: String
 	public let expires_in: Int?
@@ -20,5 +20,9 @@ public struct CNAccessToken: Codable {
 		self.expires_in = expires_in
 		self.refresh_token = refresh_token
 		self.scope = scope
+	}
+	
+	public func convert() -> CNAccessToken? {
+		self
 	}
 }

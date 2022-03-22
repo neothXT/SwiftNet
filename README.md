@@ -104,13 +104,11 @@ extension TodosEndpoint: Endpoint {
   }
 	
   //... and prepare callbackPublisher to handle authorization callbacks
-  var callbackPublisher: AnyPublisher<CNAccessToken?, Error>? {
+  var callbackPublisher: AnyPublisher<AccessTokenConvertible?, Error>? {
     CNProvider<TodosEndpoint>().publisher(for: .token, responseType: CNAccessToken?.self)
   }
 }
 ```
-
-If you want to have different publishers for initial callback and further token refresh actions, you can define both `callbackPublisher` and `refreshTokenPublisher`. If you don't provide `refreshTokenPublisher`, CombineNetworking will always call for `callbackPublisher` (if exists) when needed.
 
 See? Easy peasy!
 
