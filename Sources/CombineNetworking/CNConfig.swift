@@ -15,8 +15,6 @@ public class CNConfig {
 	public static var SSLKeys: [SecKey]? = nil
 	public static var defaultJSONDecoder: JSONDecoder = .init()
 	public static var defaultAccessTokenStrategy: AccessTokenStrategy = .default
-	public static var globalCallbackPublisher: AnyPublisher<CNAccessToken?, Error>? = nil
-	public static var globalRefreshTokenPublisher: AnyPublisher<CNAccessToken?, Error>? = nil
 	public static var storeTokensInKeychain: Bool = true
 	public static var keychainServiceLabel: String?
 	
