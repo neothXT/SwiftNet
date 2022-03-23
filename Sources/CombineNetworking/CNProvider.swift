@@ -68,6 +68,9 @@ public class CNProvider<T: Endpoint> {
 				return Result.success(output.data).publisher.eraseToAnyPublisher()
 			}
 			.decode(type: U.self, decoder: decoder ?? endpoint.jsonDecoder)
+			.tryCatch({
+				Fail(error: $0).eraseToAnyPublisher()
+			})
 			.retry(retries)
 			.receive(on: queue)
 			.eraseToAnyPublisher()
