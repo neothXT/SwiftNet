@@ -28,9 +28,9 @@ public class CNProvider<T: Endpoint> {
 		return prepPublisher(for: endpoint, ignorePinning: ignorePinning)?
 			.flatMap { [weak self] output -> AnyPublisher<Data, Error> in
 				guard let response = output.response as? HTTPURLResponse else {
-					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.failedToMapResponse.localizedDescription, mode: .stop)
+					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.failedToMapResponse(nil).localizedDescription, mode: .stop)
 					CNDebugInfo.deleteLoger(for: endpoint)
-					return Fail(error: CNError.failedToMapResponse).eraseToAnyPublisher()
+					return Fail(error: CNError.failedToMapResponse(nil)).eraseToAnyPublisher()
 				}
 				
 				if response.statusCode == 401 && !(self?.didRetry ?? true), let publisher = endpoint.callbackPublisher {
@@ -50,11 +50,11 @@ public class CNProvider<T: Endpoint> {
 				}
 				
 				guard expectedStatusCodes.contains(response.statusCode) else {
-					let error = CNErrorResponse(statusCode: response.statusCode,
-												localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
-												url: response.url,
-												mimeType: response.mimeType,
-												data: output.data)
+					let error = CNUnexpectedErrorResponse(statusCode: response.statusCode,
+														  localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
+														  url: response.url,
+														  mimeType: response.mimeType,
+														  data: output.data)
 					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.unexpectedResponse(error).localizedDescription, mode: .stop)
 					CNDebugInfo.deleteLoger(for: endpoint)
 					return Fail(error: CNError.unexpectedResponse(error)).eraseToAnyPublisher()
@@ -64,13 +64,21 @@ public class CNProvider<T: Endpoint> {
 					return Fail(error: CNError.emptyResponse).eraseToAnyPublisher()
 				}
 				
-				CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
 				return Result.success(output.data).publisher.eraseToAnyPublisher()
 			}
-			.decode(type: U.self, decoder: decoder ?? endpoint.jsonDecoder)
-			.tryCatch({
-				Fail(error: $0).eraseToAnyPublisher()
-			})
+			.flatMap { data -> AnyPublisher<U, Error> in
+				do {
+					let response = try (decoder ?? endpoint.jsonDecoder).decode(U.self, from: data)
+					
+					CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
+					return Result.success(response).publisher.eraseToAnyPublisher()
+				} catch {
+					let errorResponse = CNMapErrorResponse(error: error,
+														   jsonString: String(data: data, encoding: .utf8),
+														   data: data)
+					return Fail(error: CNError.failedToMapResponse(errorResponse)).eraseToAnyPublisher()
+				}
+			}
 			.retry(retries)
 			.receive(on: queue)
 			.eraseToAnyPublisher()
@@ -132,11 +140,11 @@ public class CNProvider<T: Endpoint> {
 		
 		return CNConfig.getSession(ignorePinning: ignorePinning).dataTaskPublisher(for: urlRequest)
 			.mapError { urlError -> Error in
-				let error = CNErrorResponse(statusCode: urlError.errorCode,
-											localizedString: urlError.localizedDescription,
-											url: urlError.failingURL,
-											mimeType: nil,
-											data: nil)
+				let error = CNUnexpectedErrorResponse(statusCode: urlError.errorCode,
+													  localizedString: urlError.localizedDescription,
+													  url: urlError.failingURL,
+													  mimeType: nil,
+													  data: nil)
 				return CNError.unexpectedResponse(error)
 			}
 			.eraseToAnyPublisher()

@@ -8,11 +8,13 @@
 import Foundation
 
 public enum CNError: Error {
-	case failedToMapResponse, unexpectedResponse(CNErrorResponse), authenticationFailed, notConnected, emptyResponse
+	case failedToMapResponse(CNMapErrorResponse?), unexpectedResponse(CNUnexpectedErrorResponse), authenticationFailed, notConnected, emptyResponse
 	
 	public var detailedResponse: CNErrorResponse? {
 		switch self {
 		case .unexpectedResponse(let response):
+			return response
+		case .failedToMapResponse(let response):
 			return response
 		default:
 			return nil
@@ -41,7 +43,17 @@ extension CNError: LocalizedError {
 	}
 }
 
-public struct CNErrorResponse {
+public protocol CNErrorResponse {
+	var data: Data? { get }
+}
+
+public struct CNMapErrorResponse: CNErrorResponse {
+	public let error: Error
+	public let jsonString: String?
+	public let data: Data?
+}
+
+public struct CNUnexpectedErrorResponse: CNErrorResponse {
 	public let statusCode: Int
 	public let localizedString: String
 	public let url: URL?
