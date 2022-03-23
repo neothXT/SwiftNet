@@ -24,7 +24,7 @@ public protocol Endpoint {
 @available(macOS 10.15, *)
 public extension Endpoint {
 	var requiresAccessToken: Bool { false }
-	var jsonDecoder: JSONDecoder { .init() }
+	var jsonDecoder: JSONDecoder { CNConfig.defaultJSONDecoder }
 	var accessTokenStrategy: AccessTokenStrategy { CNConfig.defaultAccessTokenStrategy }
 	var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { nil }
 	
