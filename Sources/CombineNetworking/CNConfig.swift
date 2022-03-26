@@ -16,7 +16,6 @@ public class CNConfig {
 	public static var defaultJSONDecoder: JSONDecoder = .init()
 	public static var defaultAccessTokenStrategy: AccessTokenStrategy = .default
 	public static var storeTokensInKeychain: Bool = true
-	public static var keychainServiceLabel: String?
 	
 	private init() {}
 	

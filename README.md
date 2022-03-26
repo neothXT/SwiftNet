@@ -126,7 +126,7 @@ Thanks to access token strategy being set both globally (via `CNConfig`) and ind
 
 ### Safe storage using Keychain
 
-CombineNetworking allows you to store your access tokens in keychain. This feature is turned on by default. You can provide your keychain service label using `CNConfig.keychainServiceLabel`.
+CombineNetworking allows you to store your access tokens in keychain. This feature is turned on by default.
 Safe storage using keychain can be disabled by toggling `CNConfig.storeTokensInKeychain` option.
 
 ### WebSockets

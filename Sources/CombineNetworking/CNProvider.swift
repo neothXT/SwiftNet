@@ -161,14 +161,8 @@ extension CNConfig {
 			accessTokens[key] = token
 			return
 		}
-		guard let serviceKey = keychainServiceLabel else {
-			#if DEBUG
-			print("Cannot store access token in keychain. Please provide keychain service key!")
-			#endif
-			return
-		}
 		
-		Keychain(service: serviceKey)[data: "accessToken_\(key)"] = try? token.toJsonData()
+		Keychain()[data: "accessToken_\(key)"] = try? token.toJsonData()
 	}
 	
 	public static func accessToken(for endpoint: Endpoint) -> CNAccessToken? {
@@ -178,14 +172,7 @@ extension CNConfig {
 			return accessTokens[key]
 		}
 		
-		guard let serviceKey = keychainServiceLabel else {
-			#if DEBUG
-			print("Cannot store access token in keychain. Please provide keychain service key!")
-			#endif
-			return nil
-		}
-		
-		guard let data = Keychain(service: serviceKey)[data: "accessToken_\(key)"] else { return nil }
+		guard let data = Keychain()[data: "accessToken_\(key)"] else { return nil }
 		return try? JSONDecoder().decode(CNAccessToken.self, from: data)
 	}
 }
