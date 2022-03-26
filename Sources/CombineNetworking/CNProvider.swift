@@ -162,7 +162,7 @@ extension CNConfig {
 			return
 		}
 		
-		Keychain()[data: "accessToken_\(key)"] = try? token.toJsonData()
+		Keychain(service: serviceKey)[data: "accessToken_\(key)"] = try? token.toJsonData()
 	}
 	
 	public static func accessToken(for endpoint: Endpoint) -> CNAccessToken? {
@@ -172,7 +172,8 @@ extension CNConfig {
 			return accessTokens[key]
 		}
 		
-		guard let data = Keychain()[data: "accessToken_\(key)"] else { return nil }
+		guard let data = Keychain(service: serviceKey)[data: "accessToken_\(key)"] else { return nil }
 		return try? JSONDecoder().decode(CNAccessToken.self, from: data)
 	}
 }
+
