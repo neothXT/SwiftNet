@@ -166,6 +166,7 @@ extension CNConfig {
 			#if DEBUG
 			print("Cannot store access token in keychain. Please provide keychain instance using CNConfig.keychainInstance!")
 			#endif
+			return
 		}
 		
 		keychain[data: "accessToken_\(key)"] = try? token.toJsonData()
