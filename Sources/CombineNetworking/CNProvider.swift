@@ -23,9 +23,9 @@ public class CNProvider<T: Endpoint> {
 										retries: Int = 0,
 										expectedStatusCodes: [Int] = [200, 201, 204],
 										ignorePinning: Bool = false,
-										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error>? {
+										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error> {
 		CNDebugInfo.createLogger(for: endpoint)
-		return prepPublisher(for: endpoint, ignorePinning: ignorePinning)?
+		return prepPublisher(for: endpoint, ignorePinning: ignorePinning)
 			.flatMap { [weak self] output -> AnyPublisher<Data, Error> in
 				guard let response = output.response as? HTTPURLResponse else {
 					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.failedToMapResponse(nil).localizedDescription, mode: .stop)
@@ -40,7 +40,7 @@ public class CNProvider<T: Endpoint> {
 							return Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 						}
 						CNConfig.setAccessToken(token, for: endpoint)
-						return self?.prepPublisher(for: endpoint, ignorePinning: ignorePinning)?.map(\.data).eraseToAnyPublisher() ?? Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
+						return self?.prepPublisher(for: endpoint, ignorePinning: ignorePinning).map(\.data).eraseToAnyPublisher() ?? Fail(error: CNError.authenticationFailed).eraseToAnyPublisher()
 					}.eraseToAnyPublisher()
 				} else if response.statusCode == 401 {
 					self?.didRetry = false
@@ -135,8 +135,10 @@ public class CNProvider<T: Endpoint> {
 		}
 	}
 	
-	private func prepPublisher(for endpoint: T, ignorePinning: Bool) -> AnyPublisher<URLSession.DataTaskPublisher.Output, Error>? {
-		guard let urlRequest = prepareRequest(for: endpoint) else { return nil }
+	private func prepPublisher(for endpoint: T, ignorePinning: Bool) -> AnyPublisher<URLSession.DataTaskPublisher.Output, Error> {
+		guard let urlRequest = prepareRequest(for: endpoint) else {
+			return Fail(error: CNError.failedToBuildRequest).eraseToAnyPublisher()
+		}
 		
 		return CNConfig.getSession(ignorePinning: ignorePinning).dataTaskPublisher(for: urlRequest)
 			.mapError { urlError -> Error in

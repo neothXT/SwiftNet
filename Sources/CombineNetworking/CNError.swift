@@ -8,7 +8,7 @@
 import Foundation
 
 public enum CNError: Error {
-	case failedToMapResponse(CNMapErrorResponse?), unexpectedResponse(CNUnexpectedErrorResponse), authenticationFailed, notConnected, emptyResponse
+	case failedToBuildRequest, failedToMapResponse(CNMapErrorResponse?), unexpectedResponse(CNUnexpectedErrorResponse), authenticationFailed, notConnected, emptyResponse
 	
 	public var detailedResponse: CNErrorResponse? {
 		switch self {
@@ -25,20 +25,23 @@ public enum CNError: Error {
 extension CNError: LocalizedError {
 	public var errorDescription: String? {
 		switch self {
+		case .failedToBuildRequest:
+			return "Failed to build URLRequest. Please make sure the URL is correct."
+			
 		case .failedToMapResponse:
-			return "Failed to map response"
+			return "Failed to map response."
 			
 		case .unexpectedResponse:
-			return "Unexpected response"
+			return "Unexpected response."
 			
 		case .authenticationFailed:
-			return "Authentication failed"
+			return "Authentication failed."
 			
 		case .notConnected:
-			return "There's no active WebSocket connection"
+			return "There's no active WebSocket connection."
 			
 		case .emptyResponse:
-			return "Empty response"
+			return "Empty response."
 		}
 	}
 }

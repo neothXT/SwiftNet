@@ -165,7 +165,7 @@ private var subscriptions: Set<AnyCancellable> = []
 var todo: Todo?
 
 func subscribeForTodos() {
-  CNProvider<TodosEndpoint>().publisher(for: .todos(1), responseType: Todo?.self)?
+  CNProvider<TodosEndpoint>().publisher(for: .todos(1), responseType: Todo?.self)
     .catch { (error) -> Just<Todo?> in
       print(error)
       return Just(nil)

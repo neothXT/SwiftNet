@@ -7,7 +7,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .posts, responseType: Todo?.self)?
+		CNProvider<RemoteEndpoint>().publisher(for: .posts, responseType: Todo?.self)
 			.catch { error -> Just<Todo?> in
 				if let responseError = error as? CNError, case .unexpectedResponse(let response) = responseError,
 				   response.statusCode == -1003 {
@@ -25,7 +25,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .todos, responseType: Todo.self)?
+		CNProvider<RemoteEndpoint>().publisher(for: .todos, responseType: Todo.self)
 			.sink(receiveCompletion: { _ in
 			}) { (todos: Todo) in
 				expectation.fulfill()
@@ -39,7 +39,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .dictGet(["postId": 1]), responseType: Post.self)?
+		CNProvider<RemoteEndpoint>().publisher(for: .dictGet(["postId": 1]), responseType: Post.self)
 			.sink(receiveCompletion: { _ in
 				expectation.fulfill()
 			}) { (_: Post) in }
@@ -54,7 +54,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .post(post), responseType: Post.self)?
+		CNProvider<RemoteEndpoint>().publisher(for: .post(post), responseType: Post.self)
 			.sink(receiveCompletion: { _ in
 				expectation.fulfill()
 			}) { (_: Post) in }
@@ -69,7 +69,7 @@ final class CombineNetworkingTests: XCTestCase {
 		
 		let dict = ["userId": "1231", "title": "Title", "body": "Body"]
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .dictPost(dict), responseType: Post.self)?
+		CNProvider<RemoteEndpoint>().publisher(for: .dictPost(dict), responseType: Post.self)
 			.sink(receiveCompletion: { _ in
 				expectation.fulfill()
 			}) { (_: Post) in }
