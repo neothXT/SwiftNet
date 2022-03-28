@@ -120,7 +120,7 @@ CombineNetworking allows you to specify access token strategies globally as well
 Available options are:
 - `.global` - uses global label to store access token
 - `.default` - uses endpoint identifiers as labels to store access tokens
-- `.custom` - with this option you can specify your own label to store access token and use it among as many endpoints as you wish
+- `.custom(String)` - with this option you can specify your own label to store access token and use it among as many endpoints as you wish
 
 Thanks to access token strategy being set both globally (via `CNConfig`) and individually (inside `Endpoint`), you can mix different strategies in your app!
 
