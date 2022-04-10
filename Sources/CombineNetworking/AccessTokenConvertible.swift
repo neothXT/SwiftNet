@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  AccessTokenConvertible.swift
 //  
 //
 //  Created by Maciej Burdzicki on 22/03/2022.

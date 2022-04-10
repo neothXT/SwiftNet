@@ -8,7 +8,7 @@
 import Foundation
 
 public enum CNError: Error {
-	case failedToBuildRequest, failedToMapResponse(CNMapErrorResponse?), unexpectedResponse(CNUnexpectedErrorResponse), authenticationFailed, notConnected, emptyResponse
+	case failedToBuildRequest, failedToMapResponse(CNMapErrorResponse?), unexpectedResponse(CNUnexpectedErrorResponse), authenticationFailed, notConnected, emptyResponse, conversionFailed
 	
 	public var detailedResponse: CNErrorResponse? {
 		switch self {
@@ -25,6 +25,8 @@ public enum CNError: Error {
 extension CNError: LocalizedError {
 	public var errorDescription: String? {
 		switch self {
+		case .conversionFailed:
+			return "Conversion to AccessTokenConvertible failed."
 		case .failedToBuildRequest:
 			return "Failed to build URLRequest. Please make sure the URL is correct."
 			
