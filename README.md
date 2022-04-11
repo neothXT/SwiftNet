@@ -105,7 +105,7 @@ extension TodosEndpoint: Endpoint {
 	
   //... and prepare callbackPublisher to handle authorization callbacks
   var callbackPublisher: AnyPublisher<AccessTokenConvertible?, Error>? {
-    CNProvider<TodosEndpoint>().publisher(for: .token, responseType: CNAccessToken?.self)
+    try? CNProvider<TodosEndpoint>().publisher(for: .token, responseType: CNAccessToken?.self).asAccessTokenConvertible()
   }
 }
 ```
