@@ -78,7 +78,7 @@ CNConfig.SSLKeys = [myKey]
 
 Please remember that for `.ssl` option it is required to provide either SSLKey or the name of a certificate attached to the project to resolve SSL public key from.
 
-### Automatic authorisation mechanism
+### Automatic authorization mechanism
 
 Handling authorization callbacks with CombineNetworking is ridiculously easy. To use it with your `Endpoint` all you have to do is the following:
 
