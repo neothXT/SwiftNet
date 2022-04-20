@@ -8,13 +8,22 @@
 import Foundation
 
 public enum CNError: Error {
-	case failedToBuildRequest, failedToMapResponse(CNMapErrorResponse?), unexpectedResponse(CNUnexpectedErrorResponse), authenticationFailed, notConnected, emptyResponse, conversionFailed
+	case failedToBuildRequest, failedToMapResponse(CNMapErrorResponse?), unexpectedResponse(CNUnexpectedErrorResponse), authenticationFailed(CNUnexpectedErrorResponse), notConnected, emptyResponse, conversionFailed
 	
 	public var detailedResponse: CNErrorResponse? {
 		switch self {
 		case .unexpectedResponse(let response):
 			return response
 		case .failedToMapResponse(let response):
+			return response
+		default:
+			return nil
+		}
+	}
+	
+	public var originalResponse: CNErrorResponse? {
+		switch self {
+		case .authenticationFailed(let response):
 			return response
 		default:
 			return nil
@@ -27,6 +36,7 @@ extension CNError: LocalizedError {
 		switch self {
 		case .conversionFailed:
 			return "Conversion to AccessTokenConvertible failed."
+			
 		case .failedToBuildRequest:
 			return "Failed to build URLRequest. Please make sure the URL is correct."
 			
@@ -54,7 +64,6 @@ public protocol CNErrorResponse {
 
 public struct CNMapErrorResponse: CNErrorResponse {
 	public let error: Error
-	public let jsonString: String?
 	public let data: Data?
 }
 
@@ -63,13 +72,15 @@ public struct CNUnexpectedErrorResponse: CNErrorResponse {
 	public let localizedString: String
 	public let url: URL?
 	public let mimeType: String?
+	public let headers: [AnyHashable: Any]?
 	public let data: Data?
 	
-	public init(statusCode: Int, localizedString: String, url: URL?, mimeType: String?, data: Data?) {
+	public init(statusCode: Int, localizedString: String, url: URL?, mimeType: String?, headers: [AnyHashable: Any]?, data: Data?) {
 		self.statusCode = statusCode
 		self.localizedString = localizedString
 		self.url = url
 		self.mimeType = mimeType
+		self.headers = headers
 		self.data = data
 	}
 	
