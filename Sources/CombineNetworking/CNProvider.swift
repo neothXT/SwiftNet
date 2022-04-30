@@ -206,7 +206,7 @@ extension CNConfig {
 	}
 	
 	@discardableResult
-	public static func removeAccessToken(for endpoint: Endpoint?) -> Bool {
+	public static func removeAccessToken(for endpoint: Endpoint? = nil) -> Bool {
 		guard let key = endpoint?.accessTokenStrategy.storingLabel ?? endpoint?.identifier ?? AccessTokenStrategy.global.storingLabel else {
 			return false
 		}
