@@ -227,7 +227,7 @@ extension CNConfig {
 		}
 		
 		do {
-			let tokenIsPresent = try keychain.contains(key)
+			let tokenIsPresent = try keychain.contains("accessToken_\(key)")
 			guard tokenIsPresent else { return false }
 			try keychain.remove(key)
 			return true
