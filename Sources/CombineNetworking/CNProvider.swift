@@ -84,6 +84,7 @@ public class CNProvider<T: Endpoint> {
 					let response = try (decoder ?? endpoint.jsonDecoder).decode(U.self, from: data)
 					
 					CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
+					CNDebugInfo.deleteLoger(for: endpoint)
 					return Result.success(response).publisher.eraseToAnyPublisher()
 				} catch {
 					let errorResponse = CNMapErrorResponse(error: error,
@@ -160,6 +161,7 @@ public class CNProvider<T: Endpoint> {
 													  headers: nil,
 													  data: nil)
 				CNDebugInfo.getLogger(for: endpoint)?.log(CNError.unexpectedResponse(error).localizedDescription, mode: .stop)
+				CNDebugInfo.deleteLoger(for: endpoint)
 				return CNError.unexpectedResponse(error)
 			}
 			.eraseToAnyPublisher()
