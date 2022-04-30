@@ -179,7 +179,7 @@ extension CNConfig {
 		
 		guard let keychain = CNConfig.keychainInstance else {
 			#if DEBUG
-			print("Cannot store access token in keychain. Please provide keychain instance using CNConfig.keychainInstance!")
+			print("Cannot store access token in keychain. Please provide keychain instance using CNConfig.keychainInstance or disable keychain storage by setting CNConfig.storeTokensInKeychain to false!")
 			#endif
 			return
 		}
@@ -196,13 +196,45 @@ extension CNConfig {
 		
 		guard let keychain = CNConfig.keychainInstance else {
 			#if DEBUG
-			print("Cannot read access token from keychain. Please provide keychain instance using CNConfig.keychainInstance!")
+			print("Cannot read access token from keychain. Please provide keychain instance using CNConfig.keychainInstance or disable keychain storage by setting CNConfig.storeTokensInKeychain to false!")
 			#endif
 			return nil
 		}
 		
 		guard let data = keychain[data: "accessToken_\(key)"] else { return nil }
 		return try? JSONDecoder().decode(CNAccessToken.self, from: data)
+	}
+	
+	@discardableResult
+	public static func removeAccessToken(for endpoint: Endpoint?) -> Bool {
+		guard let key = endpoint?.accessTokenStrategy.storingLabel ?? endpoint?.identifier ?? AccessTokenStrategy.global.storingLabel else {
+			return false
+		}
+		
+		if !storeTokensInKeychain {
+			guard Array(accessTokens.keys).contains(key) else { return false }
+			accessTokens.removeValue(forKey: key)
+			return true
+		}
+		
+		guard let keychain = CNConfig.keychainInstance else {
+			#if DEBUG
+			print("Cannot read access token from keychain. Please provide keychain instance using CNConfig.keychainInstance or disable keychain storage by setting CNConfig.storeTokensInKeychain to false!")
+			#endif
+			return false
+		}
+		
+		do {
+			let tokenIsPresent = try keychain.contains(key)
+			guard tokenIsPresent else { return false }
+			try keychain.remove(key)
+			return true
+		} catch {
+			#if DEBUG
+			print(error.localizedDescription)
+			#endif
+			return false
+		}
 	}
 }
 
