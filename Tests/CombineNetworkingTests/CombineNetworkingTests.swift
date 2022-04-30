@@ -126,4 +126,25 @@ final class CombineNetworkingTests: XCTestCase {
 		
 		wait(for: [expectation], timeout: 30)
 	}
+	
+	func testStoreToken() throws {
+		let endpoint: RemoteEndpoint = .todos
+		let sampleToken = CNAccessToken(access_token: "aaa", token_type: "", expires_in: nil, refresh_token: nil, scope: nil)
+		
+		CNConfig.storeTokensInKeychain = false
+		CNConfig.setAccessToken(sampleToken, for: endpoint)
+		
+		XCTAssert((CNConfig.accessToken(for: endpoint)?.access_token ?? "") == "aaa")
+	}
+	
+	func testRemoveToken() throws {
+		let endpoint: RemoteEndpoint = .todos
+		let sampleToken = CNAccessToken(access_token: "aaa", token_type: "", expires_in: nil, refresh_token: nil, scope: nil)
+		
+		CNConfig.storeTokensInKeychain = false
+		CNConfig.setAccessToken(sampleToken, for: endpoint)
+		CNConfig.removeAccessToken(for: endpoint)
+		
+		XCTAssert(CNConfig.accessToken(for: endpoint) == nil)
+	}
 }
