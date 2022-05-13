@@ -11,8 +11,7 @@ import KeychainAccess
 
 public class CNConfig {
 	public static var pinningModes: PinningMode = PinningMode(rawValue: 0)
-	public static var certificateNames: [String] = []
-	public static var SSLKeys: [SecKey]? = nil
+	public static var sitesExcludedFromPinning: [String] = []
 	public static var defaultJSONDecoder: JSONDecoder = .init()
 	public static var defaultAccessTokenStrategy: AccessTokenStrategy = .default
 	public static var storeTokensInKeychain: Bool = true
@@ -26,9 +25,7 @@ public class CNConfig {
 		let operationQueue = OperationQueue()
 		operationQueue.qualityOfService = .utility
 		
-		let delegate = CNSessionDelegate(mode: pinningModes,
-										 certNames: certificateNames,
-										 SSLKeys: SSLKeys)
+		let delegate = CNSessionDelegate(mode: pinningModes, excludedSites: sitesExcludedFromPinning)
 		
 		return URLSession(configuration: .default, delegate: delegate, delegateQueue: operationQueue)
 	}

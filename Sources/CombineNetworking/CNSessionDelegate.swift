@@ -8,52 +8,21 @@
 import Foundation
 
 final public class CNSessionDelegate: NSObject, URLSessionTaskDelegate {
+	private let certExplorer = CertificateExplorer()
 	private let mode: PinningMode
-	private let certNames: [String]
+	private let excludedSites: [String]
 	
-	private var _pinnedKeys: [SecKey]?
+	private lazy var pinnedCerts = certExplorer.fetchCertificates()
+	private lazy var pinnedKeys = certExplorer.fetchSLLKeys()
 	
-	private lazy var pinnedCerts: [Data] = {
-		var certificates: [Data] = []
-		
-		certNames.forEach {
-			if let certificateURL = Bundle.main.url(forResource: $0, withExtension: "cer"),
-			   let certificate = try? Data(contentsOf: certificateURL) {
-				certificates.append(certificate)
-			}
-		}
-		
-		return certificates
-	}()
-	
-	private lazy var pinnedKeys: [SecKey] = {
-		if let pinnedKeys = _pinnedKeys {
-			return pinnedKeys
-		}
-		
-		var pinnedKeys: [SecKey] = []
-		
-		certNames.forEach {
-			if let certificateURL = Bundle.main.url(forResource: $0, withExtension: "cer"),
-			   let certificateData = try? Data(contentsOf: certificateURL) as CFData,
-			   let certificate = SecCertificateCreateWithData(nil, certificateData),
-			   let key = publicKey(for: certificate) {
-				pinnedKeys.append(key)
-			}
-		}
-		
-		return pinnedKeys
-	}()
-	
-	public init(mode: PinningMode, certNames: [String] = [], SSLKeys keys: [SecKey]? = nil) {
-		_pinnedKeys = keys
-		self.certNames = certNames
+	public init(mode: PinningMode, excludedSites: [String]) {
+		self.excludedSites = excludedSites
 		self.mode = mode
 	}
 	
 	public func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
 		
-		var result = false
+		var result = true
 		
 		// Check if server got any security certificates
 		guard let trust = challenge.protectionSpace.serverTrust, SecTrustGetCertificateCount(trust) > 0 else {
@@ -61,51 +30,61 @@ final public class CNSessionDelegate: NSObject, URLSessionTaskDelegate {
 			return
 		}
 		
-		let challengeCompletion: (Bool) -> Void = {
-			if !$0 {
+		let challengeCompletion: (ChallengeResult, Bool) -> Void = { challengeResult, execute in
+			result = challengeResult != .failure
+			
+			if !execute { return }
+			
+			switch challengeResult {
+			case .success:
+				completionHandler(.useCredential, URLCredential(trust: trust))
+				
+			case .ignored:
+				completionHandler(.performDefaultHandling, nil)
+				
+			case .failure:
 				completionHandler(.cancelAuthenticationChallenge, nil)
-				return
 			}
-			result = $0
 		}
 		
+		if let baseURL = task.originalRequest?.url?.baseURL?.absoluteString, excludedSites.contains(baseURL) {
+			challengeCompletion(.ignored, true)
+			return
+		}
 		
 		challengeCertificateIfNeeded(trust: trust, completionHandler: challengeCompletion)
-		challengeKeyIfNeeded(trust: trust, completionHandler: challengeCompletion)
 		
-		completionHandler(result ? .useCredential: .cancelAuthenticationChallenge,
-						  result ? URLCredential(trust: trust): nil)
+		if !result { return }
+		
+		challengeKeyIfNeeded(trust: trust, completionHandler: challengeCompletion)
 	}
 	
-	private func challengeCertificateIfNeeded(trust: SecTrust, completionHandler: @escaping (Bool) -> Void) {
-		if !mode.contains(.certificate) { completionHandler(true); return }
+	private func challengeCertificateIfNeeded(trust: SecTrust, completionHandler: @escaping (ChallengeResult, Bool) -> Void) {
+		if !mode.contains(.certificate) { completionHandler(.ignored, false); return }
 		
 		guard let serverCert = SecTrustGetCertificateAtIndex(trust, 0) else {
-			completionHandler(false)
+			completionHandler(.failure, true)
 			return
 		}
 		
-		completionHandler(pinnedCerts.contains(SecCertificateCopyData(serverCert) as Data))
+		completionHandler(pinnedCerts.contains(serverCert) ? .success: .failure, !pinnedCerts.contains(serverCert))
 	}
 	
-	private func challengeKeyIfNeeded(trust: SecTrust, completionHandler: @escaping (Bool) -> Void) {
-		if !mode.contains(.ssl) { completionHandler(true); return }
+	private func challengeKeyIfNeeded(trust: SecTrust, completionHandler: @escaping (ChallengeResult, Bool) -> Void) {
+		if !mode.contains(.ssl) { completionHandler(.ignored, true); return }
 		
 		guard let serverCert = SecTrustGetCertificateAtIndex(trust, 0),
-			  let key = publicKey(for: serverCert) else {
-			completionHandler(false)
+			  let key = certExplorer.publicKey(for: serverCert) else {
+			completionHandler(.failure, true)
 			return
 		}
 		
-		completionHandler(pinnedKeys.contains(key))
+		completionHandler(pinnedKeys.contains(key) ? .success: .failure, true)
 	}
-	
-	private func publicKey(for certificate: SecCertificate) -> SecKey? {
-		var trust: SecTrust?
-		let trustStatus = SecTrustCreateWithCertificates(certificate, SecPolicyCreateBasicX509(), &trust)
-		
-		guard let trust = trust, trustStatus == errSecSuccess else { return nil }
-		
-		return SecTrustCopyPublicKey(trust)
+}
+
+extension CNSessionDelegate {
+	enum ChallengeResult {
+		case success, failure, ignored
 	}
 }
