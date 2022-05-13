@@ -68,15 +68,9 @@ extension TodosEndpoint: Endpoint {
 ```Swift
 //First - turn pinning on
 CNConfig.pinningModes = [.ssl, .certificate]
-
-//Second - specify certificate names (mandatory for certificate pinning, optional for ssl pinning)
-CNConfig.certificateNames = ["MyCert"]
-
-//Third - provide list of acceptable public keys (optional if you've provided certificate names)
-CNConfig.SSLKeys = [myKey]
 ```
 
-Please remember that for `.ssl` option it is required to provide either SSLKey or the name of a certificate attached to the project to resolve SSL public key from.
+Please remember that SSL/Certificate pinning requires certificate file to be attached in your project. Certificates and SSL keys are autmatically loaded by CombineNetworking.
 
 ### Automatic authorization mechanism
 
