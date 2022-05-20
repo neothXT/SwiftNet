@@ -9,6 +9,7 @@ import Foundation
 
 public enum EndpointData {
 	case plain
+	case queryString(String)
 	case queryParams([String: Any])
 	case bodyParams([String: Any])
 	case urlEncoded([String: Any])

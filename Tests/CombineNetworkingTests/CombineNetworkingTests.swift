@@ -48,6 +48,19 @@ final class CombineNetworkingTests: XCTestCase {
 		wait(for: [expectation], timeout: 10)
 	}
 	
+	func testStringQueryParams() throws {
+		let expectation = expectation(description: "Fetch first todo object")
+		var subscriptions: Set<AnyCancellable> = []
+		
+		CNProvider<RemoteEndpoint>().publisher(for: .stringGet("postId=1"), responseType: Post.self)
+			.sink(receiveCompletion: { _ in
+				expectation.fulfill()
+			}) { (_: Post) in }
+			.store(in: &subscriptions)
+		
+		wait(for: [expectation], timeout: 10)
+	}
+	
 	func testPostWithJsonModel() throws {
 		let post = Post(userId: 123, id: nil, title: "SampleTitle", body: "SampleBody")
 		

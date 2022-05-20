@@ -12,6 +12,7 @@ enum RemoteEndpoint {
 	case todos
 	case posts
 	case post(Post)
+	case stringGet(String)
 	case dictPost([String: Any])
 	case dictGet([String: Any])
 }
@@ -35,7 +36,7 @@ extension RemoteEndpoint: Endpoint {
 		case .posts:
 			return "CNErrorExample"
 			
-		case .post, .dictPost:
+		case .post, .dictPost, .stringGet:
 			return "posts"
 		}
 	}
@@ -61,6 +62,8 @@ extension RemoteEndpoint: Endpoint {
 			return .bodyParams(dict)
 		case .dictGet(let dict):
 			return .queryParams(dict)
+		case .stringGet(let string):
+			return .queryString(string)
 		default:
 			return .plain
 		}

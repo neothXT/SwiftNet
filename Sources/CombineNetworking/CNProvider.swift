@@ -120,6 +120,9 @@ public class CNProvider<T: Endpoint> {
 	
 	private func prepareBody(endpointData: EndpointData, request: inout URLRequest) {
 		switch endpointData {
+		case .queryString(let params):
+			guard let url = request.url else { return }
+			request.url = URL(string: "\(url)?\(params)")
 		case .queryParams(let params):
 			guard let url = request.url else { return }
 			var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: true)
