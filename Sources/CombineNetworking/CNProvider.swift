@@ -115,7 +115,7 @@ public class CNProvider<T: Endpoint> {
 			request.addValue("Bearer \(token ?? "")", forHTTPHeaderField: "Authorization")
 		}
 		request.addValue("Safari/CombineNetworking", forHTTPHeaderField: "User-Agent")
-		request.httpMethod = endpoint.method.rawValue
+		request.httpMethod = endpoint.method.rawValue.uppercased()
 	}
 	
 	private func prepareBody(endpointData: EndpointData, request: inout URLRequest) {
