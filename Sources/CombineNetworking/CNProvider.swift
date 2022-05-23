@@ -98,10 +98,10 @@ public class CNProvider<T: Endpoint> {
 			.eraseToAnyPublisher()
 	}
 	
-	func uploadPublisher(for endpoint: T,
-						 retries: Int = 0,
-						 ignorePinning: Bool = false,
-						 receiveOn queue: DispatchQueue = .main) -> AnyPublisher<UploadResponse, Error> {
+	puvlic func uploadPublisher(for endpoint: T,
+								retries: Int = 0,
+								ignorePinning: Bool = false,
+								receiveOn queue: DispatchQueue = .main) -> AnyPublisher<UploadResponse, Error> {
 		CNDebugInfo.createLogger(for: endpoint)
 		return prepUploadPublisher(for: endpoint, ignorePinning: ignorePinning)
 			.flatMap { [weak self] response -> AnyPublisher<UploadResponse, Error> in
