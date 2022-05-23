@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import KeychainAccess
+import XCTest
 
 public typealias EmptyArrayResponse = [String?]
 
@@ -96,12 +97,56 @@ public class CNProvider<T: Endpoint> {
 			.receive(on: queue)
 			.eraseToAnyPublisher()
 	}
+	
+	func uploadPublisher(for endpoint: T,
+						 retries: Int = 0,
+						 ignorePinning: Bool = false,
+						 receiveOn queue: DispatchQueue = .main) -> AnyPublisher<UploadResponse, Error> {
+		CNDebugInfo.createLogger(for: endpoint)
+		return prepUploadPublisher(for: endpoint, ignorePinning: ignorePinning)
+			.flatMap { [weak self] response -> AnyPublisher<UploadResponse, Error> in
+				if response == .authError && !(self?.didRetry ?? true), let publisher = endpoint.callbackPublisher {
+					let error = CNUnexpectedErrorResponse(statusCode: 401,
+														  localizedString: HTTPURLResponse.localizedString(forStatusCode: 401),
+														  url: nil,
+														  mimeType: nil,
+														  headers: nil,
+														  data: nil)
+					self?.didRetry = true
+					return publisher.flatMap { [weak self] response -> AnyPublisher<UploadResponse, Error> in
+						guard let token = (response as? CNAccessToken) ?? response.convert() else {
+							return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
+						}
+						CNConfig.setAccessToken(token, for: endpoint)
+						return self?.prepUploadPublisher(for: endpoint, ignorePinning: ignorePinning) ?? Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
+					}.eraseToAnyPublisher()
+				} else if response == .authError {
+					self?.didRetry = false
+					let error = CNUnexpectedErrorResponse(statusCode: 401,
+														  localizedString: HTTPURLResponse.localizedString(forStatusCode: 401),
+														  url: nil,
+														  mimeType: nil,
+														  headers: nil,
+														  data: nil)
+					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.authenticationFailed(error).localizedDescription, mode: .stop)
+					CNDebugInfo.deleteLoger(for: endpoint)
+					return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
+				}
+				
+				return Result.success(response).publisher.eraseToAnyPublisher()
+			}
+			.retry(retries)
+			.receive(on: queue)
+			.eraseToAnyPublisher()
+	}
 
-	private func prepareRequest(for endpoint: Endpoint) -> URLRequest? {
+	private func prepareRequest(for endpoint: Endpoint, withBody: Bool = true) -> URLRequest? {
 		guard let url = endpoint.baseURL?.appendingPathComponent(endpoint.path) else { return nil }
 		var request = URLRequest(url: url)
 		prepareHeadersAndMethod(endpoint: endpoint, request: &request)
-		prepareBody(endpointData: endpoint.data, request: &request)
+		if withBody {
+			prepareBody(endpointData: endpoint.data, request: &request)
+		}
 		CNDebugInfo.getLogger(for: endpoint)?.log("\n" + request.cURL(pretty: true), mode: .start)
 		return request
 	}
@@ -167,6 +212,44 @@ public class CNProvider<T: Endpoint> {
 				CNDebugInfo.deleteLoger(for: endpoint)
 				return CNError.unexpectedResponse(error)
 			}
+			.eraseToAnyPublisher()
+	}
+	
+	private func prepUploadPublisher(for endpoint: T, ignorePinning: Bool) -> AnyPublisher<UploadResponse, Error> {
+		guard let urlRequest = prepareRequest(for: endpoint, withBody: false),
+				case .bodyData(let data) = endpoint.data else {
+			return Fail(error: CNError.failedToBuildRequest).eraseToAnyPublisher()
+		}
+		
+		let publisher: PassthroughSubject<UploadResponse, Error> = .init()
+		let session = CNConfig.getSession(ignorePinning: ignorePinning)
+		let sessionDelegate = session.delegate as! CNSimpleSessionDelegate
+			
+		let task = session.uploadTask(with: urlRequest, from: data) { data, response, error in
+			if let error = error {
+				publisher.send(completion: .failure(error))
+				return
+			}
+			
+			if (response as? HTTPURLResponse)?.statusCode == 200 {
+				publisher.send(.response(data: data))
+				return
+			}
+			
+			if (response as? HTTPURLResponse)?.statusCode == 401 {
+				publisher.send(.authError)
+				return
+			}
+			
+			publisher.send(.response(data: nil))
+		}
+		task.resume()
+		
+		return sessionDelegate.uploadProgress
+			.filter { $0.id == task.taskIdentifier }
+			.setFailureType(to: Error.self)
+			.map { .progress(percentage: $0.progress) }
+			.merge(with: publisher)
 			.eraseToAnyPublisher()
 	}
 }

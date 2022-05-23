@@ -20,10 +20,14 @@ public class CNConfig {
 	private init() {}
 	
 	static func getSession(ignorePinning: Bool = false) -> URLSession {
-		if ignorePinning || pinningModes.rawValue == 0 { return .shared }
-		
 		let operationQueue = OperationQueue()
 		operationQueue.qualityOfService = .utility
+		
+		if ignorePinning || pinningModes.rawValue == 0 {
+			return URLSession(configuration: .default,
+							  delegate: CNSimpleSessionDelegate(),
+							  delegateQueue: operationQueue)
+		}
 		
 		let delegate = CNSessionDelegate(mode: pinningModes, excludedSites: sitesExcludedFromPinning)
 		

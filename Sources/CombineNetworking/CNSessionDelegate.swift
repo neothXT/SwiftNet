@@ -6,8 +6,17 @@
 //
 
 import Foundation
+import Combine
 
-final public class CNSessionDelegate: NSObject, URLSessionTaskDelegate {
+public class CNSimpleSessionDelegate: NSObject, URLSessionTaskDelegate {
+	let uploadProgress: PassthroughSubject<(id: Int, progress: Double), Never> = .init()
+	
+	public func urlSession(_ session: URLSession, task: URLSessionTask, didSendBodyData bytesSent: Int64, totalBytesSent: Int64, totalBytesExpectedToSend: Int64) {
+		uploadProgress.send((id: task.taskIdentifier, progress: task.progress.fractionCompleted))
+	}
+}
+
+final public class CNSessionDelegate: CNSimpleSessionDelegate {
 	private let certExplorer = CertificateExplorer()
 	private let mode: PinningMode
 	private let excludedSites: [String]
