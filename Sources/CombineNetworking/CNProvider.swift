@@ -98,7 +98,7 @@ public class CNProvider<T: Endpoint> {
 			.eraseToAnyPublisher()
 	}
 	
-	puvlic func uploadPublisher(for endpoint: T,
+	public func uploadPublisher(for endpoint: T,
 								retries: Int = 0,
 								ignorePinning: Bool = false,
 								receiveOn queue: DispatchQueue = .main) -> AnyPublisher<UploadResponse, Error> {
