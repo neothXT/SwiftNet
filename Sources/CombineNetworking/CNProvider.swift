@@ -98,13 +98,16 @@ public class CNProvider<T: Endpoint> {
 			.eraseToAnyPublisher()
 	}
 	
-	public func uploadPublisher(for endpoint: T,
-								retries: Int = 0,
-								ignorePinning: Bool = false,
-								receiveOn queue: DispatchQueue = .main) -> AnyPublisher<UploadResponse, Error> {
+	public func uploadPublisher<U: Codable>(for endpoint: T,
+											retries: Int = 0,
+											responseType: U.Type,
+											decoder: JSONDecoder? = nil,
+											ignorePinning: Bool = false,
+											receiveOn queue: DispatchQueue = .main) -> AnyPublisher<UploadResponse<U>, Error> {
 		CNDebugInfo.createLogger(for: endpoint)
-		return prepUploadPublisher(for: endpoint, ignorePinning: ignorePinning)
-			.flatMap { [weak self] response -> AnyPublisher<UploadResponse, Error> in
+		return prepUploadPublisher(for: endpoint, responseType: responseType,
+								   decoder: decoder, ignorePinning: ignorePinning)
+		.flatMap { [weak self] response -> AnyPublisher<UploadResponse, Error> in
 				if response == .authError && !(self?.didRetry ?? true), let publisher = endpoint.callbackPublisher {
 					let error = CNUnexpectedErrorResponse(statusCode: 401,
 														  localizedString: HTTPURLResponse.localizedString(forStatusCode: 401),
@@ -118,7 +121,7 @@ public class CNProvider<T: Endpoint> {
 							return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
 						}
 						CNConfig.setAccessToken(token, for: endpoint)
-						return self?.prepUploadPublisher(for: endpoint, ignorePinning: ignorePinning) ?? Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
+						return self?.prepUploadPublisher(for: endpoint, responseType: responseType, decoder: decoder, ignorePinning: ignorePinning) ?? Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
 					}.eraseToAnyPublisher()
 				} else if response == .authError {
 					self?.didRetry = false
@@ -215,13 +218,16 @@ public class CNProvider<T: Endpoint> {
 			.eraseToAnyPublisher()
 	}
 	
-	private func prepUploadPublisher(for endpoint: T, ignorePinning: Bool) -> AnyPublisher<UploadResponse, Error> {
+	private func prepUploadPublisher<U: Codable>(for endpoint: T,
+												 responseType: U.Type,
+												 decoder: JSONDecoder? = nil,
+												 ignorePinning: Bool) -> AnyPublisher<UploadResponse<U>, Error> {
 		guard let urlRequest = prepareRequest(for: endpoint, withBody: false),
 				case .bodyData(let data) = endpoint.data else {
 			return Fail(error: CNError.failedToBuildRequest).eraseToAnyPublisher()
 		}
 		
-		let publisher: PassthroughSubject<UploadResponse, Error> = .init()
+		let publisher: PassthroughSubject<UploadResponse<U>, Error> = .init()
 		let session = CNConfig.getSession(ignorePinning: ignorePinning)
 		let sessionDelegate = session.delegate as! CNSimpleSessionDelegate
 			
@@ -231,9 +237,16 @@ public class CNProvider<T: Endpoint> {
 				return
 			}
 			
-			if (response as? HTTPURLResponse)?.statusCode == 200 {
-				publisher.send(.response(data: data))
-				return
+			if (response as? HTTPURLResponse)?.statusCode == 200, let data = data {
+				do {
+					let response = try (decoder ?? endpoint.jsonDecoder).decode(U.self, from: data)
+					publisher.send(.response(data: response))
+					return
+				} catch {
+					#if DEBUG
+					print(error.localizedDescription)
+					#endif
+				}
 			}
 			
 			if (response as? HTTPURLResponse)?.statusCode == 401 {

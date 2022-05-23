@@ -7,9 +7,9 @@
 
 import Foundation
 
-public enum UploadResponse: Equatable {
+public enum UploadResponse<T: Codable & Equatable>: Equatable {
 	case progress(percentage: Double)
-	case response(data: Data?)
+	case response(data: T?)
 	case authError
 	
 	public static func == (lhs: Self, rhs: Self) -> Bool {
