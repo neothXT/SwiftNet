@@ -8,7 +8,6 @@
 import Foundation
 import Combine
 import KeychainAccess
-import XCTest
 
 public typealias EmptyArrayResponse = [String?]
 
