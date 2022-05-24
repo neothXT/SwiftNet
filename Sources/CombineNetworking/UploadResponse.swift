@@ -11,7 +11,7 @@ public enum UploadResponse<T: Codable & Equatable>: Equatable {
 	case progress(percentage: Double)
 	case response(data: T?)
 	case authError
-	case error(Int)
+	case error(Int, Data?)
 	
 	public static func == (lhs: Self, rhs: Self) -> Bool {
 		switch (lhs, rhs) {
@@ -21,8 +21,8 @@ public enum UploadResponse<T: Codable & Equatable>: Equatable {
 			return left == right
 		case (.authError, .authError):
 			return true
-		case (.error(let left), .error(let right)):
-			return left == right
+		case (.error(let left, let lData), .error(let right, let rData)):
+			return left == right && lData == rData
 		default:
 			return false
 		}

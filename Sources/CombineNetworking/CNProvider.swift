@@ -134,13 +134,13 @@ public class CNProvider<T: Endpoint> {
 					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.authenticationFailed(error).localizedDescription, mode: .stop)
 					CNDebugInfo.deleteLoger(for: endpoint)
 					return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
-				} else if case .error(let errorCode) = response {
+				} else if case .error(let errorCode, let errorData) = response {
 					let error = CNUnexpectedErrorResponse(statusCode: errorCode,
 														  localizedString: HTTPURLResponse.localizedString(forStatusCode: errorCode),
 														  url: nil,
 														  mimeType: nil,
 														  headers: nil,
-														  data: nil)
+														  data: errorData)
 					return Fail(error: CNError.unexpectedResponse(error)).eraseToAnyPublisher()
 				}
 				
@@ -259,7 +259,7 @@ public class CNProvider<T: Endpoint> {
 				publisher.send(.authError)
 				return
 			} else if let urlResponse = response as? HTTPURLResponse {
-				publisher.send(.error(urlResponse.statusCode))
+				publisher.send(.error(urlResponse.statusCode, data))
 			}
 			
 			publisher.send(.response(data: nil))
