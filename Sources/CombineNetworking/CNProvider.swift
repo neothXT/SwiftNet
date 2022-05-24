@@ -260,6 +260,7 @@ public class CNProvider<T: Endpoint> {
 				return
 			} else if let urlResponse = response as? HTTPURLResponse {
 				publisher.send(.error(urlResponse.statusCode, data))
+				return
 			}
 			
 			publisher.send(.response(data: nil))
