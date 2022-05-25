@@ -20,7 +20,15 @@ public struct Boundary: Codable {
 }
 
 public extension Boundary {
-	func toData() throws -> Data {
-		try JSONEncoder().encode(self)
+	func addTo(data: inout Data) {
+		guard let nameData = "--\(name)".data(using: .utf8),
+			  let contentDispData = "Content-Disposition: \(contentDisposition)".data(using: .utf8),
+			  let contentTypeData = "Content-Type: \(contentType)".data(using: .utf8) else {
+			return
+		}
+		
+		data.append(nameData)
+		data.append(contentDispData)
+		data.append(contentTypeData)
 	}
 }

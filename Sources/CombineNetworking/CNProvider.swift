@@ -185,31 +185,34 @@ public class CNProvider<T: Endpoint> {
 			request.url = urlComponents?.url
 			
 		case .bodyParams(let params):
-			
-			request.httpBody = try? JSONSerialization.data(withJSONObject: params, options: [])
+			guard var data = try? JSONSerialization.data(withJSONObject: params, options: []) else { return }
+			if let boundary = boundary {
+				boundary.addTo(data: &data)
+			}
+			request.httpBody = data
 			
 		case .jsonModel(let model):
-			var data = try? model.toJsonData()
-			if let boundary = try? boundary?.toData() {
-				data?.append(boundary)
+			guard var data = try? model.toJsonData() else { return }
+			if let boundary = boundary {
+				boundary.addTo(data: &data)
 			}
 			
 			request.httpBody = data
 			
 		case .urlEncoded(let params):
-			var data = params.reduce([]) { $0 + ["\($1.key)=\($1.value)"] }
-				.joined(separator: ",")
-				.data(using: .utf8)
+			guard var data = (params.reduce([]) { $0 + ["\($1.key)=\($1.value)"] }.joined(separator: ",").data(using: .utf8)) else {
+					return
+				}
 			
-			if let boundary = try? boundary?.toData() {
-				data?.append(boundary)
+			if let boundary = boundary {
+				boundary.addTo(data: &data)
 			}
 			
 			request.httpBody = data
 			
 		case .bodyData(var data):
-			if let boundary = try? boundary?.toData() {
-				data.append(boundary)
+			if let boundary = boundary {
+				boundary.addTo(data: &data)
 			}
 			request.httpBody = data
 			
