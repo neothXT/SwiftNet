@@ -21,9 +21,9 @@ public struct Boundary: Codable {
 
 public extension Boundary {
 	func addTo(data: inout Data) {
-		guard let nameData = "--\(name)".data(using: .utf8),
-			  let contentDispData = "Content-Disposition: \(contentDisposition)".data(using: .utf8),
-			  let contentTypeData = "Content-Type: \(contentType)".data(using: .utf8) else {
+		guard let nameData = "--\(name)\n".data(using: .utf8),
+			  let contentDispData = "Content-Disposition: \(contentDisposition)\n".data(using: .utf8),
+			  let contentTypeData = "Content-Type: \(contentType)\n\n".data(using: .utf8) else {
 			return
 		}
 		
