@@ -15,6 +15,7 @@ public protocol Endpoint {
     var method: RequestMethod { get }
 	var requiresAccessToken: Bool { get }
     var headers: [String: Any]? { get }
+	var boundary: Boundary? { get }
     var data: EndpointData { get }
 	var jsonDecoder: JSONDecoder { get }
 	var accessTokenStrategy: AccessTokenStrategy { get }
@@ -27,6 +28,7 @@ public extension Endpoint {
 	var jsonDecoder: JSONDecoder { CNConfig.defaultJSONDecoder }
 	var accessTokenStrategy: AccessTokenStrategy { CNConfig.defaultAccessTokenStrategy }
 	var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { nil }
+	var boundary: Boundary? { nil }
 	
 	var identifier: String { "\(type(of: self))" }
 }

@@ -155,7 +155,7 @@ public class CNProvider<T: Endpoint> {
 		var request = URLRequest(url: url)
 		prepareHeadersAndMethod(endpoint: endpoint, request: &request)
 		if withBody {
-			prepareBody(endpointData: endpoint.data, request: &request)
+			prepareBody(endpointData: endpoint.data, boundary: endpoint.boundary, request: &request)
 		}
 		CNDebugInfo.getLogger(for: endpoint)?.log("\n" + request.cURL(pretty: true), mode: .start)
 		return request
@@ -173,7 +173,7 @@ public class CNProvider<T: Endpoint> {
 		request.httpMethod = endpoint.method.rawValue.uppercased()
 	}
 	
-	private func prepareBody(endpointData: EndpointData, request: inout URLRequest) {
+	private func prepareBody(endpointData: EndpointData, boundary: Boundary?, request: inout URLRequest) {
 		switch endpointData {
 		case .queryString(let params):
 			guard let url = request.url else { return }
@@ -185,19 +185,32 @@ public class CNProvider<T: Endpoint> {
 			request.url = urlComponents?.url
 			
 		case .bodyParams(let params):
+			
 			request.httpBody = try? JSONSerialization.data(withJSONObject: params, options: [])
 			
 		case .jsonModel(let model):
-			request.httpBody = try? model.toJsonData()
-			
-		case .urlEncoded(let params):
-			let data = params.reduce([]) { $0 + ["\($1.key)=\($1.value)"] }
-				.joined(separator: ",")
-				.data(using: .utf8)
+			var data = try? model.toJsonData()
+			if let boundary = try? boundary?.toData() {
+				data?.append(boundary)
+			}
 			
 			request.httpBody = data
 			
-		case .bodyData(let data):
+		case .urlEncoded(let params):
+			var data = params.reduce([]) { $0 + ["\($1.key)=\($1.value)"] }
+				.joined(separator: ",")
+				.data(using: .utf8)
+			
+			if let boundary = try? boundary?.toData() {
+				data?.append(boundary)
+			}
+			
+			request.httpBody = data
+			
+		case .bodyData(var data):
+			if let boundary = try? boundary?.toData() {
+				data.append(boundary)
+			}
 			request.httpBody = data
 			
 		case .plain:
