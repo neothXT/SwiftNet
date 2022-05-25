@@ -20,15 +20,21 @@ public struct Boundary: Codable {
 }
 
 public extension Boundary {
-	func addTo(data: inout Data) {
-		guard let nameData = "--\(name)\n".data(using: .utf8),
-			  let contentDispData = "Content-Disposition: \(contentDisposition)\n".data(using: .utf8),
-			  let contentTypeData = "Content-Type: \(contentType)\n\n".data(using: .utf8) else {
+	func prepareData(withFileData fileData: Data) -> Data {
+		var data = Data()
+		guard let nameData = "--\(name)\r\n".data(using: .utf8),
+			  let closingData = "\r\n--\(name)--\r\n".data(using: .utf8),
+			  let contentDispData = "Content-Disposition: \(contentDisposition)\r\n".data(using: .utf8),
+			  let contentTypeData = "Content-Type: \(contentType)\r\n\r\n".data(using: .utf8) else {
 			return
 		}
 		
 		data.append(nameData)
 		data.append(contentDispData)
 		data.append(contentTypeData)
+		data.append(fileData)
+		data.append(closingData)
+		
+		return data
 	}
 }

@@ -185,40 +185,36 @@ public class CNProvider<T: Endpoint> {
 			request.url = urlComponents?.url
 			
 		case .bodyParams(let params):
-			guard var data = try? JSONSerialization.data(withJSONObject: params, options: []) else { return }
-			if let boundary = boundary {
-				boundary.addTo(data: &data)
-			}
-			request.httpBody = data
+			guard let data = try? JSONSerialization.data(withJSONObject: params, options: []) else { return }
+			request.httpBody = prepareBodyData(data, boundary: boundary)
 			
 		case .jsonModel(let model):
-			guard var data = try? model.toJsonData() else { return }
-			if let boundary = boundary {
-				boundary.addTo(data: &data)
-			}
-			
-			request.httpBody = data
+			guard let data = try? model.toJsonData() else { return }
+			request.httpBody = prepareBodyData(data, boundary: boundary)
 			
 		case .urlEncoded(let params):
-			guard var data = (params.reduce([]) { $0 + ["\($1.key)=\($1.value)"] }.joined(separator: ",").data(using: .utf8)) else {
+			guard let data = (params.reduce([]) { $0 + ["\($1.key)=\($1.value)"] }.joined(separator: ",").data(using: .utf8)) else {
 					return
 				}
 			
-			if let boundary = boundary {
-				boundary.addTo(data: &data)
-			}
+			request.httpBody = prepareBodyData(data, boundary: boundary)
 			
-			request.httpBody = data
-			
-		case .bodyData(var data):
-			if let boundary = boundary {
-				boundary.addTo(data: &data)
-			}
-			request.httpBody = data
+		case .bodyData(let data):
+			request.httpBody = prepareBodyData(data, boundary: boundary)
 			
 		case .plain:
 			break
 		}
+	}
+	
+	private func prepareBodyData(_ data: Data, boundary: Boundary?) -> Data {
+		var finalData = Data()
+		if let boundary = boundary {
+			finalData = boundary.prepareData(withFileData: data)
+		} else {
+			finalData = data
+		}
+		return finalData
 	}
 	
 	private func prepPublisher(for endpoint: T, ignorePinning: Bool) -> AnyPublisher<URLSession.DataTaskPublisher.Output, Error> {
