@@ -207,6 +207,21 @@ public class CNProvider<T: Endpoint> {
 		}
 	}
 	
+	private func prepareUploadBody(endpointData: EndpointData, boundary: Boundary?) -> Data? {
+		switch endpointData {
+		case .bodyParams(let params):
+			guard let data = try? JSONSerialization.data(withJSONObject: params, options: []) else { return nil }
+			return prepareBodyData(data, boundary: boundary)
+		case .jsonModel(let model):
+			guard let data = try? model.toJsonData() else { return nil }
+			return prepareBodyData(data, boundary: boundary)
+		case .bodyData(let data):
+			return prepareBodyData(data, boundary: boundary)
+		default:
+			return nil
+		}
+	}
+	
 	private func prepareBodyData(_ data: Data, boundary: Boundary?) -> Data {
 		var finalData = Data()
 		if let boundary = boundary {
@@ -242,7 +257,7 @@ public class CNProvider<T: Endpoint> {
 												 decoder: JSONDecoder? = nil,
 												 ignorePinning: Bool) -> AnyPublisher<UploadResponse<U>, Error> {
 		guard let urlRequest = prepareRequest(for: endpoint, withBody: false),
-				case .bodyData(let data) = endpoint.data else {
+				let data = prepareUploadBody(endpointData: endpoint.data, boundary: endpoint.boundary) else {
 			return Fail(error: CNError.failedToBuildRequest).eraseToAnyPublisher()
 		}
 		
