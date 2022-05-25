@@ -26,7 +26,7 @@ public extension Boundary {
 			  let closingData = "\r\n--\(name)--\r\n".data(using: .utf8),
 			  let contentDispData = "Content-Disposition: \(contentDisposition)\r\n".data(using: .utf8),
 			  let contentTypeData = "Content-Type: \(contentType)\r\n\r\n".data(using: .utf8) else {
-			return
+			return data
 		}
 		
 		data.append(nameData)
