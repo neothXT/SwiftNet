@@ -11,6 +11,12 @@ public struct Boundary: Codable {
 	public let name: String
 	public let contentDisposition: String
 	public let contentType: String
+	
+	public init(name: String, contentDisposition: String, contentType: String) {
+		self.name = name
+		self.contentType = contentType
+		self.contentDisposition = contentDisposition
+	}
 }
 
 public extension Boundary {
