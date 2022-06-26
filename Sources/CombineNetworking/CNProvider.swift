@@ -27,7 +27,6 @@ public class CNProvider<T: Endpoint> {
 			.flatMap { [weak self] output -> AnyPublisher<Data, Error> in
 				guard let response = output.response as? HTTPURLResponse else {
 					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.failedToMapResponse(nil).localizedDescription, mode: .stop)
-					CNDebugInfo.deleteLoger(for: endpoint)
 					return Fail(error: CNError.failedToMapResponse(nil)).eraseToAnyPublisher()
 				}
 				
@@ -55,7 +54,6 @@ public class CNProvider<T: Endpoint> {
 														  headers: response.allHeaderFields,
 														  data: output.data)
 					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.authenticationFailed(error).localizedDescription, mode: .stop)
-					CNDebugInfo.deleteLoger(for: endpoint)
 					return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
 				}
 				
@@ -67,7 +65,6 @@ public class CNProvider<T: Endpoint> {
 														  headers: response.allHeaderFields,
 														  data: output.data)
 					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.unexpectedResponse(error).localizedDescription, mode: .stop)
-					CNDebugInfo.deleteLoger(for: endpoint)
 					return Fail(error: CNError.unexpectedResponse(error)).eraseToAnyPublisher()
 				}
 				
@@ -82,7 +79,6 @@ public class CNProvider<T: Endpoint> {
 					let response = try (decoder ?? endpoint.jsonDecoder).decode(U.self, from: data)
 					
 					CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
-					CNDebugInfo.deleteLoger(for: endpoint)
 					return Result.success(response).publisher.eraseToAnyPublisher()
 				} catch {
 					let errorResponse = CNMapErrorResponse(error: error,
@@ -129,7 +125,6 @@ public class CNProvider<T: Endpoint> {
 														  headers: nil,
 														  data: nil)
 					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.authenticationFailed(error).localizedDescription, mode: .stop)
-					CNDebugInfo.deleteLoger(for: endpoint)
 					return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
 				} else if case .error(let errorCode, let errorData) = response {
 					let error = CNUnexpectedErrorResponse(statusCode: errorCode,
@@ -244,7 +239,6 @@ public class CNProvider<T: Endpoint> {
 													  headers: nil,
 													  data: nil)
 				CNDebugInfo.getLogger(for: endpoint)?.log(CNError.unexpectedResponse(error).localizedDescription, mode: .stop)
-				CNDebugInfo.deleteLoger(for: endpoint)
 				return CNError.unexpectedResponse(error)
 			}
 			.eraseToAnyPublisher()

@@ -31,11 +31,6 @@ public class CNDebugInfo {
 		
 		return loggers[endpoint.identifier]
 	}
-	
-	public static func deleteLoger(for endpoint: Endpoint) {
-		guard Array(loggers.keys).contains(endpoint.identifier) else { return }
-		loggers.removeValue(forKey: endpoint.identifier)
-	}
 }
 
 public class CNLogger {
