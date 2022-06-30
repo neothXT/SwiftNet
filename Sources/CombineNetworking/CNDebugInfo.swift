@@ -17,9 +17,9 @@ public class CNDebugInfo {
 	private init() {}
 	
 	@discardableResult
-	public static func createLogger(for endpoint: Endpoint) -> CNLogger {
+	public static func createLogger(for endpoint: Endpoint) -> CNLogger? {
 		loggers[endpoint.identifier] = CNLogger(for: endpoint)
-		return loggers[endpoint.identifier]!
+		return loggers[endpoint.identifier]
 	}
 	
 	public static func getLogger(for endpoint: Endpoint) -> CNLogger? {
