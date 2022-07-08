@@ -10,9 +10,10 @@ import Combine
 
 public class CNWebSocket: NSObject {
 	private let webSocket: URLSessionWebSocketTask
-	private var isConnected: Bool = false
-	private var isConnecting: Bool = false
-	private var failedToConnect: Bool = false
+	
+	private(set) public var failedToConnect: Bool = false
+	private(set) public var isConnecting: Bool = false
+	private(set) public var isConnected: Bool = false
 	
 	public var onConnectionEstablished: (() -> Void)?
 	public var onConnectionClosed: (() -> Void)?
@@ -45,20 +46,21 @@ public class CNWebSocket: NSObject {
 	public func connect() {
 		webSocket.resume()
 		isConnecting = true
-		ping(onSuccess: { [weak self] in
-			self?.isConnecting = false
-			if #unavailable(iOS 15.0, macOS 12.0) {
+		
+		if #unavailable(iOS 15.0, macOS 12.0) {
+			ping(onSuccess: { [weak self] in
+				self?.isConnecting = false
 				self?.isConnected = true
-			}
-		}) { [weak self] _ in
-			self?.isConnecting = false
-			if #unavailable(iOS 15.0, macOS 12.0) {
+			}) { [weak self] _ in
+				self?.isConnecting = false
 				self?.isConnected = false
 			}
 		}
 	}
 	
 	public func disconnect() {
+		isConnecting = false
+		isConnected = false
 		webSocket.cancel(with: .goingAway, reason: nil)
 	}
 	
@@ -123,12 +125,14 @@ public class CNWebSocket: NSObject {
 
 extension CNWebSocket: URLSessionWebSocketDelegate {
 	public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
+		isConnecting = false
 		isConnected = true
 		onConnectionEstablished?()
 	}
 
 	
 	public func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
+		isConnecting = false
 		isConnected = false
 		onConnectionClosed?()
 	}

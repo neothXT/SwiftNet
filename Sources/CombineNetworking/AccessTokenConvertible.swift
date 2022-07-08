@@ -8,5 +8,6 @@
 import Foundation
 
 public protocol AccessTokenConvertible: Codable {
+	/// Converts object to CNAccessToken
 	func convert() -> CNAccessToken?
 }
