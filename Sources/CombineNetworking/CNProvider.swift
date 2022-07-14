@@ -9,6 +9,12 @@ import Foundation
 import Combine
 import KeychainAccess
 
+fileprivate func runOnMain(_ completion: @escaping () -> Void) {
+	DispatchQueue.main.async {
+		completion()
+	}
+}
+
 @available(macOS 10.15, *)
 public class CNProvider<T: Endpoint> {
 	private var didRetry = false
@@ -22,11 +28,15 @@ public class CNProvider<T: Endpoint> {
 										expectedStatusCodes: [Int] = [200, 201, 204],
 										ignorePinning: Bool = false,
 										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error> {
-		CNDebugInfo.createLogger(for: endpoint)
+		runOnMain {
+			CNDebugInfo.createLogger(for: endpoint)
+		}
 		return prepPublisher(for: endpoint, ignorePinning: ignorePinning)
 			.flatMap { [weak self] output -> AnyPublisher<Data, Error> in
 				guard let response = output.response as? HTTPURLResponse else {
-					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.failedToMapResponse(nil).localizedDescription, mode: .stop)
+					runOnMain {
+						CNDebugInfo.getLogger(for: endpoint)?.log(CNError.failedToMapResponse(nil).localizedDescription, mode: .stop)
+					}
 					return Fail(error: CNError.failedToMapResponse(nil)).eraseToAnyPublisher()
 				}
 				
@@ -53,7 +63,9 @@ public class CNProvider<T: Endpoint> {
 														  mimeType: response.mimeType,
 														  headers: response.allHeaderFields,
 														  data: output.data)
-					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.authenticationFailed(error).localizedDescription, mode: .stop)
+					runOnMain {
+						CNDebugInfo.getLogger(for: endpoint)?.log(CNError.authenticationFailed(error).localizedDescription, mode: .stop)
+					}
 					return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
 				}
 				
@@ -64,7 +76,9 @@ public class CNProvider<T: Endpoint> {
 														  mimeType: response.mimeType,
 														  headers: response.allHeaderFields,
 														  data: output.data)
-					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.unexpectedResponse(error).localizedDescription, mode: .stop)
+					runOnMain {
+						CNDebugInfo.getLogger(for: endpoint)?.log(CNError.unexpectedResponse(error).localizedDescription, mode: .stop)
+					}
 					return Fail(error: CNError.unexpectedResponse(error)).eraseToAnyPublisher()
 				}
 				
@@ -77,8 +91,9 @@ public class CNProvider<T: Endpoint> {
 			.flatMap { data -> AnyPublisher<U, Error> in
 				do {
 					let response = try (decoder ?? endpoint.jsonDecoder).decode(U.self, from: data)
-					
-					CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
+					runOnMain {
+						CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
+					}
 					return Result.success(response).publisher.eraseToAnyPublisher()
 				} catch {
 					let errorResponse = CNMapErrorResponse(error: error,
@@ -97,7 +112,9 @@ public class CNProvider<T: Endpoint> {
 											decoder: JSONDecoder? = nil,
 											ignorePinning: Bool = false,
 											receiveOn queue: DispatchQueue = .main) -> AnyPublisher<UploadResponse<U>, Error> {
-		CNDebugInfo.createLogger(for: endpoint)
+		runOnMain {
+			CNDebugInfo.createLogger(for: endpoint)
+		}
 		return prepUploadPublisher(for: endpoint, responseType: responseType,
 								   decoder: decoder, ignorePinning: ignorePinning)
 		.flatMap { [weak self] response -> AnyPublisher<UploadResponse, Error> in
@@ -124,7 +141,9 @@ public class CNProvider<T: Endpoint> {
 														  mimeType: nil,
 														  headers: nil,
 														  data: nil)
-					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.authenticationFailed(error).localizedDescription, mode: .stop)
+					runOnMain {
+						CNDebugInfo.getLogger(for: endpoint)?.log(CNError.authenticationFailed(error).localizedDescription, mode: .stop)
+					}
 					return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
 				} else if case .error(let errorCode, let errorData) = response {
 					let error = CNUnexpectedErrorResponse(statusCode: errorCode,
@@ -150,7 +169,9 @@ public class CNProvider<T: Endpoint> {
 		if withBody {
 			prepareBody(endpointData: endpoint.data, boundary: endpoint.boundary, request: &request)
 		}
-		CNDebugInfo.getLogger(for: endpoint)?.log("\n" + request.cURL(pretty: true), mode: .start)
+		runOnMain {
+			CNDebugInfo.getLogger(for: endpoint)?.log("\n" + request.cURL(pretty: true), mode: .start)
+		}
 		return request
 	}
 	
@@ -238,7 +259,9 @@ public class CNProvider<T: Endpoint> {
 													  mimeType: nil,
 													  headers: nil,
 													  data: nil)
-				CNDebugInfo.getLogger(for: endpoint)?.log(CNError.unexpectedResponse(error).localizedDescription, mode: .stop)
+				runOnMain {
+					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.unexpectedResponse(error).localizedDescription, mode: .stop)
+				}
 				return CNError.unexpectedResponse(error)
 			}
 			.eraseToAnyPublisher()
