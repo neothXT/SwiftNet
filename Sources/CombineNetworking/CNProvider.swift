@@ -17,7 +17,7 @@ fileprivate func runOnMain(_ completion: @escaping () -> Void) {
 
 @available(macOS 10.15, *)
 public class CNProvider<T: Endpoint> {
-	private var didRetry = false
+	private var didRetry: [String] = []
 	
 	public init() {}
 	
@@ -40,14 +40,14 @@ public class CNProvider<T: Endpoint> {
 					return Fail(error: CNError.failedToMapResponse(nil)).eraseToAnyPublisher()
 				}
 				
-				if response.statusCode == 401 && !(self?.didRetry ?? true), let publisher = endpoint.callbackPublisher {
+				if response.statusCode == 401 && !(self?.didRetry.contains(endpoint.identifier) ?? false), let publisher = endpoint.callbackPublisher {
 					let error = CNUnexpectedErrorResponse(statusCode: response.statusCode,
 														  localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
 														  url: response.url,
 														  mimeType: response.mimeType,
 														  headers: response.allHeaderFields,
 														  data: output.data)
-					self?.didRetry = true
+					self?.didRetry.append(endpoint.identifier)
 					return publisher.flatMap { [weak self] response -> AnyPublisher<Data, Error> in
 						guard let token = (response as? CNAccessToken) ?? response.convert() else {
 							return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
@@ -56,7 +56,7 @@ public class CNProvider<T: Endpoint> {
 						return self?.prepPublisher(for: endpoint, ignorePinning: ignorePinning).map(\.data).eraseToAnyPublisher() ?? Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
 					}.eraseToAnyPublisher()
 				} else if response.statusCode == 401 {
-					self?.didRetry = false
+					self?.didRetry.removeAll { $0 == endpoint.identifier }
 					let error = CNUnexpectedErrorResponse(statusCode: response.statusCode,
 														  localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
 														  url: response.url,
@@ -69,6 +69,7 @@ public class CNProvider<T: Endpoint> {
 					return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
 				}
 				
+				self?.didRetry.removeAll { $0 == endpoint.identifier }
 				guard expectedStatusCodes.contains(response.statusCode) else {
 					let error = CNUnexpectedErrorResponse(statusCode: response.statusCode,
 														  localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
@@ -118,48 +119,49 @@ public class CNProvider<T: Endpoint> {
 		return prepUploadPublisher(for: endpoint, responseType: responseType,
 								   decoder: decoder, ignorePinning: ignorePinning)
 		.flatMap { [weak self] response -> AnyPublisher<UploadResponse, Error> in
-				if response == .authError && !(self?.didRetry ?? true), let publisher = endpoint.callbackPublisher {
-					let error = CNUnexpectedErrorResponse(statusCode: 401,
-														  localizedString: HTTPURLResponse.localizedString(forStatusCode: 401),
-														  url: nil,
-														  mimeType: nil,
-														  headers: nil,
-														  data: nil)
-					self?.didRetry = true
-					return publisher.flatMap { [weak self] response -> AnyPublisher<UploadResponse, Error> in
-						guard let token = (response as? CNAccessToken) ?? response.convert() else {
-							return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
-						}
-						CNConfig.setAccessToken(token, for: endpoint)
-						return self?.prepUploadPublisher(for: endpoint, responseType: responseType, decoder: decoder, ignorePinning: ignorePinning) ?? Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
-					}.eraseToAnyPublisher()
-				} else if response == .authError {
-					self?.didRetry = false
-					let error = CNUnexpectedErrorResponse(statusCode: 401,
-														  localizedString: HTTPURLResponse.localizedString(forStatusCode: 401),
-														  url: nil,
-														  mimeType: nil,
-														  headers: nil,
-														  data: nil)
-					runOnMain {
-						CNDebugInfo.getLogger(for: endpoint)?.log(CNError.authenticationFailed(error).localizedDescription, mode: .stop)
+			if response == .authError && !(self?.didRetry.contains(endpoint.identifier) ?? false), let publisher = endpoint.callbackPublisher {
+				let error = CNUnexpectedErrorResponse(statusCode: 401,
+													  localizedString: HTTPURLResponse.localizedString(forStatusCode: 401),
+													  url: nil,
+													  mimeType: nil,
+													  headers: nil,
+													  data: nil)
+				self?.didRetry.append(endpoint.identifier)
+				return publisher.flatMap { [weak self] response -> AnyPublisher<UploadResponse, Error> in
+					guard let token = (response as? CNAccessToken) ?? response.convert() else {
+						return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
 					}
-					return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
-				} else if case .error(let errorCode, let errorData) = response {
-					let error = CNUnexpectedErrorResponse(statusCode: errorCode,
-														  localizedString: HTTPURLResponse.localizedString(forStatusCode: errorCode),
-														  url: nil,
-														  mimeType: nil,
-														  headers: nil,
-														  data: errorData)
-					return Fail(error: CNError.unexpectedResponse(error)).eraseToAnyPublisher()
+					CNConfig.setAccessToken(token, for: endpoint)
+					return self?.prepUploadPublisher(for: endpoint, responseType: responseType, decoder: decoder, ignorePinning: ignorePinning) ?? Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
+				}.eraseToAnyPublisher()
+			} else if response == .authError {
+				self?.didRetry.removeAll { $0 == endpoint.identifier }
+				let error = CNUnexpectedErrorResponse(statusCode: 401,
+													  localizedString: HTTPURLResponse.localizedString(forStatusCode: 401),
+													  url: nil,
+													  mimeType: nil,
+													  headers: nil,
+													  data: nil)
+				runOnMain {
+					CNDebugInfo.getLogger(for: endpoint)?.log(CNError.authenticationFailed(error).localizedDescription, mode: .stop)
 				}
-				
-				return Result.success(response).publisher.eraseToAnyPublisher()
+				return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
+			} else if case .error(let errorCode, let errorData) = response {
+				let error = CNUnexpectedErrorResponse(statusCode: errorCode,
+													  localizedString: HTTPURLResponse.localizedString(forStatusCode: errorCode),
+													  url: nil,
+													  mimeType: nil,
+													  headers: nil,
+													  data: errorData)
+				return Fail(error: CNError.unexpectedResponse(error)).eraseToAnyPublisher()
 			}
-			.retry(retries)
-			.receive(on: queue)
-			.eraseToAnyPublisher()
+			
+			self?.didRetry.removeAll { $0 == endpoint.identifier }
+			return Result.success(response).publisher.eraseToAnyPublisher()
+		}
+		.retry(retries)
+		.receive(on: queue)
+		.eraseToAnyPublisher()
 	}
 
 	private func prepareRequest(for endpoint: Endpoint, withBody: Bool = true) -> URLRequest? {
