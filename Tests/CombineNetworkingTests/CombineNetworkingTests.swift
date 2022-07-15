@@ -108,7 +108,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Establish WebSocket connection and send a message")
 		let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
 		webSocket.connect()
-		webSocket.send(URLSessionWebSocketTask.Message.string("Test message")) {
+		webSocket.send(.string("Test message")) {
 			if let _ = $0 {
 				return
 			}
@@ -135,7 +135,7 @@ final class CombineNetworkingTests: XCTestCase {
 		}
 		
 		webSocket.connect()
-		webSocket.send(URLSessionWebSocketTask.Message.string("Test message"), completion: { _ in webSocket.disconnect() })
+		webSocket.send(.string("Test message"), completion: { _ in webSocket.disconnect() })
 		
 		wait(for: [expectation], timeout: 30)
 	}

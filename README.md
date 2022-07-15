@@ -55,10 +55,12 @@ extension TodosEndpoint: Endpoint {
 }
 ```
 
-`RequestMethod` is an enum with following options: `.get`, `.post`, `.put`, `.delete`.
+`RequestMethod` is an enum with following options: `.get`, `.post`, `.put`, `.delete`, `patch`.
 `EndpointData` is also an enum with following options: 
 - `.plain`
 - `.queryParams([String: Any])`
+- `.queryString([String: Any])`
+- `.bodyData([String: Any])`
 - `.bodyParams([String: Any])` - takes `Dictionary` and parses it into `Data` to send in request's body
 - `.urlEncoded([String: Any])` - takes `Dictionary` and parses it into `String` and then `Data` to send in request's body (to use with `Content-Type: application/x-www-form-urlencoded`)
 - `.jsonModel(Encodable)` - similar to `.dataParams` except this one takes `Encodable` and parses it into `Data` to send in request's body
@@ -118,6 +120,10 @@ Available options are:
 
 Thanks to access token strategy being set both globally (via `CNConfig`) and individually (inside `Endpoint`), you can mix different strategies in your app!
 
+### Event logging
+
+CombineNetworking's CNProvider uses iOS built-in Logger (if running on iOS 14 or newer) and custom debug-mode-only logger by default for each and every request.
+
 ### Safe storage using Keychain
 
 CombineNetworking allows you to store your access tokens in keychain. This feature is turned on by default. Using keychain to store your access keys requires you to provide keychain instance by setting value of `CNConfig.keychainInstance`.
@@ -143,7 +149,7 @@ webSocket.listen { result in
 		return
 	}
 }
-webSocket.send(URLSessionWebSocketTask.Message.string("Test message")) {
+webSocket.send(.string("Test message")) {
 	if let error = $0 {
 		log(error.localizedDescription)
 	}

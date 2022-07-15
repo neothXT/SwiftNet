@@ -6,10 +6,22 @@
 //
 
 import Foundation
+import os.log
 
 public enum CNDebugInfoLogMode {
 	case start, stop, message
 }
+
+fileprivate func logMessage(_ message: String) {
+	if #available(iOS 14.0, macOS 11.0, *) {
+		   let logger = Logger(subsystem: "com.neothxt.combineNetworking", category: "Network")
+		   logger.info("\(message)")
+	   } else {
+		   #if DEBUG
+		   print(message)
+		   #endif
+	   }
+   }
 
 public class CNDebugInfo {
 	private static var loggers: [String: CNLogger] = [:]
@@ -23,11 +35,9 @@ public class CNDebugInfo {
 	}
 	
 	public static func getLogger(for endpoint: Endpoint) -> CNLogger? {
-		#if DEBUG
 		if !Array(loggers.keys).contains(endpoint.identifier) {
-			print("Logger for \(endpoint.identifier) was not found!")
+			logMessage("Logger for \(endpoint.identifier) was not found!")
 		}
-		#endif
 		
 		return loggers[endpoint.identifier]
 	}
@@ -44,7 +54,6 @@ public class CNLogger {
 	public func log(_ message: String? = nil,
 			 mode: CNDebugInfoLogMode = .start,
 			 file: String = #file) {
-		#if DEBUG
 		var modeString = "@"
 		var timeString = ""
 		switch mode {
@@ -77,8 +86,7 @@ public class CNLogger {
 			output += "\(timeString)\n"
 		}
 		
-		print(output)
-		#endif
+		logMessage(output)
 	}
 }
 
