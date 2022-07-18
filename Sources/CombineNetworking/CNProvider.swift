@@ -99,6 +99,10 @@ public class CNProvider<T: Endpoint> {
 				} catch {
 					let errorResponse = CNMapErrorResponse(error: error,
 														   data: data)
+					runOnMain {
+						CNDebugInfo.getLogger(for: endpoint)?
+							.log(CNError.failedToMapResponse(errorResponse).localizedDescription, mode: .stop)
+					}
 					return Fail(error: CNError.failedToMapResponse(errorResponse)).eraseToAnyPublisher()
 				}
 			}
