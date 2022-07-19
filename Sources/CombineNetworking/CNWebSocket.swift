@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 public class CNWebSocket: NSObject {
-	private let webSocket: URLSessionWebSocketTask
+	private var webSocket: URLSessionWebSocketTask
 	
 	private(set) public var failedToConnect: Bool = false
 	private(set) public var isConnecting: Bool = false
@@ -17,6 +17,8 @@ public class CNWebSocket: NSObject {
 	
 	public var onConnectionEstablished: (() -> Void)?
 	public var onConnectionClosed: (() -> Void)?
+	
+	private var connectionParameters: WebSocketConnectionParameters?
 	
 	public init(socket: URLSessionWebSocketTask, ignorePinning: Bool = false) {
 		webSocket = socket
@@ -35,12 +37,26 @@ public class CNWebSocket: NSObject {
 		let session = CNConfig.getSession(ignorePinning: ignorePinning)
 		let webSocket = protocols.count > 0 ? session.webSocketTask(with: url, protocols: protocols) : session.webSocketTask(with: url)
 		self.init(socket: webSocket, ignorePinning: ignorePinning)
+		self.connectionParameters = WebSocketConnectionParameters(url: url, protocols: protocols,
+																  ignorePinning: ignorePinning)
 	}
 	
 	public convenience init(request: URLRequest, ignorePinning: Bool = false) {
 		let session = CNConfig.getSession(ignorePinning: ignorePinning)
 		let webSocket = session.webSocketTask(with: request)
 		self.init(socket: webSocket, ignorePinning: ignorePinning)
+		self.connectionParameters = WebSocketConnectionParameters(request: request, ignorePinning: ignorePinning)
+	}
+	
+	public convenience init?(connectionParameters: WebSocketConnectionParameters) {
+		if let request = connectionParameters.request {
+			self.init(request: request, ignorePinning: connectionParameters.ignorePinning)
+		} else if let url = connectionParameters.url {
+			self.init(url: url, protocols: connectionParameters.protocols,
+					  ignorePinning: connectionParameters.ignorePinning)
+		} else {
+			return nil
+		}
 	}
 	
 	/// Establishes connection with WebSocket server
@@ -60,15 +76,51 @@ public class CNWebSocket: NSObject {
 		}
 	}
 	
-	/// Updates WebSocket connection statis reconnects if requested
-	public func updateConnectionStatus(reconnectOnFailure: Bool = false) {
+	/// Reestablishes WebSocket connection. If the instance was initially created directly with a socket object, it is required to provide new socket object.
+	@discardableResult
+	public func reconnect(withSocket socket: URLSessionWebSocketTask? = nil) -> Bool {
+		guard let params = connectionParameters else { return false }
+		
+		var socket: URLSessionWebSocketTask?
+		let session = CNConfig.getSession(ignorePinning: params.ignorePinning)
+		
+		if let url = params.url {
+			socket = params.protocols.count > 0 ? session.webSocketTask(with: url, protocols: params.protocols) : session.webSocketTask(with: url)
+		} else if let request = params.request {
+			socket = session.webSocketTask(with: request)
+		}
+		
+		guard let finalSocket = socket else { return false }
+		
+		webSocket = finalSocket
+		
+		if #available(iOS 15.0, macOS 12.0, *) {
+			webSocket.delegate = self
+		} else {
+			#if DEBUG
+			print("Cannot assign delegate. Feature available only in iOS 15.0 or newer")
+			#endif
+		}
+		
+		connect()
+		return true
+	}
+	
+	/// Reestablishes WebSocket connection and starts to listen immediately
+	@discardableResult
+	public func reconnectAndListen(withSocket socket: URLSessionWebSocketTask? = nil,
+								   onReceive: @escaping (Result<URLSessionWebSocketTask.Message, Error>) -> Void) -> Bool {
+		guard reconnect(withSocket: socket) else { return false }
+		listen(onReceive: onReceive)
+		return true
+	}
+	
+	/// Updates WebSocket connection status reconnects if requested
+	public func updateConnectionStatus(onFail: @escaping () -> Void) {
 		ping { [weak self] in
 			self?.isConnected = true
-		} onError: { [weak self] _ in
-			self?.disconnect()
-			if reconnectOnFailure {
-				self?.connect()
-			}
+		} onError: { _ in
+			onFail()
 		}
 	}
 	
