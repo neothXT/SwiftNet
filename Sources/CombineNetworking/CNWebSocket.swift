@@ -81,16 +81,16 @@ public class CNWebSocket: NSObject {
 	public func reconnect(withSocket socket: URLSessionWebSocketTask? = nil) -> Bool {
 		guard let params = connectionParameters else { return false }
 		
-		var socket: URLSessionWebSocketTask?
+		var nullableSocket = socket
 		let session = CNConfig.getSession(ignorePinning: params.ignorePinning)
 		
 		if let url = params.url {
-			socket = params.protocols.count > 0 ? session.webSocketTask(with: url, protocols: params.protocols) : session.webSocketTask(with: url)
+			nullableSocket = params.protocols.count > 0 ? session.webSocketTask(with: url, protocols: params.protocols) : session.webSocketTask(with: url)
 		} else if let request = params.request {
-			socket = session.webSocketTask(with: request)
+			nullableSocket = session.webSocketTask(with: request)
 		}
 		
-		guard let finalSocket = socket else { return false }
+		guard let finalSocket = nullableSocket else { return false }
 		
 		webSocket = finalSocket
 		
