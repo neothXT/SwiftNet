@@ -49,10 +49,11 @@ public class CNWebSocket: NSObject {
 		isConnecting = true
 		
 		if #unavailable(iOS 15.0, macOS 12.0) {
-			ping(onSuccess: { [weak self] in
+			ping { [weak self] in
 				self?.isConnecting = false
 				self?.isConnected = true
-			}) { [weak self] _ in
+				self?.onConnectionEstablished?()
+			} onError: { [weak self] _ in
 				self?.isConnecting = false
 				self?.isConnected = false
 			}
@@ -61,15 +62,13 @@ public class CNWebSocket: NSObject {
 	
 	/// Updates WebSocket connection statis reconnects if requested
 	public func updateConnectionStatus(reconnectOnFailure: Bool = false) {
-		webSocket.sendPing { [weak self] in
-			if let _ = $0 {
-				self?.disconnect()
-				if reconnectOnFailure {
-					self?.connect()
-				}
-			}
-			
+		ping { [weak self] in
 			self?.isConnected = true
+		} onError: { [weak self] _ in
+			self?.disconnect()
+			if reconnectOnFailure {
+				self?.connect()
+			}
 		}
 	}
 	
@@ -78,8 +77,10 @@ public class CNWebSocket: NSObject {
 		isConnecting = false
 		isConnected = false
 		webSocket.cancel(with: .goingAway, reason: nil)
+		onConnectionClosed?()
 	}
 	
+	/// Sends message to WebSocket server
 	public func send(_ message: URLSessionWebSocketTask.Message, completion: @escaping (Error?) -> Void) {
 		if !isConnected {
 			if isConnecting {

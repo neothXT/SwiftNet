@@ -326,6 +326,7 @@ public class CNProvider<T: Endpoint> {
 extension CNConfig {
 	fileprivate static var accessTokens: [String: CNAccessToken] = [:]
 	
+	/// Saves new Access Token
 	public static func setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
 		guard let token = token else { return }
 		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.identifier
@@ -344,6 +345,7 @@ extension CNConfig {
 		keychain[data: "accessToken_\(key)"] = try? token.toJsonData()
 	}
 	
+	/// Returns Access Token stored for a given endpoint if present
 	public static func accessToken(for endpoint: Endpoint) -> CNAccessToken? {
 		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.identifier
 		
@@ -362,6 +364,7 @@ extension CNConfig {
 		return try? JSONDecoder().decode(CNAccessToken.self, from: data)
 	}
 	
+	/// Removes stored Access Token for a given endpoint if present
 	@discardableResult
 	public static func removeAccessToken(for endpoint: Endpoint? = nil) -> Bool {
 		guard let key = endpoint?.accessTokenStrategy.storingLabel ?? endpoint?.identifier ?? AccessTokenStrategy.global.storingLabel else {
