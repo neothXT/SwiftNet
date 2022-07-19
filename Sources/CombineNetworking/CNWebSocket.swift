@@ -43,6 +43,7 @@ public class CNWebSocket: NSObject {
 		self.init(socket: webSocket, ignorePinning: ignorePinning)
 	}
 	
+	/// Establishes connection with WebSocket server
 	public func connect() {
 		webSocket.resume()
 		isConnecting = true
@@ -58,6 +59,21 @@ public class CNWebSocket: NSObject {
 		}
 	}
 	
+	/// Updates WebSocket connection statis reconnects if requested
+	public func updateConnectionStatus(reconnectOnFailure: Bool = false) {
+		webSocket.sendPing { [weak self] in
+			if let _ = $0 {
+				self?.disconnect()
+				if reconnectOnFailure {
+					self?.connect()
+				}
+			}
+			
+			self?.isConnected = true
+		}
+	}
+	
+	/// Closes connection with WebSocket server
 	public func disconnect() {
 		isConnecting = false
 		isConnected = false
