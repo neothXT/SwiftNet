@@ -18,8 +18,13 @@ fileprivate func runOnMain(_ completion: @escaping () -> Void) {
 @available(macOS 10.15, *)
 public class CNProvider<T: Endpoint> {
 	private var didRetry: [String] = []
+	private let endpointURLMapper: EndpointURLMapper
 	
-	public init() {}
+	public typealias EndpointURLMapper = (Endpoint) -> URL?
+	
+	public init(endpointURLMapper: @escaping EndpointURLMapper = defaultURLMapper) {
+		self.endpointURLMapper = endpointURLMapper
+	}
 	
 	public func publisher<U: Decodable>(for endpoint: T,
 										responseType: U.Type,
@@ -169,7 +174,7 @@ public class CNProvider<T: Endpoint> {
 	}
 
 	private func prepareRequest(for endpoint: Endpoint, withBody: Bool = true) -> URLRequest? {
-		guard let url = endpoint.baseURL?.appendingPathComponent(endpoint.path) else { return nil }
+		guard let url = endpointURLMapper(endpoint) else { return nil }
 		var request = URLRequest(url: url)
 		prepareHeadersAndMethod(endpoint: endpoint, request: &request)
 		if withBody {
