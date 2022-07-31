@@ -30,16 +30,16 @@ public class CNDebugInfo {
 	
 	@discardableResult
 	public static func createLogger(for endpoint: Endpoint) -> CNLogger? {
-		loggers[endpoint.identifier] = CNLogger(for: endpoint)
-		return loggers[endpoint.identifier]
+		loggers[endpoint.typeIdentifier] = CNLogger(for: endpoint)
+		return loggers[endpoint.typeIdentifier]
 	}
 	
 	public static func getLogger(for endpoint: Endpoint) -> CNLogger? {
-		if !Array(loggers.keys).contains(endpoint.identifier) {
-			logMessage("Logger for \(endpoint.identifier) was not found!")
+		if !Array(loggers.keys).contains(endpoint.typeIdentifier) {
+			logMessage("Logger for \(endpoint.typeIdentifier) was not found!")
 		}
 		
-		return loggers[endpoint.identifier]
+		return loggers[endpoint.typeIdentifier]
 	}
 }
 
@@ -73,7 +73,7 @@ public class CNLogger {
 		if let subString = file.split(separator: "/").last {
 			fileString = String(subString)
 		}
-		var output = "\n[\(fileString)][\(endpoint.identifier)][\(endpoint.method.rawValue.uppercased())]\n\(modeString): \(endpoint.fullURL())\n"
+		var output = "\n[\(fileString)][\(endpoint.typeIdentifier)][\(endpoint.method.rawValue.uppercased())]\n\(modeString): \(endpoint.fullURL())\n"
 		
 		if let message = message {
 			output += "\(message)"

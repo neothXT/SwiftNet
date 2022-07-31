@@ -45,14 +45,14 @@ public class CNProvider<T: Endpoint> {
 					return Fail(error: CNError.failedToMapResponse(nil)).eraseToAnyPublisher()
 				}
 				
-				if response.statusCode == 401 && !(self?.didRetry.contains(endpoint.identifier) ?? false), let publisher = endpoint.callbackPublisher {
+				if response.statusCode == 401 && !(self?.didRetry.contains(endpoint.caseIdentifier) ?? false), let publisher = endpoint.callbackPublisher {
 					let error = CNUnexpectedErrorResponse(statusCode: response.statusCode,
 														  localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
 														  url: response.url,
 														  mimeType: response.mimeType,
 														  headers: response.allHeaderFields,
 														  data: output.data)
-					self?.didRetry.append(endpoint.identifier)
+					self?.didRetry.append(endpoint.caseIdentifier)
 					return publisher.flatMap { [weak self] response -> AnyPublisher<Data, Error> in
 						guard let token = (response as? CNAccessToken) ?? response.convert() else {
 							return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
@@ -61,7 +61,7 @@ public class CNProvider<T: Endpoint> {
 						return self?.prepPublisher(for: endpoint, ignorePinning: ignorePinning).map(\.data).eraseToAnyPublisher() ?? Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
 					}.eraseToAnyPublisher()
 				} else if response.statusCode == 401 {
-					self?.didRetry.removeAll { $0 == endpoint.identifier }
+					self?.didRetry.removeAll { $0 == endpoint.caseIdentifier }
 					let error = CNUnexpectedErrorResponse(statusCode: response.statusCode,
 														  localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
 														  url: response.url,
@@ -74,7 +74,7 @@ public class CNProvider<T: Endpoint> {
 					return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
 				}
 				
-				self?.didRetry.removeAll { $0 == endpoint.identifier }
+				self?.didRetry.removeAll { $0 == endpoint.caseIdentifier }
 				guard expectedStatusCodes.contains(response.statusCode) else {
 					let error = CNUnexpectedErrorResponse(statusCode: response.statusCode,
 														  localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
@@ -128,14 +128,14 @@ public class CNProvider<T: Endpoint> {
 		return prepUploadPublisher(for: endpoint, responseType: responseType,
 								   decoder: decoder, ignorePinning: ignorePinning)
 		.flatMap { [weak self] response -> AnyPublisher<UploadResponse, Error> in
-			if response == .authError && !(self?.didRetry.contains(endpoint.identifier) ?? false), let publisher = endpoint.callbackPublisher {
+			if response == .authError && !(self?.didRetry.contains(endpoint.caseIdentifier) ?? false), let publisher = endpoint.callbackPublisher {
 				let error = CNUnexpectedErrorResponse(statusCode: 401,
 													  localizedString: HTTPURLResponse.localizedString(forStatusCode: 401),
 													  url: nil,
 													  mimeType: nil,
 													  headers: nil,
 													  data: nil)
-				self?.didRetry.append(endpoint.identifier)
+				self?.didRetry.append(endpoint.caseIdentifier)
 				return publisher.flatMap { [weak self] response -> AnyPublisher<UploadResponse, Error> in
 					guard let token = (response as? CNAccessToken) ?? response.convert() else {
 						return Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
@@ -144,7 +144,7 @@ public class CNProvider<T: Endpoint> {
 					return self?.prepUploadPublisher(for: endpoint, responseType: responseType, decoder: decoder, ignorePinning: ignorePinning) ?? Fail(error: CNError.authenticationFailed(error)).eraseToAnyPublisher()
 				}.eraseToAnyPublisher()
 			} else if response == .authError {
-				self?.didRetry.removeAll { $0 == endpoint.identifier }
+				self?.didRetry.removeAll { $0 == endpoint.caseIdentifier }
 				let error = CNUnexpectedErrorResponse(statusCode: 401,
 													  localizedString: HTTPURLResponse.localizedString(forStatusCode: 401),
 													  url: nil,
@@ -165,7 +165,7 @@ public class CNProvider<T: Endpoint> {
 				return Fail(error: CNError.unexpectedResponse(error)).eraseToAnyPublisher()
 			}
 			
-			self?.didRetry.removeAll { $0 == endpoint.identifier }
+			self?.didRetry.removeAll { $0 == endpoint.caseIdentifier }
 			return Result.success(response).publisher.eraseToAnyPublisher()
 		}
 		.retry(retries)
@@ -334,7 +334,7 @@ extension CNConfig {
 	/// Saves new Access Token
 	public static func setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
 		guard let token = token else { return }
-		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.identifier
+		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.typeIdentifier
 		guard storeTokensInKeychain else {
 			accessTokens[key] = token
 			return
@@ -352,7 +352,7 @@ extension CNConfig {
 	
 	/// Returns Access Token stored for a given endpoint if present
 	public static func accessToken(for endpoint: Endpoint) -> CNAccessToken? {
-		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.identifier
+		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.typeIdentifier
 		
 		guard storeTokensInKeychain else {
 			return accessTokens[key]
@@ -372,7 +372,7 @@ extension CNConfig {
 	/// Removes stored Access Token for a given endpoint if present
 	@discardableResult
 	public static func removeAccessToken(for endpoint: Endpoint? = nil) -> Bool {
-		guard let key = endpoint?.accessTokenStrategy.storingLabel ?? endpoint?.identifier ?? AccessTokenStrategy.global.storingLabel else {
+		guard let key = endpoint?.accessTokenStrategy.storingLabel ?? endpoint?.typeIdentifier ?? AccessTokenStrategy.global.storingLabel else {
 			return false
 		}
 		
