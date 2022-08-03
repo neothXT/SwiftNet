@@ -1,4 +1,4 @@
-![alt [version]](https://img.shields.io/github/v/release/neothXT/CombineNetworking) ![alt cocoapods available](https://img.shields.io/badge/Cocoapods-available-green) ![alt spm available](https://img.shields.io/badge/SPM-available-green)
+![alt [version]](https://img.shields.io/github/v/release/neothXT/CombineNetworking) ![alt cocoapods available](https://img.shields.io/badge/Cocoapods-available-green) ![alt spm available](https://img.shields.io/badge/SPM-available-green) ![alt carthage unavailable](https://img.shields.io/badge/Carthage-unavailable-red)
 
 # CombineNetworking
 Meet CombineNetworking. Super lightweight and crazy easy to use framework to help you create and handle your network requests in a convenient way.
