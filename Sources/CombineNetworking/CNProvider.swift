@@ -217,11 +217,11 @@ public class CNProvider<T: Endpoint> {
 		switch endpointData {
 		case .queryString(let params):
 			guard let url = request.url else { return }
-			request.url = URL(string: "\(url)?\(params.URLEncoded())")
+			request.url = URL(string: "\(url)?\(params.encodingPlusSign())")
 		case .queryParams(let params):
 			guard let url = request.url else { return }
 			var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: true)
-			urlComponents?.queryItems = params.map { URLQueryItem(name: $0, value: "\($1)".URLEncoded()) }
+			urlComponents?.queryItems = params.map { URLQueryItem(name: $0, value: "\($1)".encodingPlusSign()) }
 			request.url = urlComponents?.url
 			
 		case .bodyParams(let params):

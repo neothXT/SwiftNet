@@ -8,11 +8,7 @@
 import Foundation
 
 extension String {
-	func URLEncoded() -> String {
-		addingPercentEncoding(withAllowedCharacters: .rfc3986Unreserved) ?? ""
+	func encodingPlusSign() -> String {
+		addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
 	}
-}
-
-extension CharacterSet {
-	static let rfc3986Unreserved = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
 }
