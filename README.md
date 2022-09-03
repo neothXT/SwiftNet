@@ -20,7 +20,7 @@ Besides basic network requests, CombineNetworking allows you to easily send your
 - Access token storing strategy - configure `global`, `endpoint specific` (`default`) or `custom` strategy for all or just some endpoints
 - Automated refresh token/callback requests
 
-## Usage
+## Basic Usage
 
 ### Create an Endpoint to work with
 ```Swift
@@ -61,7 +61,7 @@ extension TodosEndpoint: Endpoint {
 `EndpointData` is also an enum with following options: 
 - `.plain`
 - `.queryParams([String: Any])`
-- `.queryString([String: Any])`
+- `.queryString(String)`
 - `.bodyData([String: Any])`
 - `.bodyParams([String: Any])` - takes `Dictionary` and parses it into `Data` to send in request's body
 - `.urlEncoded([String: Any])` - takes `Dictionary` and parses it into `String` and then `Data` to send in request's body (to use with `Content-Type: application/x-www-form-urlencoded`)
@@ -69,8 +69,9 @@ extension TodosEndpoint: Endpoint {
 
 ### Enable SSL and/or Certificate pinning (optional)
 
+To turn SSL and/or Certificate pinning in your app just add:
+
 ```Swift
-//First - turn pinning on
 CNConfig.pinningModes = [.ssl, .certificate]
 ```
 
@@ -78,7 +79,7 @@ Please remember that SSL/Certificate pinning requires certificate file to be att
 
 ### Automatic authorization mechanism
 
-Handling authorization callbacks with CombineNetworking is ridiculously easy. To use it with your `Endpoint` all you have to do is the following:
+Handling authorization callbacks with CombineNetworking is ridiculously easy. To use it with your `Endpoint` all you have to do is to add `requiresAccessToken` and `callbackPublisher` fields as presented below:
 
 ```Swift
 
@@ -110,7 +111,17 @@ extension TodosEndpoint: Endpoint {
 
 See? Easy peasy!
 
-PS: You can also store access tokens manually using `CNConfig.setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint)`
+### CNConfig properties and methods
+
+	- `pinningModes` - turns on/off SSL and Certificate pinning. Available options are `.ssl`, `.certificate` or both.
+	- `sitesExcludedFromPinning` - list of website addresses excluded from SSL/Certificate pinning check 
+	- `defaultJSONDecoder` - use this property to set globally your custom JSONDecoder
+	- `defaultAccessTokenStrategy` - global strategy for storing access tokens. Available options are `.global`, `.default` and `.custom(String)`.
+	- `storeTokensInKeychain` - turns on/off safe storage (more info below)
+	- `keychainInstance` - keychain instance used by CombineNetworking to store/fetch access tokens from Apple's Keychain  (more info below)
+	- `setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint)` - saves new access token
+	- `accessToken(for endpoint: Endpoint)` - fetches access token for a given endpoint (if exists)
+	- `removeAccessToken(for endpoint: Endpoint? = nil)` - removes access token for a given endpoint or the global one (if exists)
 
 ### Access Token Strategies
 
@@ -130,6 +141,27 @@ CombineNetworking's CNProvider uses iOS built-in Logger (if running on iOS 14 or
 
 CombineNetworking allows you to store your access tokens in keychain. This feature is turned on by default. Using keychain to store your access keys requires you to provide keychain instance by setting value of `CNConfig.keychainInstance`.
 Safe storage using keychain can be disabled by toggling `CNConfig.storeTokensInKeychain` option.
+
+Please remember Apple's Keychain doesn't automatically remove entries created by an app upon its deletion. Do not worry, however. Only your app can access those entries. Nevertheless, if you're using CombineNetworking's safe storage, it is recommended to add some sort of app launch counter and upon first launch call `CNConfig.removeAccessToken(for endpoint: Endpoint? = nil)` to make sure any remaining old entries in keychain are removed.
+
+### Subscribe to a publisher
+
+```Swift
+private var subscriptions: Set<AnyCancellable> = []
+var todo: Todo?
+
+func subscribeForTodos() {
+  CNProvider<TodosEndpoint>().publisher(for: .todos(1), responseType: Todo?.self)
+    .catch { (error) -> Just<Todo?> in
+      print(error)
+      return Just(nil)
+    }
+    .assign(to: \.todo, on: self)
+    .store(in: &subscriptions)
+}
+```
+
+If you want to subscribe to a publisher but doesn't want to immediately decode the body but rather want to get raw Data object, use `rawPublisher` instead.
 
 ### WebSockets
 
@@ -159,22 +191,5 @@ webSocket.send(.string("Test message")) {
 ```
 
 If you want to close connection, just call `webSocket.disconnect()`.
-
-### Subscribe to a publisher
-
-```Swift
-private var subscriptions: Set<AnyCancellable> = []
-var todo: Todo?
-
-func subscribeForTodos() {
-  CNProvider<TodosEndpoint>().publisher(for: .todos(1), responseType: Todo?.self)
-    .catch { (error) -> Just<Todo?> in
-      print(error)
-      return Just(nil)
-    }
-    .assign(to: \.todo, on: self)
-    .store(in: &subscriptions)
-}
-```
 
 And that's it. Enjoy :)
