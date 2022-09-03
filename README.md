@@ -113,15 +113,15 @@ See? Easy peasy!
 
 ### CNConfig properties and methods
 
-	- `pinningModes` - turns on/off SSL and Certificate pinning. Available options are `.ssl`, `.certificate` or both.
-	- `sitesExcludedFromPinning` - list of website addresses excluded from SSL/Certificate pinning check 
-	- `defaultJSONDecoder` - use this property to set globally your custom JSONDecoder
-	- `defaultAccessTokenStrategy` - global strategy for storing access tokens. Available options are `.global`, `.default` and `.custom(String)`.
-	- `storeTokensInKeychain` - turns on/off safe storage (more info below)
-	- `keychainInstance` - keychain instance used by CombineNetworking to store/fetch access tokens from Apple's Keychain  (more info below)
-	- `setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint)` - saves new access token
-	- `accessToken(for endpoint: Endpoint)` - fetches access token for a given endpoint (if exists)
-	- `removeAccessToken(for endpoint: Endpoint? = nil)` - removes access token for a given endpoint or the global one (if exists)
+- `pinningModes` - turns on/off SSL and Certificate pinning. Available options are `.ssl`, `.certificate` or both.
+- `sitesExcludedFromPinning` - list of website addresses excluded from SSL/Certificate pinning check 
+- `defaultJSONDecoder` - use this property to set globally your custom JSONDecoder
+- `defaultAccessTokenStrategy` - global strategy for storing access tokens. Available options are `.global`, `.default` and `.custom(String)`.
+- `storeTokensInKeychain` - turns on/off safe storage (more info below)
+- `keychainInstance` - keychain instance used by CombineNetworking to store/fetch access tokens from Apple's Keychain  (more info below)
+- `setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint)` - saves new access token
+- `accessToken(for endpoint: Endpoint)` - fetches access token for a given endpoint (if exists)
+- `removeAccessToken(for endpoint: Endpoint? = nil)` - removes access token for a given endpoint or the global one (if exists)
 
 ### Access Token Strategies
 
