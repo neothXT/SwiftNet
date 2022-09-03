@@ -33,6 +33,38 @@ public class CNProvider<T: Endpoint> {
 										expectedStatusCodes: [Int] = [200, 201, 204],
 										ignorePinning: Bool = false,
 										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error> {
+		rawPublisher(for: endpoint,
+					 retries: retries,
+					 expectedStatusCodes: expectedStatusCodes,
+					 ignorePinning: ignorePinning,
+					 receiveOn: queue)
+		.flatMap { data -> AnyPublisher<U, Error> in
+			do {
+				let response = try (decoder ?? endpoint.jsonDecoder).decode(U.self, from: data)
+				runOnMain {
+					CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
+				}
+				return Result.success(response).publisher.eraseToAnyPublisher()
+			} catch {
+				let errorResponse = CNMapErrorResponse(error: error,
+													   data: data)
+				runOnMain {
+					CNDebugInfo.getLogger(for: endpoint)?
+						.log(CNError.failedToMapResponse(errorResponse).localizedDescription, mode: .stop)
+				}
+				return Fail(error: CNError.failedToMapResponse(errorResponse)).eraseToAnyPublisher()
+			}
+		}
+		.retry(retries)
+		.receive(on: queue)
+		.eraseToAnyPublisher()
+	}
+	
+	public func rawPublisher(for endpoint: T,
+							 retries: Int = 0,
+							 expectedStatusCodes: [Int] = [200, 201, 204],
+							 ignorePinning: Bool = false,
+							 receiveOn queue: DispatchQueue = .main) -> AnyPublisher<Data, Error> {
 		runOnMain {
 			CNDebugInfo.createLogger(for: endpoint)
 		}
@@ -93,23 +125,6 @@ public class CNProvider<T: Endpoint> {
 				}
 				
 				return Result.success(output.data).publisher.eraseToAnyPublisher()
-			}
-			.flatMap { data -> AnyPublisher<U, Error> in
-				do {
-					let response = try (decoder ?? endpoint.jsonDecoder).decode(U.self, from: data)
-					runOnMain {
-						CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
-					}
-					return Result.success(response).publisher.eraseToAnyPublisher()
-				} catch {
-					let errorResponse = CNMapErrorResponse(error: error,
-														   data: data)
-					runOnMain {
-						CNDebugInfo.getLogger(for: endpoint)?
-							.log(CNError.failedToMapResponse(errorResponse).localizedDescription, mode: .stop)
-					}
-					return Fail(error: CNError.failedToMapResponse(errorResponse)).eraseToAnyPublisher()
-				}
 			}
 			.retry(retries)
 			.receive(on: queue)
@@ -206,7 +221,7 @@ public class CNProvider<T: Endpoint> {
 		case .queryParams(let params):
 			guard let url = request.url else { return }
 			var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: true)
-			urlComponents?.queryItems = params.map { URLQueryItem(name: $0, value: "\($1)") }
+			urlComponents?.queryItems = params.map { URLQueryItem(name: $0, value: "\($1)".URLEncoded()) }
 			request.url = urlComponents?.url
 			
 		case .bodyParams(let params):
