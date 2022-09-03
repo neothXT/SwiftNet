@@ -217,7 +217,7 @@ public class CNProvider<T: Endpoint> {
 		switch endpointData {
 		case .queryString(let params):
 			guard let url = request.url else { return }
-			request.url = URL(string: "\(url)?\(params)")
+			request.url = URL(string: "\(url)?\(params.URLEncoded())")
 		case .queryParams(let params):
 			guard let url = request.url else { return }
 			var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: true)

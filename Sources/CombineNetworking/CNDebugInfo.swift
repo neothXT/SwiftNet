@@ -100,8 +100,12 @@ extension Endpoint {
 		case .queryParams(let params):
 			guard let requestURL = URL(string: url) else { return url }
 			var urlComponents = URLComponents(url: requestURL, resolvingAgainstBaseURL: true)
-			urlComponents?.queryItems = params.map { URLQueryItem(name: $0, value: "\($1)") }
+			urlComponents?.queryItems = params.map { URLQueryItem(name: $0, value: "\($1)".URLEncoded()) }
 			url = urlComponents?.url?.absoluteString ?? url
+			
+		case .queryString(let params):
+			guard let requestURL = URL(string: url) else { return url }
+			url = "\(requestURL)?\(params.URLEncoded())"
 			
 		default:
 			break
