@@ -109,7 +109,7 @@ extension TodosEndpoint: Endpoint {
 }
 ```
 
-See? Easy peasy!
+See? Easy peasy! Keep in mind that your token model has to conform to `AccessTokenConvertible`.
 
 ### CNConfig properties and methods
 
