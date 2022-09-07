@@ -232,8 +232,8 @@ public class CNProvider<T: Endpoint> {
 			guard let data = try? model.toJsonData() else { return }
 			request.httpBody = prepareBodyData(data, boundary: boundary)
 			
-		case .urlEncoded(let params):
-			guard let data = (params.reduce([]) { $0 + ["\($1.key)=\($1.value)"] }.joined(separator: ",").data(using: .utf8)) else {
+		case .urlEncodedBody(let params):
+			guard let data = (params.reduce([]) { $0 + ["\($1.key)=\($1.value)"] }.joined(separator: "&").data(using: .utf8)) else {
 					return
 				}
 			

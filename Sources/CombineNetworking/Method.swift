@@ -8,5 +8,5 @@
 import Foundation
 
 public enum RequestMethod: String {
-	case get, post, put, delete, patch
+	case get, post, put, delete, patch, connect, head, options, query, trace
 }

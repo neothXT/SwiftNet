@@ -64,7 +64,7 @@ extension TodosEndpoint: Endpoint {
 - `.queryString(String)`
 - `.bodyData([String: Any])`
 - `.bodyParams([String: Any])` - takes `Dictionary` and parses it into `Data` to send in request's body
-- `.urlEncoded([String: Any])` - takes `Dictionary` and parses it into `String` and then `Data` to send in request's body (to use with `Content-Type: application/x-www-form-urlencoded`)
+- `.urlEncodedBody([String: Any])` - takes `Dictionary` and parses it into `Data` to send in request's body
 - `.jsonModel(Encodable)` - similar to `.dataParams` except this one takes `Encodable` and parses it into `Data` to send in request's body
 
 ### Enable SSL and/or Certificate pinning (optional)
