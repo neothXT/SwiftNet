@@ -13,6 +13,7 @@ public enum EndpointData {
 	case queryParams([String: Any])
 	case bodyParams([String: Any])
 	case urlEncodedBody([String: Any])
+	case urlEncodedModel(Encodable)
 	case jsonModel(Encodable)
 	case bodyData(Data)
 }

@@ -15,6 +15,8 @@ enum RemoteEndpoint {
 	case stringGet(String)
 	case dictPost([String: Any])
 	case dictGet([String: Any])
+	case urlEncodedBody([String: Any])
+	case urlEncoded(Encodable)
 }
 
 extension RemoteEndpoint: Endpoint {
@@ -29,15 +31,18 @@ extension RemoteEndpoint: Endpoint {
 	
 	var path: String {
 		switch self {
-		case .dictGet:
+		case .dictGet, .stringGet:
 			return "comments"
 		case .todos:
 			return "todos/1"
 		case .posts:
 			return "CNErrorExample"
 			
-		case .post, .dictPost, .stringGet:
+		case .post, .dictPost:
 			return "posts"
+			
+		default:
+			return ""
 		}
 	}
 	
@@ -64,6 +69,10 @@ extension RemoteEndpoint: Endpoint {
 			return .queryParams(dict)
 		case .stringGet(let string):
 			return .queryString(string)
+		case .urlEncodedBody(let dict):
+			return .urlEncodedBody(dict)
+		case .urlEncoded(let model):
+			return .urlEncodedModel(model)
 		default:
 			return .plain
 		}

@@ -26,6 +26,7 @@ public class CNProvider<T: Endpoint> {
 		self.endpointURLMapper = endpointURLMapper
 	}
 	
+	/// Returns publisher which automatically converts the response data into given response type
 	public func publisher<U: Decodable>(for endpoint: T,
 										responseType: U.Type,
 										decoder: JSONDecoder? = nil,
@@ -60,6 +61,7 @@ public class CNProvider<T: Endpoint> {
 		.eraseToAnyPublisher()
 	}
 	
+	/// Returns publisher without adding any manipulations to the response data
 	public func rawPublisher(for endpoint: T,
 							 retries: Int = 0,
 							 expectedStatusCodes: [Int] = [200, 201, 204],
@@ -214,62 +216,7 @@ public class CNProvider<T: Endpoint> {
 	}
 	
 	private func prepareBody(endpointData: EndpointData, boundary: Boundary?, request: inout URLRequest) {
-		switch endpointData {
-		case .queryString(let params):
-			guard let url = request.url else { return }
-			request.url = URL(string: "\(url)?\(params)")
-		case .queryParams(let params):
-			guard let url = request.url else { return }
-			var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: true)
-			urlComponents?.queryItems = params.map { URLQueryItem(name: $0, value: "\($1)") }
-			request.url = urlComponents?.url
-			
-		case .bodyParams(let params):
-			guard let data = try? JSONSerialization.data(withJSONObject: params, options: []) else { return }
-			request.httpBody = prepareBodyData(data, boundary: boundary)
-			
-		case .jsonModel(let model):
-			guard let data = try? model.toJsonData() else { return }
-			request.httpBody = prepareBodyData(data, boundary: boundary)
-			
-		case .urlEncodedBody(let params):
-			guard let data = (params.reduce([]) { $0 + ["\($1.key)=\($1.value)"] }.joined(separator: "&").data(using: .utf8)) else {
-					return
-				}
-			
-			request.httpBody = prepareBodyData(data, boundary: boundary)
-			
-		case .bodyData(let data):
-			request.httpBody = prepareBodyData(data, boundary: boundary)
-			
-		case .plain:
-			break
-		}
-	}
-	
-	private func prepareUploadBody(endpointData: EndpointData, boundary: Boundary?) -> Data? {
-		switch endpointData {
-		case .bodyParams(let params):
-			guard let data = try? JSONSerialization.data(withJSONObject: params, options: []) else { return nil }
-			return prepareBodyData(data, boundary: boundary)
-		case .jsonModel(let model):
-			guard let data = try? model.toJsonData() else { return nil }
-			return prepareBodyData(data, boundary: boundary)
-		case .bodyData(let data):
-			return prepareBodyData(data, boundary: boundary)
-		default:
-			return nil
-		}
-	}
-	
-	private func prepareBodyData(_ data: Data, boundary: Boundary?) -> Data {
-		var finalData = Data()
-		if let boundary = boundary {
-			finalData = boundary.prepareData(withFileData: data)
-		} else {
-			finalData = data
-		}
-		return finalData
+		CNDataEncoder.encode(endpointData, boundary: boundary, request: &request)
 	}
 	
 	private func prepPublisher(for endpoint: T, ignorePinning: Bool) -> AnyPublisher<URLSession.DataTaskPublisher.Output, Error> {
@@ -298,7 +245,7 @@ public class CNProvider<T: Endpoint> {
 												 decoder: JSONDecoder? = nil,
 												 ignorePinning: Bool) -> AnyPublisher<UploadResponse<U>, Error> {
 		guard let urlRequest = prepareRequest(for: endpoint, withBody: false),
-				let data = prepareUploadBody(endpointData: endpoint.data, boundary: endpoint.boundary) else {
+			  let data = CNDataEncoder.prepareUploadBody(endpointData: endpoint.data, boundary: endpoint.boundary) else {
 			return Fail(error: CNError.failedToBuildRequest).eraseToAnyPublisher()
 		}
 		

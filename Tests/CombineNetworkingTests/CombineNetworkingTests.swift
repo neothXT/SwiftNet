@@ -39,10 +39,8 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .dictGet(["postId": 1]), responseType: Post.self)
-			.sink(receiveCompletion: { _ in
-				expectation.fulfill()
-			}) { (_: Post) in }
+		CNProvider<RemoteEndpoint>().publisher(for: .dictGet(["postId": 1]), responseType: [Comment].self)
+			.sink(receiveCompletion: { _ in }) { (_: [Comment]) in expectation.fulfill() }
 			.store(in: &subscriptions)
 		
 		wait(for: [expectation], timeout: 10)
@@ -52,10 +50,8 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .stringGet("postId=1"), responseType: Post.self)
-			.sink(receiveCompletion: { _ in
-				expectation.fulfill()
-			}) { (_: Post) in }
+		CNProvider<RemoteEndpoint>().publisher(for: .stringGet("postId=1"), responseType: [Comment].self)
+			.sink(receiveCompletion: { _ in }) { (_: [Comment]) in expectation.fulfill() }
 			.store(in: &subscriptions)
 		
 		wait(for: [expectation], timeout: 10)
@@ -110,5 +106,55 @@ final class CombineNetworkingTests: XCTestCase {
 		CNConfig.removeAccessToken(for: endpoint)
 		
 		XCTAssert(CNConfig.accessToken(for: endpoint) == nil)
+	}
+	
+	func testUrlEncodedBody() throws {
+		let endpoint: RemoteEndpoint = .urlEncodedBody(["name": "Test", "lastname": "Tester"])
+		var urlRequest = URLRequest(url: endpoint.baseURL!)
+		
+		CNDataEncoder.encode(endpoint.data, boundary: nil, request: &urlRequest)
+		
+		let encodedDataString = String(data: urlRequest.httpBody ?? Data(), encoding: .utf8) ?? ""
+		
+		let expectedRasultArray = ["name=Test", "lastname=Tester"]
+		var result = true
+		
+		expectedRasultArray.forEach { result = result && encodedDataString.contains($0) }
+		
+		XCTAssertTrue(result)
+	}
+	
+	func testUrlEncodedModel() throws {
+		let model = TestParamsModel(name: "Test", lastname: "Tester", age: 99)
+		let endpoint: RemoteEndpoint = .urlEncoded(model)
+		var urlRequest = URLRequest(url: endpoint.baseURL!)
+		
+		CNDataEncoder.encode(endpoint.data, boundary: nil, request: &urlRequest)
+		
+		let encodedDataString = String(data: urlRequest.httpBody ?? Data(), encoding: .utf8) ?? ""
+		
+		let expectedRasultArray = ["name=Test", "lastname=Tester", "age=99"]
+		var result = true
+		
+		expectedRasultArray.forEach { result = result && encodedDataString.contains($0) }
+		
+		XCTAssertTrue(result)
+	}
+	
+	func testUrlEncodedModelWithNilValue() throws {
+		let model = TestParamsModel(name: "Test", lastname: "Tester", age: nil)
+		let endpoint: RemoteEndpoint = .urlEncoded(model)
+		var urlRequest = URLRequest(url: endpoint.baseURL!)
+		
+		CNDataEncoder.encode(endpoint.data, boundary: nil, request: &urlRequest)
+		
+		let encodedDataString = String(data: urlRequest.httpBody ?? Data(), encoding: .utf8) ?? ""
+		
+		let expectedRasultArray = ["name=Test", "lastname=Tester", "age=99"]
+		var result = true
+		
+		expectedRasultArray.forEach { result = result && encodedDataString.contains($0) }
+		
+		XCTAssertFalse(result)
 	}
 }
