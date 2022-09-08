@@ -93,8 +93,34 @@ final class CombineNetworkingTests: XCTestCase {
 		
 		CNConfig.storeTokensInKeychain = false
 		CNConfig.setAccessToken(sampleToken, for: endpoint)
-		
 		XCTAssert((CNConfig.accessToken(for: endpoint)?.access_token ?? "") == "aaa")
+	}
+	
+	func testFetchTokenByStrategy() throws {
+		let endpoint: RemoteEndpoint = .todos
+		let sampleToken = CNAccessToken(access_token: "aaa", token_type: "", expires_in: nil, refresh_token: nil, scope: nil)
+		
+		CNConfig.storeTokensInKeychain = false
+		CNConfig.setAccessToken(sampleToken, for: endpoint)
+		XCTAssert((CNConfig.accessToken(for: RemoteEndpoint.self)?.access_token ?? "") == "aaa")
+	}
+	
+	func testFetchTokenByStoringLabel() throws {
+		let endpoint: RemoteEndpoint = .posts
+		let sampleToken = CNAccessToken(access_token: "aaa", token_type: "", expires_in: nil, refresh_token: nil, scope: nil)
+		
+		CNConfig.storeTokensInKeychain = false
+		CNConfig.setAccessToken(sampleToken, for: endpoint)
+		XCTAssert((CNConfig.accessToken(for: "someLabel")?.access_token ?? "") == "aaa")
+	}
+	
+	func testFetchGlobalToken() throws {
+		let endpoint: RemoteEndpoint = .stringGet("")
+		let sampleToken = CNAccessToken(access_token: "aaa", token_type: "", expires_in: nil, refresh_token: nil, scope: nil)
+		
+		CNConfig.storeTokensInKeychain = false
+		CNConfig.setAccessToken(sampleToken, for: endpoint)
+		XCTAssert((CNConfig.globalAccessToken()?.access_token ?? "") == "aaa")
 	}
 	
 	func testRemoveToken() throws {

@@ -315,9 +315,24 @@ extension CNConfig {
 	/// Returns Access Token stored for a given endpoint if present
 	public static func accessToken(for endpoint: Endpoint) -> CNAccessToken? {
 		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.typeIdentifier
-		
+		return accessToken(for: key)
+	}
+	
+	/// Returns Access Token stored for a given endpoint type identifier if present
+	public static func accessToken<T: Endpoint>(for endpoint: T.Type) -> CNAccessToken? {
+		accessToken(for: endpoint.identifier)
+	}
+	
+	/// Returns global Access Token if present
+	public static func globalAccessToken() -> CNAccessToken? {
+		guard let key = AccessTokenStrategy.global.storingLabel else { return nil }
+		return accessToken(for: key)
+	}
+	
+	/// Returns access token for specific storing label if present
+	public static func accessToken(for storingLabel: String) -> CNAccessToken? {
 		guard storeTokensInKeychain else {
-			return accessTokens[key]
+			return accessTokens[storingLabel]
 		}
 		
 		guard let keychain = CNConfig.keychainInstance else {
@@ -327,7 +342,7 @@ extension CNConfig {
 			return nil
 		}
 		
-		guard let data = keychain[data: "accessToken_\(key)"] else { return nil }
+		guard let data = keychain[data: "accessToken_\(storingLabel)"] else { return nil }
 		return try? JSONDecoder().decode(CNAccessToken.self, from: data)
 	}
 	

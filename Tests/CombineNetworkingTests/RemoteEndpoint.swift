@@ -78,4 +78,14 @@ extension RemoteEndpoint: Endpoint {
 		}
 	}
 	
+	var accessTokenStrategy: AccessTokenStrategy {
+		switch self {
+		case .posts:
+			return .custom("someLabel")
+		case .stringGet:
+			return .global
+		default:
+			return .default
+		}
+	}
 }

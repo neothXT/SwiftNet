@@ -30,6 +30,7 @@ public extension Endpoint {
 	var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { nil }
 	var boundary: Boundary? { nil }
 	
-	var typeIdentifier: String { "\(type(of: self))" }
+	var typeIdentifier: String { Self.identifier }
 	var caseIdentifier: String { String(String(reflecting: self).split(separator: "(").first ?? "\(self)") }
+	static var identifier: String { "\(type(of: self))".replacingOccurrences(of: ".Type", with: "") }
 }
