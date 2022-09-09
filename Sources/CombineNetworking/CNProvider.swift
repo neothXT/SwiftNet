@@ -293,12 +293,30 @@ public class CNProvider<T: Endpoint> {
 extension CNConfig {
 	fileprivate static var accessTokens: [String: CNAccessToken] = [:]
 	
-	/// Saves new Access Token
+	//MARK: set access token methods
+	
+	/// Saves new Access Token for a given endpoint
 	public static func setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
-		guard let token = token else { return }
 		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.typeIdentifier
+		setAccessToken(token, for: key)
+	}
+	
+	/// Saves new Access Token for a given endpoint type identifier
+	public static func setAccessToken<T: Endpoint>(_ token: CNAccessToken?, for endpoint: T.Type) {
+		setAccessToken(token, for: endpoint.identifier)
+	}
+	
+	/// Saves global Access Token
+	public static func setGlobalAccessToken(_ token: CNAccessToken?) {
+		guard let key = AccessTokenStrategy.global.storingLabel else { return }
+		setAccessToken(token, for: key)
+	}
+	
+	/// Saves new Access Token for specific storing label
+	public static func setAccessToken(_ token: CNAccessToken?, for storingLabel: String) {
+		guard let token = token else { return }
 		guard storeTokensInKeychain else {
-			accessTokens[key] = token
+			accessTokens[storingLabel] = token
 			return
 		}
 		
@@ -309,8 +327,10 @@ extension CNConfig {
 			return
 		}
 		
-		keychain[data: "accessToken_\(key)"] = try? token.toJsonData()
+		keychain[data: "accessToken_\(storingLabel)"] = try? token.toJsonData()
 	}
+	
+	//MARK: fetch access token methods
 	
 	/// Returns Access Token stored for a given endpoint if present
 	public static func accessToken(for endpoint: Endpoint) -> CNAccessToken? {
@@ -329,7 +349,7 @@ extension CNConfig {
 		return accessToken(for: key)
 	}
 	
-	/// Returns access token for specific storing label if present
+	/// Returns Access Token for specific storing label if present
 	public static func accessToken(for storingLabel: String) -> CNAccessToken? {
 		guard storeTokensInKeychain else {
 			return accessTokens[storingLabel]
@@ -346,16 +366,34 @@ extension CNConfig {
 		return try? JSONDecoder().decode(CNAccessToken.self, from: data)
 	}
 	
+	//MARK: remove access token methods
+	
 	/// Removes stored Access Token for a given endpoint if present
 	@discardableResult
-	public static func removeAccessToken(for endpoint: Endpoint? = nil) -> Bool {
-		guard let key = endpoint?.accessTokenStrategy.storingLabel ?? endpoint?.typeIdentifier ?? AccessTokenStrategy.global.storingLabel else {
-			return false
-		}
-		
+	public static func removeAccessToken(for endpoint: Endpoint) -> Bool {
+		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.typeIdentifier
+		return removeAccessToken(for: key)
+	}
+	
+	/// Removes Access Token stored for a given endpoint type identifier if present
+	@discardableResult
+	public static func removeAccessToken<T: Endpoint>(for endpoint: T.Type) -> Bool {
+		removeAccessToken(for: endpoint.identifier)
+	}
+	
+	/// Removes global Access Token if present
+	@discardableResult
+	public static func removeGlobalAccessToken() -> Bool {
+		guard let key = AccessTokenStrategy.global.storingLabel else { return false }
+		return removeAccessToken(for: key)
+	}
+	
+	/// Removes Access Token for specific storing label if present
+	@discardableResult
+	public static func removeAccessToken(for storingLabel: String) -> Bool {
 		if !storeTokensInKeychain {
-			guard Array(accessTokens.keys).contains(key) else { return false }
-			accessTokens.removeValue(forKey: key)
+			guard Array(accessTokens.keys).contains(storingLabel) else { return false }
+			accessTokens.removeValue(forKey: storingLabel)
 			return true
 		}
 		
@@ -367,9 +405,9 @@ extension CNConfig {
 		}
 		
 		do {
-			let tokenIsPresent = try keychain.contains("accessToken_\(key)")
+			let tokenIsPresent = try keychain.contains("accessToken_\(storingLabel)")
 			guard tokenIsPresent else { return false }
-			try keychain.remove("accessToken_\(key)")
+			try keychain.remove("accessToken_\(storingLabel)")
 			return true
 		} catch {
 			#if DEBUG

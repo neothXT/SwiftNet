@@ -127,6 +127,38 @@ See? Easy peasy! Keep in mind that your token model has to conform to `AccessTok
 - `globalAccessToken()` - fetches global access token (if exists)
 - `removeAccessToken(for endpoint: Endpoint? = nil)` - removes access token for a given endpoint or the global one (if exists)
 
+### Access Token manipulations
+
+There are 4 approaches how to store, fetch and remove access tokens using `CNConfig`.
+
+#### 1. For specific endpoint:
+- `setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint)`
+- `accessToken(for endpoint: Endpoint)`
+- `removeAccessToken(for endpoint: Endpoint)`
+
+Example: `CNConfig.accessToken(for: .sampleEndpointCase)`
+
+#### 2. For specific endpoint's default storing label:
+- `setAccessToken<T: Endpoint>(_ token: CNAccessToken?, for endpoint: T.Type)`
+- `accessToken<T: Endpoint>(for endpoint: T.Type)`
+- `removeAccessToken<T: Endpoint>(for endpoint: T.Type)`
+
+Example: `CNConfig.accessToken(for: SampleEndpoint.self)`
+
+#### 3. For specific custom storing label:
+- `setAccessToken(for storingLabel: String)`
+- `accessToken(for storingLabel: String)`
+- `removeAccessToken(for storingLabel: String)`
+
+Example: `CNConfig.accessToken(for: "sampleCustomLabel")`
+
+#### 4. For global tokens:
+- `setGlobalAccessToken()`
+- `globalAccessToken()`
+- `removeGlobalAccessToken()`
+
+Example: `CNConfig.globalAccessToken()`
+
 ### Access Token Strategies
 
 CombineNetworking allows you to specify access token strategies globally as well as individually for each endpoint. You can specify your strategy by setting it for `CNConfig.defaultAccessTokenStrategy` or inside your `Endpoint` by setting value for field `accessTokenStrategy`.

@@ -28,14 +28,14 @@ class CNDataEncoder {
 			request.httpBody = prepareBodyData(data, boundary: boundary)
 			
 		case .urlEncodedBody(let params):
-			guard let data = mapToArray(dictionary: params).joinedWithAmpedsands().data(using: .utf8) else {
+			guard let data = mapToArray(dictionary: params).joinedWithAmpersands().data(using: .utf8) else {
 				return
 			}
 			
 			request.httpBody = prepareBodyData(data, boundary: boundary)
 			
 		case .urlEncodedModel(let model):
-			guard let data = mapToArray(dictionary: model.toDictionary()).joinedWithAmpedsands().data(using: .utf8) else {
+			guard let data = mapToArray(dictionary: model.toDictionary()).joinedWithAmpersands().data(using: .utf8) else {
 				return
 			}
 			
@@ -80,7 +80,7 @@ class CNDataEncoder {
 }
 
 fileprivate extension Collection where Element == String {
-	func joinedWithAmpedsands() -> String {
+	func joinedWithAmpersands() -> String {
 		self.joined(separator: "&")
 	}
 }
