@@ -195,6 +195,33 @@ func subscribeForTodos() {
 
 If you want to subscribe to a publisher but doesn't want to immediately decode the body but rather want to get raw Data object, use `rawPublisher` instead.
 
+### Error handling
+
+In case of request failure, CombineNetworking returns stuct of type `CNError` reflected as `Error`.
+
+```Swift
+public struct CNError: Error {
+	let type: ErrorType
+	let details: CNErrorDetails?
+	let data: Data?
+}
+```
+
+Available error types are: `failedToBuildRequest`, `failedToMapResponse`, `unexpectedResponse`, `authenticationFailed`, `notConnected`, `emptyResponse` and `conversionFailed`.
+
+`CNErrorDetails` looks like following:
+
+```Swift
+public struct CNErrorDetails {
+	public let statusCode: Int
+	public let localizedString: String
+	public let url: URL?
+	public let mimeType: String?
+	public let headers: [AnyHashable: Any]?
+	public let data: Data?
+}
+```
+
 ### WebSockets
 
 CombineNetworking also allows you to connect with WebSockets effortlessly. Simply use `CNWebSocket` like this:
