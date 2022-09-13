@@ -9,8 +9,7 @@ final class CombineNetworkingTests: XCTestCase {
 		
 		CNProvider<RemoteEndpoint>().publisher(for: .posts, responseType: Todo?.self)
 			.catch { error -> Just<Todo?> in
-				if let responseError = error as? CNError, case .unexpectedResponse(let response) = responseError,
-				   response.statusCode != 200 {
+				if let responseError = error as? CNError, responseError.details?.statusCode != 200 {
 					expectation.fulfill()
 				}
 				return Just(nil)
@@ -63,10 +62,9 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .post(post), responseType: Post.self)
+		CNProvider<RemoteEndpoint>().rawPublisher(for: .post(post))
 			.sink(receiveCompletion: { _ in
-				expectation.fulfill()
-			}) { (_: Post) in }
+			}) { _ in expectation.fulfill() }
 			.store(in: &subscriptions)
 		
 		wait(for: [expectation], timeout: 10)
@@ -78,10 +76,9 @@ final class CombineNetworkingTests: XCTestCase {
 		
 		let dict = ["userId": "1231", "title": "Title", "body": "Body"]
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .dictPost(dict), responseType: Post.self)
+		CNProvider<RemoteEndpoint>().rawPublisher(for: .dictPost(dict))
 			.sink(receiveCompletion: { _ in
-				expectation.fulfill()
-			}) { (_: Post) in }
+			}) { _ in expectation.fulfill() }
 			.store(in: &subscriptions)
 		
 		wait(for: [expectation], timeout: 10)

@@ -145,7 +145,7 @@ public class CNWebSocket: NSObject {
 			#if DEBUG
 			print("Connect to WebSocket before subscribing for messages!")
 			#endif
-			completion(CNError.notConnected)
+			completion(CNError(type: .notConnected))
 			return
 		}
 		
@@ -164,7 +164,7 @@ public class CNWebSocket: NSObject {
 			#if DEBUG
 			print("Connect to WebSocket before subscribing for messages!")
 			#endif
-			onReceive(.failure(CNError.notConnected))
+			onReceive(.failure(CNError(type: .notConnected)))
 			return
 		}
 		

@@ -7,35 +7,25 @@
 
 import Foundation
 
-public enum CNError: Error {
-	case failedToBuildRequest, failedToMapResponse(CNMapErrorResponse?),
-		 unexpectedResponse(CNUnexpectedErrorResponse), authenticationFailed(CNUnexpectedErrorResponse),
-		 notConnected, emptyResponse, conversionFailed
+public struct CNError: Error {
+	let type: ErrorType
+	let details: CNErrorDetails?
+	let data: Data?
 	
-	public var detailedResponse: CNErrorResponse? {
-		switch self {
-		case .unexpectedResponse(let response):
-			return response
-		case .failedToMapResponse(let response):
-			return response
-		default:
-			return nil
-		}
-	}
-	
-	public var originalResponse: CNErrorResponse? {
-		switch self {
-		case .authenticationFailed(let response):
-			return response
-		default:
-			return nil
-		}
+	init(type: ErrorType, details: CNErrorDetails? = nil, data: Data? = nil) {
+		self.type = type
+		self.details = details
+		self.data = data
 	}
 }
 
-extension CNError: LocalizedError {
-	public var errorDescription: String? {
-		switch self {
+public extension CNError {
+	enum ErrorType {
+		case failedToBuildRequest, failedToMapResponse, unexpectedResponse, authenticationFailed, notConnected, emptyResponse, conversionFailed
+	}
+	
+	var errorDescription: String? {
+		switch type {
 		case .conversionFailed:
 			return "Conversion to AccessTokenConvertible failed."
 			
@@ -60,16 +50,7 @@ extension CNError: LocalizedError {
 	}
 }
 
-public protocol CNErrorResponse {
-	var data: Data? { get }
-}
-
-public struct CNMapErrorResponse: CNErrorResponse {
-	public let error: Error
-	public let data: Data?
-}
-
-public struct CNUnexpectedErrorResponse: CNErrorResponse {
+public struct CNErrorDetails {
 	public let statusCode: Int
 	public let localizedString: String
 	public let url: URL?
@@ -77,7 +58,7 @@ public struct CNUnexpectedErrorResponse: CNErrorResponse {
 	public let headers: [AnyHashable: Any]?
 	public let data: Data?
 	
-	public init(statusCode: Int, localizedString: String, url: URL?, mimeType: String?, headers: [AnyHashable: Any]?, data: Data?) {
+	public init(statusCode: Int, localizedString: String, url: URL? = nil, mimeType: String? = nil, headers: [AnyHashable: Any]? = nil, data: Data? = nil) {
 		self.statusCode = statusCode
 		self.localizedString = localizedString
 		self.url = url
@@ -85,5 +66,4 @@ public struct CNUnexpectedErrorResponse: CNErrorResponse {
 		self.headers = headers
 		self.data = data
 	}
-	
 }

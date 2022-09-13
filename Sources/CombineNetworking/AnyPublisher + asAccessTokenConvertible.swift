@@ -13,7 +13,7 @@ extension AnyPublisher {
 	public func asAccessTokenConvertible() throws -> AnyPublisher<AccessTokenConvertible, Error> {
 		self.tryMap { output in
 			guard let convertedOutput = output as? AccessTokenConvertible else {
-				throw CNError.conversionFailed
+				throw CNError(type: .conversionFailed)
 			}
 			
 			return convertedOutput

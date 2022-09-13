@@ -21,15 +21,29 @@ class CNDataEncoder {
 			
 		case .bodyParams(let params):
 			guard let data = try? JSONSerialization.data(withJSONObject: params, options: []) else { return }
+			
+			if !(request.allHTTPHeaderFields ?? [:]).keys.contains("Content-Type") {
+				request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+			}
+			
 			request.httpBody = prepareBodyData(data, boundary: boundary)
 			
 		case .jsonModel(let model):
 			guard let data = try? model.toJsonData() else { return }
+			
+			if !(request.allHTTPHeaderFields ?? [:]).keys.contains("Content-Type") {
+				request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+			}
+			
 			request.httpBody = prepareBodyData(data, boundary: boundary)
 			
 		case .urlEncodedBody(let params):
 			guard let data = mapToArray(dictionary: params).joinedWithAmpersands().data(using: .utf8) else {
 				return
+			}
+			
+			if !(request.allHTTPHeaderFields ?? [:]).keys.contains("Content-Type") {
+				request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 			}
 			
 			request.httpBody = prepareBodyData(data, boundary: boundary)
@@ -39,9 +53,17 @@ class CNDataEncoder {
 				return
 			}
 			
+			if !(request.allHTTPHeaderFields ?? [:]).keys.contains("Content-Type") {
+				request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+			}
+			
 			request.httpBody = prepareBodyData(data, boundary: boundary)
 			
 		case .bodyData(let data):
+			if !(request.allHTTPHeaderFields ?? [:]).keys.contains("Content-Type") {
+				request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+			}
+			
 			request.httpBody = prepareBodyData(data, boundary: boundary)
 			
 		case .plain:
