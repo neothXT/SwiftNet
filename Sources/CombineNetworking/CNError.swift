@@ -8,9 +8,9 @@
 import Foundation
 
 public struct CNError: Error {
-	let type: ErrorType
-	let details: CNErrorDetails?
-	let data: Data?
+	public let type: ErrorType
+	public let details: CNErrorDetails?
+	public let data: Data?
 	
 	init(type: ErrorType, details: CNErrorDetails? = nil, data: Data? = nil) {
 		self.type = type
