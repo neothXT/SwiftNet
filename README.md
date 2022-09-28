@@ -16,7 +16,7 @@ Besides basic network requests, CombineNetworking allows you to easily send your
 - Sending requests easily using `Endpoint` models
 - SSL and Certificate pinning with just 2 lines of code
 - WebSocket connection support with `CNWebSocket`
-- Secure access token storage with KeyChain (thanks to KeychainAccess framework)
+- Secure access token storage with Keychain (thanks to KeychainAccess framework)
 - Access token storing strategy - configure `global`, `endpoint specific` (`default`) or `custom` strategy for all or just some endpoints
 - Automated refresh token/callback requests
 
