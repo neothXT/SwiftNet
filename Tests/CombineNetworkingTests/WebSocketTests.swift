@@ -2,7 +2,7 @@ import XCTest
 import Combine
 @testable import CombineNetworking
 
-final class CNWebSocketTests: XCTestCase {
+final class WebSocketTests: XCTestCase {
 	func testWebSocketConnection() throws {
 		let expectation = expectation(description: "Establish WebSocket connection")
 		

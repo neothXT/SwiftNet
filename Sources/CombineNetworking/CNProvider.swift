@@ -243,9 +243,15 @@ public class CNProvider<T: Endpoint> {
 		
 		return CNConfig.getSession(ignorePinning: ignorePinning).dataTaskPublisher(for: urlRequest)
 			.mapError { urlError -> Error in
+				let networkErrorCodes = [
+					NSURLErrorNetworkConnectionLost,
+					NSURLErrorNotConnectedToInternet,
+					NSURLErrorCannotLoadFromNetwork
+				]
+				let errorType: CNError.ErrorType = networkErrorCodes.contains(urlError.errorCode) ? .noInternetConnection : .unexpectedResponse
 				let errorDetails = CNErrorDetails(statusCode: urlError.errorCode,
 												  localizedString: urlError.localizedDescription)
-				let error = CNError(type: .unexpectedResponse, details: errorDetails)
+				let error = CNError(type: errorType, details: errorDetails)
 				runOnMain {
 					CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
 				}

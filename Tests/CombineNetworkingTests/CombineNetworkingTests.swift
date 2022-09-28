@@ -20,6 +20,24 @@ final class CombineNetworkingTests: XCTestCase {
 		wait(for: [expectation], timeout: 10)
 	}
 	
+	func testBadResponseFetchNoInternetConnection() throws {
+		let expectation = expectation(description: "Fetch first todo object")
+		var subscriptions: Set<AnyCancellable> = []
+		
+		CNProvider<RemoteEndpoint>().publisher(for: .posts, responseType: Todo?.self)
+			.catch { error -> Just<Todo?> in
+				if let responseError = error as? CNError,
+				   responseError.details?.statusCode != 200 && responseError.type == .noInternetConnection {
+					expectation.fulfill()
+				}
+				return Just(nil)
+			}
+			.sink { _ in }
+			.store(in: &subscriptions)
+		
+		wait(for: [expectation], timeout: 10)
+	}
+	
 	func testPlain() throws {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []

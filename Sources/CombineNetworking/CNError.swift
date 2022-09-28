@@ -21,7 +21,7 @@ public struct CNError: Error {
 
 public extension CNError {
 	enum ErrorType {
-		case failedToBuildRequest, failedToMapResponse, unexpectedResponse, authenticationFailed, notConnected, emptyResponse, conversionFailed
+		case failedToBuildRequest, failedToMapResponse, unexpectedResponse, authenticationFailed, notConnected, emptyResponse, conversionFailed, noInternetConnection
 	}
 	
 	var errorDescription: String? {
@@ -43,6 +43,9 @@ public extension CNError {
 			
 		case .notConnected:
 			return "There's no active WebSocket connection."
+			
+		case .noInternetConnection:
+			return "Please check your internet connection."
 			
 		case .emptyResponse:
 			return "Empty response."
