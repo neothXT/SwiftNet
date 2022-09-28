@@ -207,7 +207,7 @@ public struct CNError: Error {
 }
 ```
 
-Available error types are: `failedToBuildRequest`, `failedToMapResponse`, `unexpectedResponse`, `authenticationFailed`, `notConnected`, `emptyResponse` and `conversionFailed`.
+Available error types are: `failedToBuildRequest`, `failedToMapResponse`, `unexpectedResponse`, `authenticationFailed`, `notConnected`, `emptyResponse`, `noInternetConnection` and `conversionFailed`.
 
 `CNErrorDetails` looks like following:
 
