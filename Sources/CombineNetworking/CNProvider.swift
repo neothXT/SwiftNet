@@ -108,7 +108,7 @@ public class CNProvider<T: Endpoint> {
 					}.eraseToAnyPublisher()
 				} else if response.statusCode == 401 {
 					self?.didRetry.removeAll { $0 == endpoint.caseIdentifier }
-					let error = CNError(type: .unexpectedResponse,
+					let error = CNError(type: .authenticationFailed,
 										details: .init(statusCode: response.statusCode,
 													   localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
 													   url: response.url,
