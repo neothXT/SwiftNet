@@ -16,7 +16,7 @@ fileprivate func runOnMain(_ completion: @escaping () -> Void) {
 }
 
 @available(macOS 10.15, *)
-public class CNProvider<T: Endpoint> {
+open class CNProvider<T: Endpoint> {
 	private var didRetry: [String] = []
 	private let endpointURLMapper: EndpointURLMapper
 	

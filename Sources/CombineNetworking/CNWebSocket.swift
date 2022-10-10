@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-public class CNWebSocket: NSObject {
+open class CNWebSocket: NSObject {
 	private var webSocket: URLSessionWebSocketTask
 	
 	private(set) public var failedToConnect: Bool = false
