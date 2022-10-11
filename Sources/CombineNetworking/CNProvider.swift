@@ -27,7 +27,7 @@ open class CNProvider<T: Endpoint> {
 	}
 	
 	/// Returns publisher which automatically converts the response data into given response type
-	public func publisher<U: Decodable>(for endpoint: T,
+	open func publisher<U: Decodable>(for endpoint: T,
 										responseType: U.Type,
 										decoder: JSONDecoder? = nil,
 										retries: Int = 0,
@@ -61,7 +61,7 @@ open class CNProvider<T: Endpoint> {
 	}
 	
 	/// Returns publisher without adding any manipulations to the response data
-	public func rawPublisher(for endpoint: T,
+	open func rawPublisher(for endpoint: T,
 							 retries: Int = 0,
 							 expectedStatusCodes: [Int] = [200, 201, 204],
 							 ignorePinning: Bool = false,
@@ -150,7 +150,7 @@ open class CNProvider<T: Endpoint> {
 			.eraseToAnyPublisher()
 	}
 	
-	public func uploadPublisher<U: Codable>(for endpoint: T,
+	open func uploadPublisher<U: Codable>(for endpoint: T,
 											retries: Int = 0,
 											responseType: U.Type,
 											decoder: JSONDecoder? = nil,

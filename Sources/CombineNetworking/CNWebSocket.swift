@@ -133,7 +133,7 @@ open class CNWebSocket: NSObject {
 	}
 	
 	/// Sends message to WebSocket server
-	public func send(_ message: URLSessionWebSocketTask.Message, completion: @escaping (Error?) -> Void) {
+	open func send(_ message: URLSessionWebSocketTask.Message, completion: @escaping (Error?) -> Void) {
 		if !isConnected {
 			if isConnecting {
 				DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
@@ -152,7 +152,7 @@ open class CNWebSocket: NSObject {
 		webSocket.send(message, completionHandler: completion)
 	}
 	
-	public func listen(onReceive: @escaping (Result<URLSessionWebSocketTask.Message, Error>) -> Void) {
+	open func listen(onReceive: @escaping (Result<URLSessionWebSocketTask.Message, Error>) -> Void) {
 		if !isConnected {
 			if isConnecting {
 				DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
@@ -174,7 +174,7 @@ open class CNWebSocket: NSObject {
 		}
 	}
 	
-	public func ping(withTimeInterval interval: DispatchTime? = nil, onSuccess: (() -> Void)? = nil, onError: @escaping (Error) -> Void, stopAfterError: Bool = true) {
+	open func ping(withTimeInterval interval: DispatchTime? = nil, onSuccess: (() -> Void)? = nil, onError: @escaping (Error) -> Void, stopAfterError: Bool = true) {
 		webSocket.sendPing { [weak self] in
 			if let error = $0 {
 				onError(error)
