@@ -45,6 +45,7 @@ open class CNProvider<T: Endpoint> {
 				runOnMain {
 					CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
 				}
+				
 				return Result.success(response).publisher.eraseToAnyPublisher()
 			} catch {
 				let error = CNError(type: .failedToMapResponse, data: data)
@@ -52,6 +53,7 @@ open class CNProvider<T: Endpoint> {
 					CNDebugInfo.getLogger(for: endpoint)?
 						.log(error.localizedDescription, mode: .stop)
 				}
+				
 				return Fail(error: error).eraseToAnyPublisher()
 			}
 		}
@@ -76,6 +78,7 @@ open class CNProvider<T: Endpoint> {
 					runOnMain {
 						CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
 					}
+					
 					return Fail(error: error).eraseToAnyPublisher()
 				}
 				
@@ -118,6 +121,7 @@ open class CNProvider<T: Endpoint> {
 					runOnMain {
 						CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
 					}
+					
 					return Fail(error: error).eraseToAnyPublisher()
 				}
 				
@@ -133,6 +137,7 @@ open class CNProvider<T: Endpoint> {
 					runOnMain {
 						CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
 					}
+					
 					return Fail(error: error).eraseToAnyPublisher()
 				}
 				
@@ -140,6 +145,7 @@ open class CNProvider<T: Endpoint> {
 					runOnMain {
 						CNDebugInfo.getLogger(for: endpoint)?.log(CNError(type: .emptyResponse).localizedDescription, mode: .stop)
 					}
+					
 					return Fail(error: CNError(type: .emptyResponse)).eraseToAnyPublisher()
 				}
 				
@@ -167,14 +173,17 @@ open class CNProvider<T: Endpoint> {
 												  localizedString: HTTPURLResponse.localizedString(forStatusCode: 401))
 				let error = CNError(type: .authenticationFailed, details: errorDetails)
 				self?.didRetry.append(endpoint.caseIdentifier)
+				
 				return publisher.flatMap { [weak self] response -> AnyPublisher<UploadResponse, Error> in
 					guard let token = (response as? CNAccessToken) ?? response.convert() else {
 						runOnMain {
 							CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
 						}
+						
 						return Fail(error: error).eraseToAnyPublisher()
 					}
 					CNConfig.setAccessToken(token, for: endpoint)
+					
 					return self?.prepUploadPublisher(for: endpoint, responseType: responseType, decoder: decoder, ignorePinning: ignorePinning) ?? Fail(error: error).eraseToAnyPublisher()
 				}.eraseToAnyPublisher()
 			} else if response == .authError {
@@ -185,6 +194,7 @@ open class CNProvider<T: Endpoint> {
 				runOnMain {
 					CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
 				}
+				
 				return Fail(error: error).eraseToAnyPublisher()
 			} else if case .error(let errorCode, let errorData) = response {
 				let errorDetails = CNErrorDetails(statusCode: errorCode,
@@ -193,10 +203,12 @@ open class CNProvider<T: Endpoint> {
 				runOnMain {
 					CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
 				}
+				
 				return Fail(error: error).eraseToAnyPublisher()
 			}
 			
 			self?.didRetry.removeAll { $0 == endpoint.caseIdentifier }
+			
 			return Result.success(response).publisher.eraseToAnyPublisher()
 		}
 		.retry(retries)
@@ -214,6 +226,7 @@ open class CNProvider<T: Endpoint> {
 		runOnMain {
 			CNDebugInfo.getLogger(for: endpoint)?.log("\n" + request.cURL(pretty: true), mode: .start)
 		}
+		
 		return request
 	}
 	
@@ -238,6 +251,7 @@ open class CNProvider<T: Endpoint> {
 			runOnMain {
 				CNDebugInfo.getLogger(for: endpoint)?.log(CNError(type: .failedToBuildRequest).localizedDescription, mode: .stop)
 			}
+			
 			return Fail(error: CNError(type: .failedToBuildRequest)).eraseToAnyPublisher()
 		}
 		
@@ -255,6 +269,7 @@ open class CNProvider<T: Endpoint> {
 				runOnMain {
 					CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
 				}
+				
 				return error
 			}
 			.eraseToAnyPublisher()
@@ -269,6 +284,7 @@ open class CNProvider<T: Endpoint> {
 			runOnMain {
 				CNDebugInfo.getLogger(for: endpoint)?.log(CNError(type: .failedToBuildRequest).localizedDescription, mode: .stop)
 			}
+			
 			return Fail(error: CNError(type: .failedToBuildRequest)).eraseToAnyPublisher()
 		}
 		
@@ -310,134 +326,6 @@ open class CNProvider<T: Endpoint> {
 			.map { .progress(percentage: $0.progress) }
 			.merge(with: publisher)
 			.eraseToAnyPublisher()
-	}
-}
-
-extension CNConfig {
-	fileprivate static var accessTokens: [String: CNAccessToken] = [:]
-	
-	//MARK: set access token methods
-	
-	/// Saves new Access Token for a given endpoint
-	public static func setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
-		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.typeIdentifier
-		setAccessToken(token, for: key)
-	}
-	
-	/// Saves new Access Token for a given endpoint type identifier
-	public static func setAccessToken<T: Endpoint>(_ token: CNAccessToken?, for endpoint: T.Type) {
-		setAccessToken(token, for: endpoint.identifier)
-	}
-	
-	/// Saves global Access Token
-	public static func setGlobalAccessToken(_ token: CNAccessToken?) {
-		guard let key = AccessTokenStrategy.global.storingLabel else { return }
-		setAccessToken(token, for: key)
-	}
-	
-	/// Saves new Access Token for specific storing label
-	public static func setAccessToken(_ token: CNAccessToken?, for storingLabel: String) {
-		guard let token = token else { return }
-		guard storeTokensInKeychain else {
-			accessTokens[storingLabel] = token
-			return
-		}
-		
-		guard let keychain = CNConfig.keychainInstance else {
-			#if DEBUG
-			print("Cannot store access token in keychain. Please provide keychain instance using CNConfig.keychainInstance or disable keychain storage by setting CNConfig.storeTokensInKeychain to false!")
-			#endif
-			return
-		}
-		
-		keychain[data: "accessToken_\(storingLabel)"] = try? token.toJsonData()
-	}
-	
-	//MARK: fetch access token methods
-	
-	/// Returns Access Token stored for a given endpoint if present
-	public static func accessToken(for endpoint: Endpoint) -> CNAccessToken? {
-		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.typeIdentifier
-		return accessToken(for: key)
-	}
-	
-	/// Returns Access Token stored for a given endpoint type identifier if present
-	public static func accessToken<T: Endpoint>(for endpoint: T.Type) -> CNAccessToken? {
-		accessToken(for: endpoint.identifier)
-	}
-	
-	/// Returns global Access Token if present
-	public static func globalAccessToken() -> CNAccessToken? {
-		guard let key = AccessTokenStrategy.global.storingLabel else { return nil }
-		return accessToken(for: key)
-	}
-	
-	/// Returns Access Token for specific storing label if present
-	public static func accessToken(for storingLabel: String) -> CNAccessToken? {
-		guard storeTokensInKeychain else {
-			return accessTokens[storingLabel]
-		}
-		
-		guard let keychain = CNConfig.keychainInstance else {
-			#if DEBUG
-			print("Cannot read access token from keychain. Please provide keychain instance using CNConfig.keychainInstance or disable keychain storage by setting CNConfig.storeTokensInKeychain to false!")
-			#endif
-			return nil
-		}
-		
-		guard let data = keychain[data: "accessToken_\(storingLabel)"] else { return nil }
-		return try? JSONDecoder().decode(CNAccessToken.self, from: data)
-	}
-	
-	//MARK: remove access token methods
-	
-	/// Removes stored Access Token for a given endpoint if present
-	@discardableResult
-	public static func removeAccessToken(for endpoint: Endpoint) -> Bool {
-		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.typeIdentifier
-		return removeAccessToken(for: key)
-	}
-	
-	/// Removes Access Token stored for a given endpoint type identifier if present
-	@discardableResult
-	public static func removeAccessToken<T: Endpoint>(for endpoint: T.Type) -> Bool {
-		removeAccessToken(for: endpoint.identifier)
-	}
-	
-	/// Removes global Access Token if present
-	@discardableResult
-	public static func removeGlobalAccessToken() -> Bool {
-		guard let key = AccessTokenStrategy.global.storingLabel else { return false }
-		return removeAccessToken(for: key)
-	}
-	
-	/// Removes Access Token for specific storing label if present
-	@discardableResult
-	public static func removeAccessToken(for storingLabel: String) -> Bool {
-		if !storeTokensInKeychain {
-			guard Array(accessTokens.keys).contains(storingLabel) else { return false }
-			accessTokens.removeValue(forKey: storingLabel)
-			return true
-		}
-		
-		guard let keychain = CNConfig.keychainInstance else {
-			#if DEBUG
-			print("Cannot read access token from keychain. Please provide keychain instance using CNConfig.keychainInstance or disable keychain storage by setting CNConfig.storeTokensInKeychain to false!")
-			#endif
-			return false
-		}
-		
-		do {
-			let tokenIsPresent = try keychain.contains("accessToken_\(storingLabel)")
-			guard tokenIsPresent else { return false }
-			try keychain.remove("accessToken_\(storingLabel)")
-			return true
-		} catch {
-			#if DEBUG
-			print(error.localizedDescription)
-			#endif
-			return false
-		}
 	}
 }
 

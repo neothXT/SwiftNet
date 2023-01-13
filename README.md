@@ -171,8 +171,8 @@ CombineNetworking's CNProvider uses iOS built-in Logger (if running on iOS 14 or
 
 ### Safe storage using Keychain
 
-CombineNetworking allows you to store your access tokens in keychain. This feature is turned on by default. Using keychain to store your access keys requires you to provide keychain instance by setting value of `CNConfig.keychainInstance`.
-Safe storage using keychain can be disabled by toggling `CNConfig.storeTokensInKeychain` option.
+CombineNetworking allows you to store your access tokens in keychain. This feature is turned off by default. Using keychain to store your access keys requires you to provide keychain instance by setting value of `CNConfig.keychainInstance`.
+Safe storage using keychain can be enabled by toggling `CNConfig.storeTokensInKeychain` option.
 
 Please remember Apple's Keychain doesn't automatically remove entries created by an app upon its deletion. Do not worry, however. Only your app can access those entries. Nevertheless, if you're using CombineNetworking's safe storage, it is recommended to add some sort of app launch counter and upon first launch call `CNConfig.removeAccessToken(for endpoint: Endpoint? = nil)` to make sure any remaining old entries in keychain are removed.
 
