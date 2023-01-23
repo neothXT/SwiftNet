@@ -3,19 +3,15 @@ import Combine
 @testable import CombineNetworking
 
 final class CombineNetworkingTests: XCTestCase {
+	private let provider = CNProvider<RemoteEndpoint>()
+	
 	func testBadResponseFetch() throws {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .posts, responseType: Todo?.self)
-			.catch { error -> Just<Todo?> in
-				if let responseError = error as? CNError, responseError.details?.statusCode != 200 {
-					expectation.fulfill()
-				}
-				return Just(nil)
-			}
-			.sink { _ in }
-			.store(in: &subscriptions)
+		provider.test(.posts, storeIn: &subscriptions) { _ in
+			expectation.fulfill()
+		}
 		
 		wait(for: [expectation], timeout: 10)
 	}
@@ -24,16 +20,11 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .posts, responseType: Todo?.self)
-			.catch { error -> Just<Todo?> in
-				if let responseError = error as? CNError,
-				   responseError.details?.statusCode != 200 && responseError.type == .noInternetConnection {
-					expectation.fulfill()
-				}
-				return Just(nil)
+		provider.test(.posts, storeIn: &subscriptions) {
+			if let error = $0 as? CNError, error.type == .noInternetConnection {
+				expectation.fulfill()
 			}
-			.sink { _ in }
-			.store(in: &subscriptions)
+		}
 		
 		wait(for: [expectation], timeout: 10)
 	}
@@ -42,12 +33,9 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .todos, responseType: Todo.self)
-			.sink(receiveCompletion: { _ in
-			}) { (todos: Todo) in
-				expectation.fulfill()
-			}
-			.store(in: &subscriptions)
+		provider.test(.todos, storeIn: &subscriptions) {
+			expectation.fulfill()
+		}
 		
 		wait(for: [expectation], timeout: 10)
 	}
@@ -56,9 +44,9 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .dictGet(["postId": 1]), responseType: [Comment].self)
-			.sink(receiveCompletion: { _ in }) { (_: [Comment]) in expectation.fulfill() }
-			.store(in: &subscriptions)
+		provider.test(.dictGet(["postId": 1]), storeIn: &subscriptions) {
+			expectation.fulfill()
+		}
 		
 		wait(for: [expectation], timeout: 10)
 	}
@@ -67,9 +55,9 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().publisher(for: .stringGet("postId=1"), responseType: [Comment].self)
-			.sink(receiveCompletion: { _ in }) { (_: [Comment]) in expectation.fulfill() }
-			.store(in: &subscriptions)
+		provider.test(.stringGet("postId=1"), storeIn: &subscriptions) {
+			expectation.fulfill()
+		}
 		
 		wait(for: [expectation], timeout: 10)
 	}
@@ -80,10 +68,9 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNProvider<RemoteEndpoint>().rawPublisher(for: .post(post))
-			.sink(receiveCompletion: { _ in
-			}) { _ in expectation.fulfill() }
-			.store(in: &subscriptions)
+		provider.test(.post(post), storeIn: &subscriptions) {
+			expectation.fulfill()
+		}
 		
 		wait(for: [expectation], timeout: 10)
 	}
@@ -94,10 +81,9 @@ final class CombineNetworkingTests: XCTestCase {
 		
 		let dict = ["userId": "1231", "title": "Title", "body": "Body"]
 		
-		CNProvider<RemoteEndpoint>().rawPublisher(for: .dictPost(dict))
-			.sink(receiveCompletion: { _ in
-			}) { _ in expectation.fulfill() }
-			.store(in: &subscriptions)
+		provider.test(.dictPost(dict), storeIn: &subscriptions) {
+			expectation.fulfill()
+		}
 		
 		wait(for: [expectation], timeout: 10)
 	}

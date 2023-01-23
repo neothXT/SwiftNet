@@ -6,7 +6,7 @@ final class WebSocketTests: XCTestCase {
 	func testWebSocketConnection() throws {
 		let expectation = expectation(description: "Establish WebSocket connection")
 		
-		let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
+		let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/1/demo/")!)
 		webSocket.onConnectionEstablished = {
 			webSocket.disconnect()
 			expectation.fulfill()
@@ -18,7 +18,7 @@ final class WebSocketTests: XCTestCase {
 	
 	func testWebSoketSendMessage() throws {
 		let expectation = expectation(description: "Establish WebSocket connection and send a message")
-		let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
+		let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/1/demo/")!)
 		webSocket.connect()
 		webSocket.send(.string("Test message")) {
 			if let _ = $0 {
@@ -33,8 +33,8 @@ final class WebSocketTests: XCTestCase {
 	func testWebSocketReceiveMessage() throws {
 		let expectation = expectation(description: "Establish WebSocket connection and receive a message")
 		
-		let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
-		let receiverWebSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
+		let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/1/demo/")!)
+		let receiverWebSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/1/demo/")!)
 		receiverWebSocket.connect()
 		receiverWebSocket.listen { result in
 			switch result {
@@ -55,8 +55,8 @@ final class WebSocketTests: XCTestCase {
 	func testWebSocketReconnect() throws {
 		let expectation = expectation(description: "Reestablish WebSocket connection and receive a message")
 		
-		let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
-		let receiverWebSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
+		let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/1/demo/")!)
+		let receiverWebSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/1/demo/")!)
 		receiverWebSocket.connect()
 		receiverWebSocket.disconnect()
 		receiverWebSocket.reconnect()

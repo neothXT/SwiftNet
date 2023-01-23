@@ -222,6 +222,27 @@ public struct CNErrorDetails {
 }
 ```
 
+### Simplified testing
+
+If you want to run simple tests on your request, just to confirm the status code of the response met the expectations set for a given endpoint you can just run `test()` method like this:
+
+```Swift
+final class CombineNetworkingTests: XCTestCase {
+	private let provider = CNProvider<RemoteEndpoint>()
+	
+	func testTodoFetch() throws {
+		let expectation = expectation(description: "Test todo fetching request")
+		var subscriptions: Set<AnyCancellable> = []
+		
+		provider.test(.todos, storeIn: &subscriptions) {
+			expectation.fulfill()
+		}
+		
+		wait(for: [expectation], timeout: 10)
+	} 
+}
+```
+
 ### WebSockets
 
 CombineNetworking also allows you to connect with WebSockets effortlessly. Simply use `CNWebSocket` like this:
