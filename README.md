@@ -25,35 +25,35 @@ Besides basic network requests, CombineNetworking allows you to easily send your
 ### Create an Endpoint to work with
 ```Swift
 enum TodosEndpoint {
-  case todos(Int)
+    case todos(Int)
 }
 
 extension TodosEndpoint: Endpoint {
-  var baseURL: URL? {
-    URL(string: "https://jsonplaceholder.typicode.com/")
-  }
-	
-  var path: String {
-    switch self {
-      case .todos:
-      return "todos"
+    var baseURL: URL? {
+        URL(string: "https://jsonplaceholder.typicode.com/")
     }
-  }
 	
-  var method: RequestMethod {
-    .get
-  }
-	
-  var headers: [String : Any]? {
-    nil
-  }
-	
-  var data: EndpointData {
-    switch self {
-      case .todos(let id):
-      return .queryParams(["id": id])
+    var path: String {
+        switch self {
+        case .todos:
+            return "todos"
+        }
     }
-  }
+	
+    var method: RequestMethod {
+        .get
+    }
+	
+    var headers: [String : Any]? {
+        nil
+    }
+	
+    var data: EndpointData {
+        switch self {
+        case .todos(let id):
+            return .queryParams(["id": id])
+        }
+    }
 }
 ```
 
@@ -85,28 +85,28 @@ Handling authorization callbacks with CombineNetworking is ridiculously easy. To
 ```Swift
 
 enum TodosEndpoint {
-  case token
-  case todos(Int)
+    case token
+    case todos(Int)
 }
 
 extension TodosEndpoint: Endpoint {
-  //Setup all the required properties like baseURL, path, etc...
+    //Setup all the required properties like baseURL, path, etc...
 		
-  //... then determine which of your endpoints require authorization...
-  var requiresAccessToken: Bool {
-    switch self {
-    case .token:
-      return false
+    //... then determine which of your endpoints require authorization...
+    var requiresAccessToken: Bool {
+        switch self {
+        case .token:
+            return false
      
-    default:
-      return true
+        default:
+            return true
+        }
     }
-  }
 	
-  //... and prepare callbackPublisher to handle authorization callbacks
-  var callbackPublisher: AnyPublisher<AccessTokenConvertible?, Error>? {
-    try? CNProvider<TodosEndpoint>().publisher(for: .token, responseType: CNAccessToken?.self).asAccessTokenConvertible()
-  }
+    //... and prepare callbackPublisher to handle authorization callbacks
+    var callbackPublisher: AnyPublisher<AccessTokenConvertible?, Error>? {
+        try? CNProvider<TodosEndpoint>().publisher(for: .token, responseType: CNAccessToken?.self).asAccessTokenConvertible()
+    }
 }
 ```
 
@@ -183,13 +183,13 @@ private var subscriptions: Set<AnyCancellable> = []
 var todo: Todo?
 
 func subscribeForTodos() {
-  CNProvider<TodosEndpoint>().publisher(for: .todos(1), responseType: Todo?.self)
-    .catch { (error) -> Just<Todo?> in
-      print(error)
-      return Just(nil)
-    }
-    .assign(to: \.todo, on: self)
-    .store(in: &subscriptions)
+    CNProvider<TodosEndpoint>().publisher(for: .todos(1), responseType: Todo?.self)
+        .catch { (error) -> Just<Todo?> in
+            print(error)
+            return Just(nil)
+        }
+        .assign(to: \.todo, on: self)
+        .store(in: &subscriptions)
 }
 ```
 
@@ -201,9 +201,9 @@ In case of request failure, CombineNetworking returns stuct of type `CNError` re
 
 ```Swift
 public struct CNError: Error {
-	let type: ErrorType
-	let details: CNErrorDetails?
-	let data: Data?
+    let type: ErrorType
+    let details: CNErrorDetails?
+    let data: Data?
 }
 ```
 
@@ -213,12 +213,12 @@ Available error types are: `failedToBuildRequest`, `failedToMapResponse`, `unexp
 
 ```Swift
 public struct CNErrorDetails {
-	public let statusCode: Int
-	public let localizedString: String
-	public let url: URL?
-	public let mimeType: String?
-	public let headers: [AnyHashable: Any]?
-	public let data: Data?
+    public let statusCode: Int
+    public let localizedString: String
+    public let url: URL?
+    public let mimeType: String?
+    public let headers: [AnyHashable: Any]?
+    public let data: Data?
 }
 ```
 
@@ -228,18 +228,18 @@ If you want to run simple tests on your request, just to confirm the status code
 
 ```Swift
 final class CombineNetworkingTests: XCTestCase {
-	private let provider = CNProvider<RemoteEndpoint>()
+    private let provider = CNProvider<RemoteEndpoint>()
 	
-	func testTodoFetch() throws {
-		let expectation = expectation(description: "Test todo fetching request")
-		var subscriptions: Set<AnyCancellable> = []
+    func testTodoFetch() throws {
+        let expectation = expectation(description: "Test todo fetching request")
+	var subscriptions: Set<AnyCancellable> = []
 		
-		provider.test(.todos, storeIn: &subscriptions) {
-			expectation.fulfill()
-		}
+	provider.test(.todos, storeIn: &subscriptions) {
+	    expectation.fulfill()
+	}
 		
-		wait(for: [expectation], timeout: 10)
-	} 
+        wait(for: [expectation], timeout: 10)
+    } 
 }
 ```
 
@@ -251,22 +251,23 @@ CombineNetworking also allows you to connect with WebSockets effortlessly. Simpl
 let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
 webSocket.connect()
 webSocket.listen { result in
-	switch result {
-	case .success(let message):
-		switch message {
-		case .data(let data):
-			print("Received binary: \(data)")
-		case .string(let string):
-			print("Received string: \(string)")
-		}
-	default:
-		return
+    switch result {
+    case .success(let message):
+        switch message {
+	case .data(let data):
+	    print("Received binary: \(data)")
+	case .string(let string):
+	    print("Received string: \(string)")
 	}
+    default:
+	return
+    }
 }
+
 webSocket.send(.string("Test message")) {
-	if let error = $0 {
-		log(error.localizedDescription)
-	}
+    if let error = $0 {
+        log(error.localizedDescription)
+    }
 }
 ```
 
