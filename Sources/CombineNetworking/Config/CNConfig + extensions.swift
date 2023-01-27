@@ -32,15 +32,8 @@ extension CNConfig {
 	/// Saves new Access Token for specific storing label
 	public static func setAccessToken(_ token: CNAccessToken?, for storingLabel: String) {
 		guard let token = token else { return }
-		guard storeTokensInKeychain else {
-			accessTokens[storingLabel] = token
-			return
-		}
-		
 		guard let keychain = CNConfig.keychainInstance else {
-			#if DEBUG
-			print("Cannot store access token in keychain. Please provide keychain instance using CNConfig.keychainInstance or disable keychain storage by setting CNConfig.storeTokensInKeychain to false!")
-			#endif
+			accessTokens[storingLabel] = token
 			return
 		}
 		
@@ -68,15 +61,8 @@ extension CNConfig {
 	
 	/// Returns Access Token for specific storing label if present
 	public static func accessToken(for storingLabel: String) -> CNAccessToken? {
-		guard storeTokensInKeychain else {
-			return accessTokens[storingLabel]
-		}
-		
 		guard let keychain = CNConfig.keychainInstance else {
-			#if DEBUG
-			print("Cannot read access token from keychain. Please provide keychain instance using CNConfig.keychainInstance or disable keychain storage by setting CNConfig.storeTokensInKeychain to false!")
-			#endif
-			return nil
+			return accessTokens[storingLabel]
 		}
 		
 		guard let data = keychain[data: "accessToken_\(storingLabel)"] else { return nil }
@@ -108,17 +94,10 @@ extension CNConfig {
 	/// Removes Access Token for specific storing label if present
 	@discardableResult
 	public static func removeAccessToken(for storingLabel: String) -> Bool {
-		if !storeTokensInKeychain {
+		guard let keychain = CNConfig.keychainInstance else {
 			guard Array(accessTokens.keys).contains(storingLabel) else { return false }
 			accessTokens.removeValue(forKey: storingLabel)
 			return true
-		}
-		
-		guard let keychain = CNConfig.keychainInstance else {
-			#if DEBUG
-			print("Cannot read access token from keychain. Please provide keychain instance using CNConfig.keychainInstance or disable keychain storage by setting CNConfig.storeTokensInKeychain to false!")
-			#endif
-			return false
 		}
 		
 		do {
