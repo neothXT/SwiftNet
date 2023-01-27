@@ -224,7 +224,7 @@ public struct CNErrorDetails {
 
 ### Simplified testing
 
-If you want to run simple tests on your request, just to confirm the status code of the response met the expectations set for a given endpoint you can just run `test()` method like this:
+If you want to run simple tests on your request, just to confirm the status code of the response met the expectations set for a given endpoint you can just run `testRaw()` method like this:
 
 ```Swift
 final class CombineNetworkingTests: XCTestCase {
@@ -234,7 +234,26 @@ final class CombineNetworkingTests: XCTestCase {
         let expectation = expectation(description: "Test todo fetching request")
 	var subscriptions: Set<AnyCancellable> = []
 		
-	provider.test(.todos, storeIn: &subscriptions) {
+	provider.testRaw(.todos, storeIn: &subscriptions) {
+	    expectation.fulfill()
+	}
+		
+        wait(for: [expectation], timeout: 10)
+    } 
+}
+```
+
+... and if you want to test your request by confirming both the status code and the response model, use `test()` method like this:
+
+```Swift
+final class CombineNetworkingTests: XCTestCase {
+    private let provider = CNProvider<RemoteEndpoint>()
+	
+    func testTodoFetchWithModel() throws {
+        let expectation = expectation(description: "Test todo fetching request together with its response model")
+	var subscriptions: Set<AnyCancellable> = []
+		
+	provider.test(.todos, responseType: Todo.self, storeIn: &subscriptions) {
 	    expectation.fulfill()
 	}
 		

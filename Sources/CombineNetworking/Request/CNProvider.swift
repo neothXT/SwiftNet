@@ -15,6 +15,20 @@ fileprivate func runOnMain(_ completion: @escaping () -> Void) {
 	}
 }
 
+fileprivate func generateSuccess<T: Endpoint, U: Decodable>(for endpoint: T, data: U) -> AnyPublisher<U, Error> {
+	runOnMain {
+		CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
+	}
+	return Result.success(data).publisher.eraseToAnyPublisher()
+}
+
+fileprivate func generateFailure<T: Endpoint, U: Decodable>(for endpoint: T, error: CNError) -> AnyPublisher<U, Error> {
+	runOnMain {
+		CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
+	}
+	return Fail(error: error).eraseToAnyPublisher()
+}
+
 @available(macOS 10.15, *)
 open class CNProvider<T: Endpoint> {
 	private var didRetry: [String] = []
@@ -42,19 +56,10 @@ open class CNProvider<T: Endpoint> {
 		.flatMap { data -> AnyPublisher<U, Error> in
 			do {
 				let response = try (decoder ?? endpoint.jsonDecoder).decode(U.self, from: data)
-				runOnMain {
-					CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
-				}
-				
-				return Result.success(response).publisher.eraseToAnyPublisher()
+				return generateSuccess(for: endpoint, data: response)
 			} catch {
 				let error = CNError(type: .failedToMapResponse, data: data)
-				runOnMain {
-					CNDebugInfo.getLogger(for: endpoint)?
-						.log(error.localizedDescription, mode: .stop)
-				}
-				
-				return Fail(error: error).eraseToAnyPublisher()
+				return generateFailure(for: endpoint, error: error)
 			}
 		}
 		.retry(retries)
@@ -75,11 +80,7 @@ open class CNProvider<T: Endpoint> {
 			.flatMap { [weak self] output -> AnyPublisher<Data, Error> in
 				guard let response = output.response as? HTTPURLResponse else {
 					let error = CNError(type: .failedToMapResponse)
-					runOnMain {
-						CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
-					}
-					
-					return Fail(error: error).eraseToAnyPublisher()
+					return generateFailure(for: endpoint, error: error)
 				}
 				
 				if response.statusCode == 401 && !(self?.didRetry.contains(endpoint.caseIdentifier) ?? false), let publisher = endpoint.callbackPublisher {
@@ -93,18 +94,12 @@ open class CNProvider<T: Endpoint> {
 					return publisher.flatMap { [weak self] response -> AnyPublisher<Data, Error> in
 						let error = CNError(type: .authenticationFailed, details: errorDetails)
 						guard let token = (response as? CNAccessToken) ?? response.convert() else {
-							runOnMain {
-								CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
-							}
-							return Fail(error: error).eraseToAnyPublisher()
+							return generateFailure(for: endpoint, error: error)
 						}
 						CNConfig.setAccessToken(token, for: endpoint)
 						
 						guard let newPublisher = self?.prepPublisher(for: endpoint, ignorePinning: ignorePinning).map(\.data).eraseToAnyPublisher() else {
-							runOnMain {
-								CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
-							}
-							return Fail(error: error).eraseToAnyPublisher()
+							return generateFailure(for: endpoint, error: error)
 						}
 						
 						return newPublisher
@@ -118,11 +113,7 @@ open class CNProvider<T: Endpoint> {
 													   mimeType: response.mimeType,
 													   headers: response.allHeaderFields),
 										data: output.data)
-					runOnMain {
-						CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
-					}
-					
-					return Fail(error: error).eraseToAnyPublisher()
+					return generateFailure(for: endpoint, error: error)
 				}
 				
 				self?.didRetry.removeAll { $0 == endpoint.caseIdentifier }
@@ -134,19 +125,11 @@ open class CNProvider<T: Endpoint> {
 													   mimeType: response.mimeType,
 													   headers: response.allHeaderFields),
 										data: output.data)
-					runOnMain {
-						CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
-					}
-					
-					return Fail(error: error).eraseToAnyPublisher()
+					return generateFailure(for: endpoint, error: error)
 				}
 				
 				guard output.data.count > 0 else {
-					runOnMain {
-						CNDebugInfo.getLogger(for: endpoint)?.log(CNError(type: .emptyResponse).localizedDescription, mode: .stop)
-					}
-					
-					return Fail(error: CNError(type: .emptyResponse)).eraseToAnyPublisher()
+					return generateFailure(for: endpoint, error: CNError(type: .emptyResponse))
 				}
 				
 				return Result.success(output.data).publisher.eraseToAnyPublisher()

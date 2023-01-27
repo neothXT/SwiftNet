@@ -9,7 +9,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		provider.test(.posts, storeIn: &subscriptions) { _ in
+		provider.testRaw(.posts, storeIn: &subscriptions) { _ in
 			expectation.fulfill()
 		}
 		
@@ -20,7 +20,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		provider.test(.posts, storeIn: &subscriptions) {
+		provider.testRaw(.posts, storeIn: &subscriptions) {
 			if let error = $0 as? CNError, error.type == .noInternetConnection {
 				expectation.fulfill()
 			}
@@ -33,7 +33,18 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		provider.test(.todos, storeIn: &subscriptions) {
+		provider.testRaw(.todos, storeIn: &subscriptions) {
+			expectation.fulfill()
+		}
+		
+		wait(for: [expectation], timeout: 10)
+	}
+	
+	func testModel() throws {
+		let expectation = expectation(description: "Fetch first todo object")
+		var subscriptions: Set<AnyCancellable> = []
+		
+		provider.test(.todos, responseType: Todo.self, storeIn: &subscriptions) {
 			expectation.fulfill()
 		}
 		
@@ -44,7 +55,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		provider.test(.dictGet(["postId": 1]), storeIn: &subscriptions) {
+		provider.testRaw(.dictGet(["postId": 1]), storeIn: &subscriptions) {
 			expectation.fulfill()
 		}
 		
@@ -55,7 +66,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		provider.test(.stringGet("postId=1"), storeIn: &subscriptions) {
+		provider.testRaw(.stringGet("postId=1"), storeIn: &subscriptions) {
 			expectation.fulfill()
 		}
 		
@@ -68,7 +79,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Fetch first todo object")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		provider.test(.post(post), storeIn: &subscriptions) {
+		provider.testRaw(.post(post), storeIn: &subscriptions) {
 			expectation.fulfill()
 		}
 		
@@ -81,7 +92,7 @@ final class CombineNetworkingTests: XCTestCase {
 		
 		let dict = ["userId": "1231", "title": "Title", "body": "Body"]
 		
-		provider.test(.dictPost(dict), storeIn: &subscriptions) {
+		provider.testRaw(.dictPost(dict), storeIn: &subscriptions) {
 			expectation.fulfill()
 		}
 		
