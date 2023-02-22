@@ -174,17 +174,22 @@ CombineNetowrking uses ashleymills's Reachability to let you continuously monito
 If you want to subscribe to a network connection monitor's publisher, you can do it like this:
 
 ```Swift
-CNNetworkMonitor.publisher()
-    .sink { status in
-        switch status {
-        case .wifi:
-            // Do something
-	case .cellular:
-	    // Do something else
-	case .unavailable:
-            // Show connection error
+private var subscriptions: Set<AnyCancellable> = []
+
+func subscribeForNetworkChanges() {
+    CNNetworkMonitor.publisher()
+        .sink { status in
+            switch status {
+            case .wifi:
+                // Do something
+            case .cellular:
+                // Do something else
+            case .unavailable:
+                // Show connection error
+            }
         }
-    }
+        .store(in: &subscriptions)
+}
 ```
 
 ### Safe storage using Keychain
