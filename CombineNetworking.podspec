@@ -16,7 +16,7 @@ Pod::Spec.new do |spec|
   #
 
   spec.name         = "CombineNetworking"
-  spec.version      = "1.7.2"
+  spec.version      = "1.8.0"
   spec.summary      = "Easy approach on Networking using Combine"
 
   # This description is used to generate tags and improve search results.

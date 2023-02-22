@@ -168,6 +168,25 @@ Thanks to access token strategy being set both globally (via `CNConfig`) and ind
 
 CombineNetworking's CNProvider uses iOS built-in Logger (if running on iOS 14 or newer) and custom debug-mode-only logger by default for each and every request.
 
+### Network connection monitor
+
+CombineNetowrking uses ashleymills's Reachability to let you continuously monitor network connection status. 
+If you want to subscribe to a network connection monitor's publisher, you can do it like this:
+
+```Swift
+CNNetworkMonitor.publisher()
+    .sink { status in
+        switch status {
+        case .wifi:
+            // Do something
+	    case .cellular:
+	        // Do something else
+		case .unavailable:
+		    // Show connection error
+        }
+    }
+```
+
 ### Safe storage using Keychain
 
 CombineNetworking allows you to store your access tokens in keychain. Using keychain to store your access tokens requires you to provide keychain instance by setting value of `CNConfig.keychainInstance`.

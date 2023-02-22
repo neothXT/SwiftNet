@@ -10,7 +10,7 @@ import Combine
 import Reachability
 
 public class CNNetworkMonitor {
-	public static func monitorPublisher() -> AnyPublisher<Reachability.Connection, Never> {
+	public static func publisher() -> AnyPublisher<Reachability.Connection, Never> {
 		let reachability = try! Reachability()
 		
 		try? reachability.startNotifier()
