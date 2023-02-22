@@ -179,10 +179,10 @@ CNNetworkMonitor.publisher()
         switch status {
         case .wifi:
             // Do something
-	    case .cellular:
-	        // Do something else
-		case .unavailable:
-		    // Show connection error
+	case .cellular:
+	    // Do something else
+	case .unavailable:
+            // Show connection error
         }
     }
 ```
