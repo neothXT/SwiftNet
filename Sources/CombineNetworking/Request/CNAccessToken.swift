@@ -14,7 +14,7 @@ public struct CNAccessToken: AccessTokenConvertible {
 	public let refresh_token: String?
 	public let scope: String?
 	
-	public init(access_token: String, token_type: String = "", expires_in: Int?, refresh_token: String?, scope: String?) {
+	public init(access_token: String, token_type: String = "", expires_in: Int? = nil, refresh_token: String? = nil, scope: String? = nil) {
 		self.access_token = access_token
 		self.token_type = token_type
 		self.expires_in = expires_in

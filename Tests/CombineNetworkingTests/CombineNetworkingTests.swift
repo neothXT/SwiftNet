@@ -1,23 +1,13 @@
 import XCTest
 import Combine
+import Reachability
 @testable import CombineNetworking
 
 final class CombineNetworkingTests: XCTestCase {
 	private let provider = CNProvider<RemoteEndpoint>()
 	
-	func testBadResponseFetch() throws {
-		let expectation = expectation(description: "Fetch first todo object")
-		var subscriptions: Set<AnyCancellable> = []
-		
-		provider.testRaw(.posts, storeIn: &subscriptions) { _ in
-			expectation.fulfill()
-		}
-		
-		wait(for: [expectation], timeout: 10)
-	}
-	
 	func testBadResponseFetchNoInternetConnection() throws {
-		let expectation = expectation(description: "Fetch first todo object")
+		let expectation = expectation(description: "Test should fail due to no internet connection")
 		var subscriptions: Set<AnyCancellable> = []
 		
 		provider.testRaw(.posts, storeIn: &subscriptions) {
@@ -30,7 +20,7 @@ final class CombineNetworkingTests: XCTestCase {
 	}
 	
 	func testPlain() throws {
-		let expectation = expectation(description: "Fetch first todo object")
+		let expectation = expectation(description: "Test plain fetch")
 		var subscriptions: Set<AnyCancellable> = []
 		
 		provider.testRaw(.todos, storeIn: &subscriptions) {
@@ -41,7 +31,7 @@ final class CombineNetworkingTests: XCTestCase {
 	}
 	
 	func testModel() throws {
-		let expectation = expectation(description: "Fetch first todo object")
+		let expectation = expectation(description: #"Test "test()"#)
 		var subscriptions: Set<AnyCancellable> = []
 		
 		provider.test(.todos, responseType: Todo.self, storeIn: &subscriptions) {
@@ -52,7 +42,7 @@ final class CombineNetworkingTests: XCTestCase {
 	}
 
 	func testQueryParams() throws {
-		let expectation = expectation(description: "Fetch first todo object")
+		let expectation = expectation(description: "Test query params")
 		var subscriptions: Set<AnyCancellable> = []
 		
 		provider.testRaw(.dictGet(["postId": 1]), storeIn: &subscriptions) {
@@ -63,7 +53,7 @@ final class CombineNetworkingTests: XCTestCase {
 	}
 	
 	func testStringQueryParams() throws {
-		let expectation = expectation(description: "Fetch first todo object")
+		let expectation = expectation(description: "Test string query params")
 		var subscriptions: Set<AnyCancellable> = []
 		
 		provider.testRaw(.stringGet("postId=1"), storeIn: &subscriptions) {
@@ -76,7 +66,7 @@ final class CombineNetworkingTests: XCTestCase {
 	func testPostWithJsonModel() throws {
 		let post = Post(userId: 123, id: nil, title: "SampleTitle", body: "SampleBody")
 		
-		let expectation = expectation(description: "Fetch first todo object")
+		let expectation = expectation(description: "Test post with JSON model")
 		var subscriptions: Set<AnyCancellable> = []
 		
 		provider.testRaw(.post(post), storeIn: &subscriptions) {
@@ -87,7 +77,7 @@ final class CombineNetworkingTests: XCTestCase {
 	}
 	
 	func testPostWithDictionary() throws {
-		let expectation = expectation(description: "Fetch first todo object")
+		let expectation = expectation(description: "Test post with dictionary")
 		var subscriptions: Set<AnyCancellable> = []
 		
 		let dict = ["userId": "1231", "title": "Title", "body": "Body"]
@@ -97,6 +87,21 @@ final class CombineNetworkingTests: XCTestCase {
 		}
 		
 		wait(for: [expectation], timeout: 10)
+	}
+	
+	func testNetworkMonitor() throws {
+		let expectation = expectation(description: "Test network monitor")
+		var subscriptions: Set<AnyCancellable> = []
+		
+		CNNetworkMonitor.monitorPublisher()
+			.sink { status in
+				if status == .unavailable {
+					expectation.fulfill()
+				}
+			}
+			.store(in: &subscriptions)
+		
+		wait(for: [expectation], timeout: 30)
 	}
 	
 	func testStoreToken() throws {

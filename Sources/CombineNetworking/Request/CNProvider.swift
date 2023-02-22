@@ -67,7 +67,7 @@ open class CNProvider<T: Endpoint> {
 		.eraseToAnyPublisher()
 	}
 	
-	/// Returns publisher without adding any manipulations to the response data
+	/// Returns publisher with raw data in the response
 	open func rawPublisher(for endpoint: T,
 							 retries: Int = 0,
 							 expectedStatusCodes: [Int] = [200, 201, 204],
@@ -139,6 +139,8 @@ open class CNProvider<T: Endpoint> {
 			.eraseToAnyPublisher()
 	}
 	
+	
+	/// Returns publisher which gives you updates on upload progress until the task is complete
 	open func uploadPublisher<U: Codable>(for endpoint: T,
 											retries: Int = 0,
 											responseType: U.Type,
@@ -311,4 +313,3 @@ open class CNProvider<T: Endpoint> {
 			.eraseToAnyPublisher()
 	}
 }
-
