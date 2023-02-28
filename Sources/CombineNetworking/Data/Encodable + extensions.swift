@@ -17,8 +17,21 @@ extension Encodable {
 		let mirror = Mirror(reflecting: self)
 		
 		mirror.children.filter { !$0.label.isNilOrEmpty }.forEach { child in
-			if let value = valueOrNil(child.value) {
-				output[child.label!] = value
+			guard let value = valueOrNil(child.value) else { return }
+			
+			if let array = value as? Array<Any> {
+				guard array.count > 0 else { return }
+				output[child.label!] = array.compactMap { arrayValue -> Any? in
+					guard let value = valueOrNil(arrayValue) else { return nil }
+					return rawValueIfNeeded(value)
+				}
+			} else if let dict = value as? Dictionary<String, Any> {
+				guard Array(dict.keys).count > 0 else { return }
+				output[child.label!] = dict.filter { _, value in
+					valueOrNil(value) != nil
+				}
+			} else {
+				output[child.label!] = rawValueIfNeeded(value)
 			}
 		}
 		
@@ -34,6 +47,12 @@ extension Encodable {
 		default:
 			return value
 		}
+	}
+	
+	private func rawValueIfNeeded(_ value: Any) -> Any {
+		let mirror = Mirror(reflecting: value)
+		guard mirror.displayStyle == .enum, let value = value as? any RawRepresentable else { return value }
+		return value.rawValue
 	}
 }
 

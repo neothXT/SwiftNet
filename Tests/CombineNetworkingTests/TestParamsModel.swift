@@ -12,3 +12,28 @@ struct TestParamsModel: Codable {
 	let lastname: String
 	let age: Int?
 }
+
+struct TestParamsModelWithArray: Codable {
+	let name: String
+	let lastname: String
+	let age: Int?
+	let array: [String]
+}
+
+struct TestParamsModelWithDict: Codable {
+	let name: String
+	let lastname: String
+	let age: Int?
+	let dict: [String: String]
+}
+
+struct TestParamsModelWithEnum: Codable {
+	let name: String
+	let lastname: String
+	let age: Int?
+	let sex: Sex?
+	
+	enum Sex: String, Codable {
+		case male, female
+	}
+}
