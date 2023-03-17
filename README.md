@@ -284,7 +284,7 @@ final class CombineNetworkingTests: XCTestCase {
 }
 ```
 
-You can also use mocked data in your tests. To do so, just add `mockedData` to your `Endpoint` and when calling `provider.test()` or `provider.testRaw` set `usingMocks` to `true`.
+You can also use mocked data in your tests. To do so, just add `mockedData` to your `Endpoint` and when calling `provider.test()` or `provider.testRaw()` set `usingMocks` to `true`.
 
 ### WebSockets
 
