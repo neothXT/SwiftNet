@@ -20,6 +20,14 @@ enum RemoteEndpoint {
 }
 
 extension RemoteEndpoint: Endpoint {
+	private static var postItems: [Post] = [
+		Post(userId: 1, id: 1, title: "Title1", body: "Body1"),
+		Post(userId: 2, id: 2, title: "Title2", body: "Body2"),
+		Post(userId: 3, id: 3, title: "Title3", body: "Body3"),
+		Post(userId: 4, id: 4, title: "Title4", body: "Body4"),
+		Post(userId: 5, id: 5, title: "Title5", body: "Body5")
+	]
+	
 	var baseURL: URL? {
 		switch self {
 		case .posts:
@@ -75,6 +83,18 @@ extension RemoteEndpoint: Endpoint {
 			return .urlEncodedModel(model)
 		default:
 			return .plain
+		}
+	}
+	
+	var mockedData: Codable? {
+		switch self {
+		case .posts:
+			return RemoteEndpoint.postItems
+		case .post(let post):
+			RemoteEndpoint.postItems.append(post)
+			return RemoteEndpoint.postItems
+		default:
+			return nil
 		}
 	}
 	

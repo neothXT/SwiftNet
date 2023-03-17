@@ -10,7 +10,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Test should fail due to no internet connection")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		provider.testRaw(.posts, storeIn: &subscriptions) {
+		provider.testRaw(.posts, usingMocks: false, storeIn: &subscriptions) {
 			if let error = $0 as? CNError, error.type == .noInternetConnection {
 				expectation.fulfill()
 			}
@@ -23,7 +23,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Test plain fetch")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		provider.testRaw(.todos, storeIn: &subscriptions) {
+		provider.testRaw(.todos, usingMocks: false, storeIn: &subscriptions) {
 			expectation.fulfill()
 		}
 		
@@ -34,9 +34,9 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: #"Test "test()"#)
 		var subscriptions: Set<AnyCancellable> = []
 		
-		provider.test(.todos, responseType: Todo.self, storeIn: &subscriptions) {
+		provider.test(.todos, responseType: Todo.self, usingMocks: false, storeIn: &subscriptions) { _ in
 			expectation.fulfill()
-		}
+		} onFailure: { _ in }
 		
 		wait(for: [expectation], timeout: 10)
 	}
@@ -45,7 +45,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Test query params")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		provider.testRaw(.dictGet(["postId": 1]), storeIn: &subscriptions) {
+		provider.testRaw(.dictGet(["postId": 1]), usingMocks: false, storeIn: &subscriptions) {
 			expectation.fulfill()
 		}
 		
@@ -56,7 +56,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Test string query params")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		provider.testRaw(.stringGet("postId=1"), storeIn: &subscriptions) {
+		provider.testRaw(.stringGet("postId=1"), usingMocks: false, storeIn: &subscriptions) {
 			expectation.fulfill()
 		}
 		
@@ -69,7 +69,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Test post with JSON model")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		provider.testRaw(.post(post), storeIn: &subscriptions) {
+		provider.testRaw(.post(post), usingMocks: false, storeIn: &subscriptions) {
 			expectation.fulfill()
 		}
 		
@@ -82,7 +82,7 @@ final class CombineNetworkingTests: XCTestCase {
 		
 		let dict = ["userId": "1231", "title": "Title", "body": "Body"]
 		
-		provider.testRaw(.dictPost(dict), storeIn: &subscriptions) {
+		provider.testRaw(.dictPost(dict), usingMocks: false, storeIn: &subscriptions) {
 			expectation.fulfill()
 		}
 		
@@ -224,5 +224,32 @@ final class CombineNetworkingTests: XCTestCase {
 	func testToDictionaryWithEnum() throws {
 		let model = TestParamsModelWithEnum(name: "First", lastname: "Last", age: 24, sex: .male)
 		XCTAssertTrue(model.toDictionary().contains { ($0.value as? String) == "male" })
+	}
+	
+	func testMockedFetch() throws {
+		var subscriptions: Set<AnyCancellable> = []
+		let expectation = expectation(description: "Mocked test should return 5 posts")
+		
+		CNProvider<RemoteEndpoint>().test(.posts, responseType: [Post].self, usingMocks: true, storeIn: &subscriptions) { data in
+			if (data ?? []).count == 5 {
+				expectation.fulfill()
+			}
+		}
+		
+		wait(for: [expectation], timeout: 5)
+	}
+	
+	func testMockedPost() throws {
+		var subscriptions: Set<AnyCancellable> = []
+		let expectation = expectation(description: "Mocked post test should add 1 post to the list and return 6 posts")
+		let post = Post(userId: 6, id: 6, title: "Title6", body: "Body6")
+		
+		CNProvider<RemoteEndpoint>().test(.post(post), responseType: [Post].self, usingMocks: true, storeIn: &subscriptions) { data in
+			if (data ?? []).count == 6 {
+				expectation.fulfill()
+			}
+		}
+		
+		wait(for: [expectation], timeout: 5)
 	}
 }

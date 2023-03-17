@@ -16,6 +16,7 @@ public protocol Endpoint {
 	var requiresAccessToken: Bool { get }
     var headers: [String: Any]? { get }
 	var boundary: Boundary? { get }
+	var mockedData: Codable? { get }
     var data: EndpointData { get }
 	var jsonDecoder: JSONDecoder { get }
 	var accessTokenStrategy: AccessTokenStrategy { get }
@@ -29,6 +30,7 @@ public extension Endpoint {
 	var accessTokenStrategy: AccessTokenStrategy { CNConfig.defaultAccessTokenStrategy }
 	var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { nil }
 	var boundary: Boundary? { nil }
+	var mockedData: Codable? { nil }
 	
 	var typeIdentifier: String { Self.identifier }
 	var caseIdentifier: String { String(String(reflecting: self).split(separator: "(").first ?? "\(self)") }

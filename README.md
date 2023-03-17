@@ -256,7 +256,7 @@ final class CombineNetworkingTests: XCTestCase {
         let expectation = expectation(description: "Test todo fetching request")
 	var subscriptions: Set<AnyCancellable> = []
 		
-	provider.testRaw(.todos, storeIn: &subscriptions) {
+	provider.testRaw(.todos, usingMocks: false, storeIn: &subscriptions) {
 	    expectation.fulfill()
 	}
 		
@@ -275,7 +275,7 @@ final class CombineNetworkingTests: XCTestCase {
         let expectation = expectation(description: "Test todo fetching request together with its response model")
 	var subscriptions: Set<AnyCancellable> = []
 		
-	provider.test(.todos, responseType: Todo.self, storeIn: &subscriptions) {
+	provider.test(.todos, responseType: Todo.self, usingMocks: false, storeIn: &subscriptions) {
 	    expectation.fulfill()
 	}
 		
@@ -283,6 +283,8 @@ final class CombineNetworkingTests: XCTestCase {
     } 
 }
 ```
+
+You can also use mocked data in your tests. To do so, just add `mockedData` to your `Endpoint` and when calling `provider.test()` or `provider.testRaw` set `usingMocks` to `true`.
 
 ### WebSockets
 
