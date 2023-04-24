@@ -121,6 +121,16 @@ See? Easy peasy! Keep in mind that your token model has to conform to `AccessTok
 - `keychainInstance` - keychain instance used by CombineNetworking to store/fetch access tokens from Apple's Keychain. If not provided, safe storage will be turned off (more info below)
 - `removeAccessToken(for endpoint: Endpoint? = nil)` - removes access token for a given endpoint or the global one (if exists)
 
+### Access Token Strategies
+
+CombineNetworking allows you to specify access token strategies globally as well as individually for each endpoint. You can specify your strategy by setting it for `CNConfig.defaultAccessTokenStrategy` or inside your `Endpoint` by setting value for field `accessTokenStrategy`.
+Available options are:
+- `.global` - uses global label to store access token
+- `.default` - uses endpoint identifiers as labels to store access tokens
+- `.custom(String)` - with this option you can specify your own label to store access token and use it among as many endpoints as you wish
+
+Thanks to access token strategy being set both globally (via `CNConfig`) and individually (inside `Endpoint`), you can mix different strategies in your app!
+
 ### Access Token manipulations
 
 If you want, you can manipulate access tokens yourself.
@@ -153,16 +163,6 @@ Example: `CNConfig.accessToken(for: "sampleCustomLabel")`
 - `removeGlobalAccessToken()`
 
 Example: `CNConfig.globalAccessToken()`
-
-### Access Token Strategies
-
-CombineNetworking allows you to specify access token strategies globally as well as individually for each endpoint. You can specify your strategy by setting it for `CNConfig.defaultAccessTokenStrategy` or inside your `Endpoint` by setting value for field `accessTokenStrategy`.
-Available options are:
-- `.global` - uses global label to store access token
-- `.default` - uses endpoint identifiers as labels to store access tokens
-- `.custom(String)` - with this option you can specify your own label to store access token and use it among as many endpoints as you wish
-
-Thanks to access token strategy being set both globally (via `CNConfig`) and individually (inside `Endpoint`), you can mix different strategies in your app!
 
 ### Event logging
 

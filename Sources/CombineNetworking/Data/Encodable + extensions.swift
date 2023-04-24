@@ -12,33 +12,23 @@ extension Encodable {
 		try JSONEncoder().encode(self)
 	}
 	
-	public func toDictionary() -> [String: Any] {
-		var output: [String: Any] = [:]
-		let mirror = Mirror(reflecting: self)
+	public func toDictionary(options: EncodableConversionOptions = .init(rawValue: 0)) -> [String: Any] {
+		guard let data = try? toJsonData(), var json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+			return [:]
+		}
 		
-		mirror.children.filter { !$0.label.isNilOrEmpty }.forEach { child in
-			guard let value = valueOrNil(child.value) else { return }
-			
-			if let array = value as? Array<Any> {
-				guard array.count > 0 else { return }
-				output[child.label!] = array.compactMap { arrayValue -> Any? in
-					guard let value = valueOrNil(arrayValue) else { return nil }
-					return rawValueIfNeeded(value)
-				}
-			} else if let dict = value as? Dictionary<String, Any> {
-				guard Array(dict.keys).count > 0 else { return }
-				output[child.label!] = dict.filter { _, value in
-					valueOrNil(value) != nil
-				}
-			} else {
-				output[child.label!] = rawValueIfNeeded(value)
+		if !options.contains(.keepEmptyCollections) {
+			json.filter {
+				valueOrNil($0.value) == nil || (collectionCountOrNil($0.value) ?? -1) == 0
+			}.forEach {
+				json.removeValue(forKey: $0.key)
 			}
 		}
 		
-		return output
+		return json
 	}
 	
-	fileprivate func valueOrNil(_ value: Any) -> Any? {
+	private func valueOrNil(_ value: Any) -> Any? {
 		switch value {
 		case Optional<Any>.none:
 			return nil
@@ -49,10 +39,14 @@ extension Encodable {
 		}
 	}
 	
-	private func rawValueIfNeeded(_ value: Any) -> Any {
-		let mirror = Mirror(reflecting: value)
-		guard mirror.displayStyle == .enum, let value = value as? any RawRepresentable else { return value }
-		return value.rawValue
+	fileprivate func collectionCountOrNil(_ value: Any) -> Int? {
+		if let val = value as? Array<Any> {
+			return val.count
+		} else if let val = value as? Dictionary<String, Any> {
+			return val.count
+		} else {
+			return nil
+		}
 	}
 }
 
@@ -60,4 +54,15 @@ fileprivate extension Optional where Wrapped: Collection {
 	var isNilOrEmpty: Bool {
 		self?.isEmpty ?? true
 	}
+}
+
+public struct EncodableConversionOptions: OptionSet {
+	public let rawValue: Int
+	
+	public init(rawValue: Int) {
+		self.rawValue = rawValue
+	}
+	
+	/// Keeps first level empty collections
+	public static let keepEmptyCollections = EncodableConversionOptions(rawValue: 1 << 0)
 }

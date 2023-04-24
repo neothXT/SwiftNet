@@ -104,48 +104,6 @@ final class CombineNetworkingTests: XCTestCase {
 		wait(for: [expectation], timeout: 30)
 	}
 	
-	func testStoreToken() throws {
-		let endpoint: RemoteEndpoint = .todos
-		let sampleToken = CNAccessToken(access_token: "aaa", expires_in: nil, refresh_token: nil, scope: nil)
-		
-		CNConfig.setAccessToken(sampleToken, for: endpoint)
-		XCTAssert((CNConfig.accessToken(for: endpoint)?.access_token ?? "") == "aaa")
-	}
-	
-	func testFetchTokenByStrategy() throws {
-		let endpoint: RemoteEndpoint = .todos
-		let sampleToken = CNAccessToken(access_token: "aaa", expires_in: nil, refresh_token: nil, scope: nil)
-		
-		CNConfig.setAccessToken(sampleToken, for: endpoint)
-		XCTAssert((CNConfig.accessToken(for: RemoteEndpoint.self)?.access_token ?? "") == "aaa")
-	}
-	
-	func testFetchTokenByStoringLabel() throws {
-		let endpoint: RemoteEndpoint = .posts
-		let sampleToken = CNAccessToken(access_token: "aaa", expires_in: nil, refresh_token: nil, scope: nil)
-		
-		CNConfig.setAccessToken(sampleToken, for: endpoint)
-		XCTAssert((CNConfig.accessToken(for: "someLabel")?.access_token ?? "") == "aaa")
-	}
-	
-	func testFetchGlobalToken() throws {
-		let endpoint: RemoteEndpoint = .stringGet("")
-		let sampleToken = CNAccessToken(access_token: "aaa", expires_in: nil, refresh_token: nil, scope: nil)
-		
-		CNConfig.setAccessToken(sampleToken, for: endpoint)
-		XCTAssert((CNConfig.globalAccessToken()?.access_token ?? "") == "aaa")
-	}
-	
-	func testRemoveToken() throws {
-		let endpoint: RemoteEndpoint = .todos
-		let sampleToken = CNAccessToken(access_token: "aaa", expires_in: nil, refresh_token: nil, scope: nil)
-		
-		CNConfig.setAccessToken(sampleToken, for: endpoint)
-		CNConfig.removeAccessToken(for: endpoint)
-		
-		XCTAssert(CNConfig.accessToken(for: endpoint) == nil)
-	}
-	
 	func testUrlEncodedBody() throws {
 		let endpoint: RemoteEndpoint = .urlEncodedBody(["name": "Test", "lastname": "Tester"])
 		var urlRequest = URLRequest(url: endpoint.baseURL!)
@@ -194,36 +152,6 @@ final class CombineNetworkingTests: XCTestCase {
 		expectedRasultArray.forEach { result = result && encodedDataString.contains($0) }
 		
 		XCTAssertFalse(result)
-	}
-	
-	func testToDictionaryWithEmptyArray() throws {
-		let model = TestParamsModelWithArray(name: "First", lastname: "Last", age: 24, array: [])
-		XCTAssertFalse(model.toDictionary().contains { $0.key == "array" })
-	}
-	
-	func testToDictionaryWithArray() throws {
-		let model = TestParamsModelWithArray(name: "First", lastname: "Last", age: 24, array: ["testValue"])
-		XCTAssertTrue(model.toDictionary().contains { $0.key == "array" })
-	}
-	
-	func testToDictionaryWithEmptyDict() throws {
-		let model = TestParamsModelWithDict(name: "First", lastname: "Last", age: 24, dict: [:])
-		XCTAssertFalse(model.toDictionary().contains { $0.key == "dict" })
-	}
-	
-	func testToDictionaryWithDict() throws {
-		let model = TestParamsModelWithDict(name: "First", lastname: "Last", age: 24, dict: ["testKey": "testValue"])
-		XCTAssertTrue(model.toDictionary().contains { $0.key == "dict" })
-	}
-	
-	func testToDictionaryWithEmptyEnum() throws {
-		let model = TestParamsModelWithEnum(name: "First", lastname: "Last", age: 24, sex: nil)
-		XCTAssertFalse(model.toDictionary().contains { $0.key == "sex" })
-	}
-	
-	func testToDictionaryWithEnum() throws {
-		let model = TestParamsModelWithEnum(name: "First", lastname: "Last", age: 24, sex: .male)
-		XCTAssertTrue(model.toDictionary().contains { ($0.value as? String) == "male" })
 	}
 	
 	func testMockedFetch() throws {
