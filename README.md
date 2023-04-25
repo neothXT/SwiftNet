@@ -170,7 +170,7 @@ CombineNetworking's CNProvider uses iOS built-in Logger (if running on iOS 14 or
 
 ### Network connection monitor
 
-CombineNetowrking uses ashleymills's Reachability to let you continuously monitor network connection status. 
+CombineNetowrking allows you continuously monitor network connection status. 
 If you want to subscribe to a network connection monitor's publisher, you can do it like this:
 
 ```Swift
