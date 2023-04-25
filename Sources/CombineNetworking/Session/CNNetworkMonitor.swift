@@ -7,17 +7,35 @@
 
 import Foundation
 import Combine
-import Reachability
+import Network
 
 public class CNNetworkMonitor {
-	public static func publisher() -> AnyPublisher<Reachability.Connection, Never> {
-		let reachability = try! Reachability()
-		
-		try? reachability.startNotifier()
-		
-		return NotificationCenter.default.publisher(for: .reachabilityChanged, object: reachability)
-			.map { ($0.object as! Reachability).connection }
-			.receive(on: DispatchQueue.main)
-			.eraseToAnyPublisher()
+	private let monitor = NWPathMonitor()
+	private let connectionPublisher: PassthroughSubject<ConnectionType, Never> = .init()
+	
+	static let shared = CNNetworkMonitor()
+	
+	private init() { }
+	
+	public func publisher() -> AnyPublisher<ConnectionType, Never> {
+		monitor.pathUpdateHandler = { [unowned self] in
+			if $0.status == .requiresConnection || $0.status == .unsatisfied {
+				self.connectionPublisher.send(.unavailable)
+			} else if $0.usesInterfaceType(.cellular) {
+				self.connectionPublisher.send(.cellular)
+			} else if $0.usesInterfaceType(.wifi) {
+				self.connectionPublisher.send(.wifi)
+			} else {
+				self.connectionPublisher.send(.other)
+			}
+		}
+		monitor.start(queue: DispatchQueue.global(qos: .background))
+		return connectionPublisher.eraseToAnyPublisher()
+	}
+}
+
+public extension CNNetworkMonitor {
+	enum ConnectionType {
+		case wifi, cellular, other, unavailable
 	}
 }

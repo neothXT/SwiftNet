@@ -37,7 +37,10 @@ extension CNConfig {
 			return
 		}
 		
-		keychain[data: "accessToken_\(storingLabel)"] = try? token.toJsonData()
+		guard let data = try? token.toJsonData() else { return }
+		
+//		keychain[data: "accessToken_\(storingLabel)"] = try? token.toJsonData()
+		keychain.add(data, forKey: "accessToken_\(storingLabel)")
 	}
 	
 	//MARK: fetch access token methods
@@ -65,7 +68,8 @@ extension CNConfig {
 			return accessTokens[storingLabel]
 		}
 		
-		guard let data = keychain[data: "accessToken_\(storingLabel)"] else { return nil }
+		guard let data = keychain.fetch(key: "accessToken_\(storingLabel)") else { return nil }
+//		guard let data = keychain[data: "accessToken_\(storingLabel)"] else { return nil }
 		return try? JSONDecoder().decode(CNAccessToken.self, from: data)
 	}
 	
@@ -100,16 +104,9 @@ extension CNConfig {
 			return true
 		}
 		
-		do {
-			let tokenIsPresent = try keychain.contains("accessToken_\(storingLabel)")
-			guard tokenIsPresent else { return false }
-			try keychain.remove("accessToken_\(storingLabel)")
-			return true
-		} catch {
-			#if DEBUG
-			print(error.localizedDescription)
-			#endif
-			return false
-		}
+		let key = "accessToken_\(storingLabel)"
+		guard keychain.contains(key: key) else { return false }
+		keychain.delete(forKey: key)
+		return true
 	}
 }

@@ -93,7 +93,7 @@ final class CombineNetworkingTests: XCTestCase {
 		let expectation = expectation(description: "Test network monitor")
 		var subscriptions: Set<AnyCancellable> = []
 		
-		CNNetworkMonitor.publisher()
+		CNNetworkMonitor.shared.publisher()
 			.sink { status in
 				if status == .unavailable {
 					expectation.fulfill()

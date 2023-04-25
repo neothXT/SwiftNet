@@ -14,7 +14,7 @@ public class CNConfig {
 	public static var sitesExcludedFromPinning: [String] = []
 	public static var defaultJSONDecoder: JSONDecoder = .init()
 	public static var defaultAccessTokenStrategy: AccessTokenStrategy = .default
-	public static var keychainInstance: Keychain?
+	public static var keychainInstance: CNKeychain?
 	
 	private init() {}
 	
