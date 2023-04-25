@@ -1,5 +1,5 @@
 //
-//  CNKeychain.swift
+//  Keychain.swift
 //  
 //
 //  Created by Maciej Burdzicki on 25/04/2023.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class CNKeychain {
+public class Keychain {
 	private let service: String
 	
 	public init(serviceName: String) {
