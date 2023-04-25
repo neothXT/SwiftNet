@@ -1,6 +1,5 @@
 import XCTest
 import Combine
-import Reachability
 @testable import CombineNetworking
 
 final class CombineNetworkingTests: XCTestCase {
