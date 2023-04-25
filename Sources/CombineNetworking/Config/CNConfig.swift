@@ -7,7 +7,6 @@
 
 import Foundation
 import Combine
-import KeychainAccess
 
 public class CNConfig {
 	public static var pinningModes: PinningMode = PinningMode(rawValue: 0)
