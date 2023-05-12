@@ -27,8 +27,9 @@ final class EncodableConversionTests: XCTestCase {
 	}
 	
 	func testToDictionaryWithDict() throws {
-		let model = TestParamsModelWithDict(name: "First", lastname: "Last", age: 24, dict: ["testKey": "testValue"])
-		XCTAssertTrue(model.toDictionary().contains { $0.key == "dict" })
+		let model = TestParamsModelWithDict(name: "First", lastname: "Last", age: 24, dict: ["testKey": "testValue", "testKey2": nil]).toDictionary()
+		let dict = (model["dict"] as? [String: Any]) ?? [:]
+		XCTAssertTrue(model.contains { $0.key == "dict" } && !(dict.contains { $0.key == "testKey2" }))
 	}
 	
 	func testToDictionaryWithEmptyEnum() throws {

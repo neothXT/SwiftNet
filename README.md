@@ -62,7 +62,7 @@ extension TodosEndpoint: Endpoint {
 - `.plain`
 - `.queryParams([String: Any])`
 - `.queryString(String)`
-- `.bodyData([String: Any])`
+- `.bodyData(Data)`
 - `.bodyParams([String: Any])` - takes `Dictionary` and parses it into `Data` to send in request's body
 - `.urlEncodedBody([String: Any])` - takes `Dictionary` and parses it into url encoded `Data` to send in request's body
 - `.urlEncodedModel(Encodable)` - takes `Encodable` model and parses it into url encoded `Data` to send in request's body

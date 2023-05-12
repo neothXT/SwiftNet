@@ -24,7 +24,7 @@ struct TestParamsModelWithDict: Codable {
 	let name: String
 	let lastname: String
 	let age: Int?
-	let dict: [String: String]
+	let dict: [String: String?]
 }
 
 struct TestParamsModelWithEnum: Codable {

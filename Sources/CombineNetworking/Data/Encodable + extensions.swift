@@ -18,14 +18,53 @@ extension Encodable {
 		}
 		
 		if !options.contains(.keepEmptyCollections) {
-			json.filter {
-				valueOrNil($0.value) == nil || (collectionCountOrNil($0.value) ?? -1) == 0
-			}.forEach {
-				json.removeValue(forKey: $0.key)
-			}
+			json = (removeEmptyCollections(from: json) as? [String: Any]) ?? [:]
 		}
 		
 		return json
+	}
+	
+	private func removeEmptyCollections(from input: Any) -> Any {
+		if var array = input as? [Any?] {
+			array.enumerated().forEach { index, value in
+				guard let value else {
+					array.remove(at: index)
+					return
+				}
+				guard let count = collectionCountOrNil(value) else {
+					if valueOrNil(value) == nil {
+						array.remove(at: index)
+					}
+					return
+				}
+				if count == 0 {
+					array.remove(at: index)
+				} else {
+					array[index] = removeEmptyCollections(from: value)
+				}
+			}
+			return array
+		} else if var dict = input as? [String: Any?] {
+			dict.forEach { key, value in
+				guard let value else {
+					dict.removeValue(forKey: key)
+					return
+				}
+				guard let count = collectionCountOrNil(value) else {
+					if valueOrNil(value) == nil {
+						dict.removeValue(forKey: key)
+					}
+					return
+				}
+				if count == 0 {
+					dict.removeValue(forKey: key)
+				} else {
+					dict[key] = removeEmptyCollections(from: value)
+				}
+			}
+			return dict
+		}
+		return input
 	}
 	
 	private func valueOrNil(_ value: Any) -> Any? {
@@ -63,6 +102,6 @@ public struct EncodableConversionOptions: OptionSet {
 		self.rawValue = rawValue
 	}
 	
-	/// Keeps first level empty collections
+	/// Keeps empty collections in final output
 	public static let keepEmptyCollections = EncodableConversionOptions(rawValue: 1 << 0)
 }
