@@ -119,7 +119,6 @@ See? Easy peasy! Keep in mind that your token model has to conform to `AccessTok
 - `defaultJSONDecoder` - use this property to set globally your custom JSONDecoder
 - `defaultAccessTokenStrategy` - global strategy for storing access tokens. Available options are `.global`, `.default` and `.custom(String)`.
 - `keychainInstance` - keychain instance used by CombineNetworking to store/fetch access tokens from Apple's Keychain. If not provided, safe storage will be turned off (more info below)
-- `removeAccessToken(for endpoint: Endpoint? = nil)` - removes access token for a given endpoint or the global one (if exists)
 
 ### Access Token Strategies
 
@@ -196,7 +195,7 @@ func subscribeForNetworkChanges() {
 
 CombineNetworking allows you to store your access tokens in keychain. Using keychain to store your access tokens requires you to provide keychain instance by setting value of `CNConfig.keychainInstance`.
 
-Please remember Apple's Keychain doesn't automatically remove entries created by an app upon its deletion. Do not worry, however. Only your app can access those entries, nevertheless, it's up to you to make sure those are removed from keychain if not needed anymore. CombineNetworking provides method `CNConfig.removeAccessToken(for endpoint: Endpoint? = nil)` to help you do it.
+Please remember Apple's Keychain doesn't automatically remove entries created by an app upon its deletion. Do not worry, however. Only your app can access those entries, nevertheless, it's up to you to make sure those are removed from keychain if not needed anymore. CombineNetworking provides method `CNConfig.removeAccessToken(...)` to help you do it.
 ### Subscribe to a publisher
 
 ```Swift
