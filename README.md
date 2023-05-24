@@ -196,8 +196,7 @@ func subscribeForNetworkChanges() {
 
 CombineNetworking allows you to store your access tokens in keychain. Using keychain to store your access tokens requires you to provide keychain instance by setting value of `CNConfig.keychainInstance`.
 
-Please remember Apple's Keychain doesn't automatically remove entries created by an app upon its deletion. Do not worry, however. Only your app can access those entries. Nevertheless, if you're using CombineNetworking's safe storage, it is recommended to add some sort of app launch counter and upon first launch call `CNConfig.removeAccessToken(for endpoint: Endpoint? = nil)` to make sure any remaining old entries in keychain are removed.
-
+Please remember Apple's Keychain doesn't automatically remove entries created by an app upon its deletion. Do not worry, however. Only your app can access those entries, nevertheless, it's up to you to make sure those are removed from keychain if not needed anymore. CombineNetworking provides method `CNConfig.removeAccessToken(for endpoint: Endpoint? = nil)` to help you do it.
 ### Subscribe to a publisher
 
 ```Swift
