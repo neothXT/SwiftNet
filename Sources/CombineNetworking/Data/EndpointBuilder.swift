@@ -13,7 +13,7 @@ public class EndpointBuilder<T: Codable & Equatable> {
     fileprivate(set) var method: String = "get"
     fileprivate(set) var headers: [String: Any] = [:]
     fileprivate(set) var data: EndpointData = .plain
-    fileprivate(set) var mock: T?
+    fileprivate(set) var mock: Codable?
     fileprivate(set) var accessTokenStrategy: AccessTokenStrategy = CNConfig.defaultAccessTokenStrategy
     fileprivate(set) var callbackTask: (() async throws -> AccessTokenConvertible)? = nil
     fileprivate(set) var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>?
@@ -52,7 +52,7 @@ public class EndpointBuilder<T: Codable & Equatable> {
         return self
     }
     
-    public func mockResponse(with model: T) -> Self {
+    public func mockResponse(with model: Codable) -> Self {
         mock = model
         return self
     }

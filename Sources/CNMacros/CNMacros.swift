@@ -4,39 +4,59 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import Foundation
 
-/// Implementation of the `stringify` macro, which takes an expression
-/// of any type and produces a tuple containing the value of that expression
-/// and the source code that produced the value. For example
-///
-///     #stringify(x + y)
-///
-///  will expand to
-///
-///     (x + y, "x + y")
-public struct StringifyMacro: ExpressionMacro {
-    public static func expansion(
-        of node: some FreestandingMacroExpansionSyntax,
-        in context: some MacroExpansionContext
-    ) -> ExprSyntax {
-        guard let argument = node.argumentList.first?.expression else {
-            fatalError("compiler bug: the macro does not have any arguments")
+enum EndpointMacroError: CustomStringConvertible, Error {
+    case badType, badInheritance, badOrMissingParameter
+    
+    var description: String {
+        switch self {
+        case .badType:
+            return "@Endpoint(url:) can only be applied to a struct or a class"
+        case .badInheritance:
+            return "@Endpoint(url:) can only be applied to a struct or a class which implements EndpointModel protocol"
+        case .badOrMissingParameter:
+            return "Missing or bad parameter url passed"
         }
-
-        return "(\(argument), \(literal: argument.description))"
     }
 }
 
+enum NetworkRequestMacroError: CustomStringConvertible, Error {
+    case badType(macroName: String), badOrMissingUrlParameter, badOrMissingMethodParameter, syntaxError
+    
+    var description: String {
+        switch self {
+        case .badType(let macroName):
+            return "@\(macroName)(url:) can only be applied to an EndpointBuilder"
+        case .badOrMissingUrlParameter:
+            return "Missing or bad parameter url passed"
+        case .badOrMissingMethodParameter:
+            return "Missing or bad parameter method passed"
+        case .syntaxError:
+            return "Unknown syntax error occurred"
+        }
+    }
+}
+ 
 public struct EndpointMacro: MemberMacro {
 	public static func expansion<Declaration, Context>(
 		of node: AttributeSyntax,
 		providingMembersOf declaration: Declaration,
 		in context: Context
 	) throws -> [DeclSyntax] where Declaration : DeclGroupSyntax, Context : MacroExpansionContext {
+        guard declaration.is(StructDeclSyntax.self) || declaration.is(ClassDeclSyntax.self) else {
+            throw EndpointMacroError.badType
+        }
+        
+        let structInheritedType = declaration.as(StructDeclSyntax.self)?.inheritanceClause?.inheritedTypeCollection.trimmedDescription
+        let classInheritedType = declaration.as(ClassDeclSyntax.self)?.inheritanceClause?.inheritedTypeCollection.trimmedDescription
+        
+        guard structInheritedType == "EndpointModel" || classInheritedType == "EndpointModel" else {
+            throw EndpointMacroError.badInheritance
+        }
+        
         guard let expression = node.argument?.as(TupleExprElementListSyntax.self)?.first?.expression,
 			  let urlString = expression.as(StringLiteralExprSyntax.self)?.segments.first?.trimmedDescription,
 			  let _ = URL(string: urlString) else {
-			//TODO throw error
-			return []
+            throw EndpointMacroError.badOrMissingParameter
 		}
         
 		return [
@@ -55,24 +75,39 @@ public struct NetworkRequestMacro: AccessorMacro {
         providingAccessorsOf declaration: Declaration,
         in context: Context
     ) throws -> [AccessorDeclSyntax] where Context : MacroExpansionContext, Declaration : DeclSyntaxProtocol {
+        let macroName = node.attributeName.trimmedDescription
+        
+        guard let typeDescription = declaration.as(VariableDeclSyntax.self)?.bindings.first?.typeAnnotation?.type.trimmedDescription,
+              typeDescription.hasPrefix("EndpointBuilder") else {
+            passedMethod = nil
+            throw NetworkRequestMacroError.badType(macroName: macroName)
+        }
+        
         guard let expressions = node.argument?.as(TupleExprElementListSyntax.self) else {
-            //TODO throw error
-            return []
+            passedMethod = nil
+            throw NetworkRequestMacroError.syntaxError
         }
         
         let segments = expressions.compactMap { $0.expression.as(StringLiteralExprSyntax.self)?.segments }
         let params = segments.compactMap { $0.trimmedDescription }
         
+        guard let url = params[safe: 0], let _ = URL(string: url) else {
+            passedMethod = nil
+            throw NetworkRequestMacroError.badOrMissingUrlParameter
+        }
+        
         let comparissonArray = ["get", "post", "put", "delete", "patch", "connect", "head", "options", "query", "trace"]
+        
         guard params.count == 2 || (params.count == 1 && comparissonArray.contains(passedMethod ?? "")) else {
-            //TODO throw error
-            return []
+            passedMethod = nil
+            throw NetworkRequestMacroError.badOrMissingMethodParameter
         }
         
         let method = passedMethod ?? params[safe: 1] ?? ""
+        
         guard comparissonArray.contains(method) else {
-            //TODO throw error
-            return []
+            passedMethod = nil
+            throw NetworkRequestMacroError.badOrMissingMethodParameter
         }
         
         passedMethod = nil
@@ -166,7 +201,6 @@ fileprivate extension Collection {
 @main
 struct EndpointPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
-        StringifyMacro.self,
         EndpointMacro.self,
         NetworkRequestMacro.self,
         GetMacro.self,

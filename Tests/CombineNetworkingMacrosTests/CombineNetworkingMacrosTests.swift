@@ -3,32 +3,25 @@ import SwiftSyntaxMacrosTestSupport
 import XCTest
 import CNMacros
 
-let testMacros: [String: Macro.Type] = [
-    "Endpoint": EndpointMacro.self,
-    "NetworkRequest": NetworkRequestMacro.self,
-    "GET": GetMacro.self,
-    "POST": PostMacro.self
-]
-
 final class CombineNetworkingMacrosTests: XCTestCase {
-    func testEndpointMacro() {
+    func testEndpointMacro() throws {
         assertMacroExpansion(
             """
             @Endpoint(url: "https://apple.com")
-            struct MyEndpoint {
+            struct MyEndpoint: EndpointModel {
             }
             """,
             expandedSource: """
             
-            struct MyEndpoint {
+            struct MyEndpoint: EndpointModel {
                 let url = "https://apple.com"
             }
             """,
-            macros: testMacros
+            macros: ["Endpoint": EndpointMacro.self]
         )
     }
     
-    func testGetMacro() {
+    func testGetMacro() throws {
         assertMacroExpansion(
             """
             struct MyEndpoint {
@@ -44,11 +37,11 @@ final class CombineNetworkingMacrosTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: ["GET": GetMacro.self]
         )
     }
     
-    func testNetworkRequestMacro() {
+    func testNetworkRequestMacro() throws {
         assertMacroExpansion(
             """
             struct MyEndpoint {
@@ -64,11 +57,11 @@ final class CombineNetworkingMacrosTests: XCTestCase {
                 }
             }
             """,
-            macros: testMacros
+            macros: ["NetworkRequest": NetworkRequestMacro.self]
         )
     }
     
-    func testPostMacro() {
+    func testPostMacro() throws {
         assertMacroExpansion(
                 """
                 struct MyEndpoint {
@@ -84,7 +77,53 @@ final class CombineNetworkingMacrosTests: XCTestCase {
                     }
                 }
                 """,
-                macros: testMacros
+                macros: ["POST": PostMacro.self]
         )
+    }
+    
+    func testEndpointMacroFailure() throws {
+        assertMacroExpansion(
+            """
+            @Endpoint(url: "https://apple.com")
+            enum MyEndpoint {
+            }
+            """,
+            expandedSource: """
+            
+            enum MyEndpoint {
+            }
+            """,
+            diagnostics: [
+                DiagnosticSpec(message: "@Endpoint(url:) can only be applied to a struct or a class", line: 1, column: 1)
+            ],
+            macros: ["Endpoint": EndpointMacro.self])
+    }
+    
+    func testGetMacroFailure() throws {
+        assertMacroExpansion(
+            """
+            @GET(url: "/test") var test: Data
+            """,
+            expandedSource: """
+            var test: Data
+            """,
+            diagnostics: [
+                DiagnosticSpec(message: "@GET(url:) can only be applied to an EndpointBuilder", line: 1, column: 1)
+            ],
+            macros: ["GET": GetMacro.self])
+    }
+    
+    func testPutMacroFailure() throws {
+        assertMacroExpansion(
+            """
+            @PUT(url: "/test") var test: Data?
+            """,
+            expandedSource: """
+            var test: Data?
+            """,
+            diagnostics: [
+                DiagnosticSpec(message: "@PUT(url:) can only be applied to an EndpointBuilder", line: 1, column: 1)
+            ],
+            macros: ["PUT": PutMacro.self])
     }
 }
