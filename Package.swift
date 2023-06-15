@@ -14,7 +14,10 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "CombineNetworking",
-            targets: ["CombineNetworking"])
+            targets: ["CombineNetworking"]),
+        .library(
+            name: "CombineNetworkingMacros",
+            targets: ["CombineNetworkingMacros"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
