@@ -314,4 +314,79 @@ webSocket.send(.string("Test message")) {
 
 If you want to close connection, just call `webSocket.disconnect()`.
 
+## Macro-powered networking
+
+From release 2.0.0 CombineNetworking introduces new way of building and executing network requests.
+
+### Endpoint creation
+
+Start by creating struct or class implementing `EndpointModel` protocol.
+
+```Swift
+public protocol EndpointModel {
+    var defaultAccessTokenStrategy: AccessTokenStrategy { get }
+    var defaultHeaders: [String: Any] { get }
+    var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { get }
+}
+```
+
+Once done, you're ready to create your endpoint. Each endpoint request should be of type `EndpointBuilder<T: Codable & Equatable>`.
+
+- Use `@Endpoint(url:)` macro to setup baseURL of your endpoint
+- Determine method and path of your endpoint requests with `@GET(url:)`, `@POST(url:)`, `@PUT(url:)`, `@DELETE(url:)`, `@PATCH(url:)`, `@CONNECT(url:)`, `@HEAD(url:)`, `@OPTIONS(url:)`, `@QUERY(url:)` or `@TRACE(url:)`
+
+```Swift
+@Endpoint(url: "https://jsonplaceholder.typicode.com/")
+struct TestEndpoint: EndpointModel {
+    @GET(url: "todos/1") var todos: EndpointBuilder<Todo>
+    @GET(url: "comments") var comments: EndpointBuilder<Data>
+    @POST(url: "posts") var post: EndpointBuilder<Data>
+}
+```
+
+### Endpoint builder
+
+`EndpointBuilder` got the following methods to prepare and build your request:
+
+```Swift
+public class EndpointBuilder<T: Codable & Equatable> {
+    extendUrl(with path: String)
+    setRequestParams(_ data: EndpointData)
+    setAsyncCallback(_ callback: @escaping () async throws -> AccessTokenConvertible)
+    mockResponse(with model: T)
+    using(provider: CNProvider<BridgingEndpoint<T>>)
+    build(retries: Int = 0, expectedStatusCodes: [Int] = [200, 201, 204], ignorePinning: Bool = false, receiveOn queue: DispatchQueue = .main) -> AnyPublisher<T, Error>
+    buildForUpload(retries: Int = 0, ignorePinning: Bool = false, receiveOn queue: DispatchQueue = .main) -> AnyPublisher<UploadResponse<T>, Error>
+    buildAsync(ignorePinning: Bool = false) async throws -> T
+    test(failOnFinished: Bool = true, storeIn store: inout Set<AnyCancellable>, onSuccess: @escaping (T?) -> Void, onFailure: @escaping (Error) -> Void)
+    testRaw(failOnFinished: Bool = true, storeIn store: inout Set<AnyCancellable>, onSuccess: @escaping () -> Void, onFailure: @escaping (Error) -> Void)
+}
+```
+
+### Build a request
+
+Now that your endpoint is ready, time to build a request. 
+
+```Swift
+class NetworkManager {
+    private var subscriptions: Set<AnyCancellable> = []
+    private let endpoint = TestEndpoint()
+    
+    var todo: Todo?
+
+    func callRequest() {
+        endpoint
+            .comments
+            .setRequestParams(.queryParams(["postId": 1]))
+            .build()
+            .catch { (error) -> Just<Todo?> in
+                print(error)
+                return Just(nil)
+            }
+            .assign(to: \.todo, on: self)
+            .store(in: &subscriptions)
+    }
+}
+```
+
 And that's it. Enjoy :)
