@@ -38,15 +38,58 @@ open class CNProvider<T: Endpoint> {
 	public init(endpointURLMapper: @escaping EndpointURLMapper = defaultURLMapper) {
 		self.endpointURLMapper = endpointURLMapper
 	}
+    
+    open func task<U: Decodable>(
+        for endpoint: T,
+        responseType: U.Type,
+        decoder: JSONDecoder? = nil,
+        ignorePinning: Bool = false,
+        callbackTask: (() async throws -> AccessTokenConvertible)?
+    ) async throws -> U {
+        runOnMain {
+            CNDebugInfo.createLogger(for: endpoint)
+        }
+        guard let urlRequest = prepareRequest(for: endpoint) else {
+            runOnMain {
+                CNDebugInfo.getLogger(for: endpoint)?.log(CNError(type: .failedToBuildRequest).localizedDescription, mode: .stop)
+            }
+            
+            throw CNError(type: .failedToBuildRequest)
+        }
+        
+        let session = CNConfig.getSession(ignorePinning: ignorePinning)
+        
+        let (data, urlResponse) = try await session.data(for: urlRequest)
+        
+        if let response = urlResponse as? HTTPURLResponse,
+           response.statusCode == 401 && !didRetry.contains(endpoint.caseIdentifier),
+           let callback = callbackTask {
+            didRetry.append(endpoint.caseIdentifier)
+            
+            let token = try await callback().convert()
+            
+            CNConfig.setAccessToken(token, for: endpoint)
+            
+            return try await self.task(for: endpoint,
+                                       responseType: U.self,
+                                       decoder: decoder,
+                                       ignorePinning: ignorePinning,
+                                       callbackTask: callbackTask)
+        }
+        
+        return try (decoder ?? endpoint.jsonDecoder).decode(U.self, from: data)
+    }
 	
 	/// Returns publisher which automatically converts the response data into given response type
-	open func publisher<U: Decodable>(for endpoint: T,
-										responseType: U.Type,
-										decoder: JSONDecoder? = nil,
-										retries: Int = 0,
-										expectedStatusCodes: [Int] = [200, 201, 204],
-										ignorePinning: Bool = false,
-										receiveOn queue: DispatchQueue = .main) -> AnyPublisher<U, Error> {
+    open func publisher<U: Decodable>(
+        for endpoint: T,
+        responseType: U.Type,
+        decoder: JSONDecoder? = nil,
+        retries: Int = 0,
+        expectedStatusCodes: [Int] = [200, 201, 204],
+        ignorePinning: Bool = false,
+        receiveOn queue: DispatchQueue = .main
+    ) -> AnyPublisher<U, Error> {
 		rawPublisher(for: endpoint,
 					 retries: retries,
 					 expectedStatusCodes: expectedStatusCodes,
@@ -67,11 +110,13 @@ open class CNProvider<T: Endpoint> {
 	}
 	
 	/// Returns publisher with raw data in the response
-	open func rawPublisher(for endpoint: T,
-							 retries: Int = 0,
-							 expectedStatusCodes: [Int] = [200, 201, 204],
-							 ignorePinning: Bool = false,
-							 receiveOn queue: DispatchQueue = .main) -> AnyPublisher<Data, Error> {
+	open func rawPublisher(
+        for endpoint: T,
+        retries: Int = 0,
+        expectedStatusCodes: [Int] = [200, 201, 204],
+        ignorePinning: Bool = false,
+        receiveOn queue: DispatchQueue = .main
+    ) -> AnyPublisher<Data, Error> {
 		runOnMain {
 			CNDebugInfo.createLogger(for: endpoint)
 		}
@@ -140,12 +185,14 @@ open class CNProvider<T: Endpoint> {
 	
 	
 	/// Returns publisher which gives you updates on upload progress until the task is complete
-	open func uploadPublisher<U: Codable>(for endpoint: T,
-											retries: Int = 0,
-											responseType: U.Type,
-											decoder: JSONDecoder? = nil,
-											ignorePinning: Bool = false,
-											receiveOn queue: DispatchQueue = .main) -> AnyPublisher<UploadResponse<U>, Error> {
+    open func uploadPublisher<U: Codable>(
+        for endpoint: T,
+        responseType: U.Type,
+        retries: Int = 0,
+        decoder: JSONDecoder? = nil,
+        ignorePinning: Bool = false,
+        receiveOn queue: DispatchQueue = .main
+    ) -> AnyPublisher<UploadResponse<U>, Error> {
 		runOnMain {
 			CNDebugInfo.createLogger(for: endpoint)
 		}
@@ -259,10 +306,12 @@ open class CNProvider<T: Endpoint> {
 			.eraseToAnyPublisher()
 	}
 	
-	private func prepUploadPublisher<U: Codable>(for endpoint: T,
-												 responseType: U.Type,
-												 decoder: JSONDecoder? = nil,
-												 ignorePinning: Bool) -> AnyPublisher<UploadResponse<U>, Error> {
+	private func prepUploadPublisher<U: Codable>(
+        for endpoint: T,
+        responseType: U.Type,
+        decoder: JSONDecoder? = nil,
+        ignorePinning: Bool
+    ) -> AnyPublisher<UploadResponse<U>, Error> {
 		guard let urlRequest = prepareRequest(for: endpoint, withBody: false),
 			  let data = CNDataEncoder.prepareUploadBody(endpointData: endpoint.data, boundary: endpoint.boundary) else {
 			runOnMain {
