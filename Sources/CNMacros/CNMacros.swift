@@ -54,8 +54,7 @@ public struct EndpointMacro: MemberMacro {
         }
         
         guard let expression = node.argument?.as(TupleExprElementListSyntax.self)?.first?.expression,
-			  let urlString = expression.as(StringLiteralExprSyntax.self)?.segments.first?.trimmedDescription,
-              let _ = URL(string: VariableDetector.stripVarIndicators(from: urlString)) else {
+			  let urlString = expression.as(StringLiteralExprSyntax.self)?.segments.first?.trimmedDescription else {
             throw EndpointMacroError.badOrMissingParameter
 		}
         
@@ -93,7 +92,7 @@ public struct NetworkRequestMacro: AccessorMacro {
         let segments = expressions.compactMap { $0.expression.as(StringLiteralExprSyntax.self)?.segments }
         let params = segments.compactMap { $0.trimmedDescription }
         
-        guard let url = params[safe: 0], let _ = URL(string: VariableDetector.stripVarIndicators(from: url)) else {
+        guard let url = params[safe: 0] else {
             passedMethod = nil
             throw NetworkRequestMacroError.badOrMissingUrlParameter
         }
