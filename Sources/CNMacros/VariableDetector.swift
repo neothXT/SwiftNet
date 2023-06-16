@@ -13,12 +13,4 @@ class VariableDetector {
             .replacingOccurrences(of: "${", with: #"\("#)
             .replacingOccurrences(of: "}$", with: #")"#)
     }
-    
-    static func stripVarIndicators(from string: String) -> String {
-        string
-            .replacingOccurrences(of: "${", with: "")
-            .replacingOccurrences(of: "}$", with: "")
-            .replacingOccurrences(of: "#{", with: "")
-            .replacingOccurrences(of: "}#", with: "")
-    }
 }
