@@ -13,7 +13,7 @@ public enum BridgingEndpoint<T: Codable & Equatable>: Endpoint {
     
     public var baseURL: URL? {
         guard case .custom(let request) = self else { return nil }
-        return request.url
+        return URL(string: request.url)
     }
     
     public var path: String {

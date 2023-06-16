@@ -13,7 +13,7 @@ import CombineNetworkingMacros
 
 @Endpoint(url: "https://jsonplaceholder.typicode.com/")
 struct TestEndpoint: EndpointModel {
-    @GET(url: "todos/1") var todos: EndpointBuilder<Todo>
+    @GET(url: "todos/#{id}#") var todos: EndpointBuilder<Todo>
     @GET(url: "comments") var comments: EndpointBuilder<Data>
     @POST(url: "posts") var post: EndpointBuilder<Data>
 }
@@ -27,6 +27,7 @@ final class MacroPoweredApproachTests: XCTestCase {
         
         endpoint
             .todos
+            .setUrlValue("1", forKey: "id")
             .testRaw(storeIn: &subscriptions) {
                 expectation.fulfill()
             } onFailure: { _ in }

@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 public class EndpointBuilder<T: Codable & Equatable> {
-    fileprivate(set) var url: URL?
+    fileprivate(set) var url: String
     fileprivate(set) var method: String = "get"
     fileprivate(set) var headers: [String: Any] = [:]
     fileprivate(set) var data: EndpointData = .plain
@@ -29,7 +29,7 @@ public class EndpointBuilder<T: Codable & Equatable> {
         accessTokenStrategy: AccessTokenStrategy,
         callbackTask: (() -> AccessTokenConvertible)? = nil,
         callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? = nil) {
-            self.url = URL(string: url)
+            self.url = url
             self.method = method
             self.headers = headers
             self.accessTokenStrategy = accessTokenStrategy
@@ -38,12 +38,17 @@ public class EndpointBuilder<T: Codable & Equatable> {
     }
     
     public func extendUrl(with path: String) -> Self {
-        url = url?.appendingPathComponent(path)
+        url = url + path
         return self
     }
     
     public func setRequestParams(_ data: EndpointData) -> Self {
         self.data = data
+        return self
+    }
+    
+    public func setUrlValue(_ value: String, forKey key: String) -> Self {
+        url = url.replacingOccurrences(of: "#{\(key)}#", with: value)
         return self
     }
     

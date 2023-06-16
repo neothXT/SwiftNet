@@ -55,13 +55,15 @@ public struct EndpointMacro: MemberMacro {
         
         guard let expression = node.argument?.as(TupleExprElementListSyntax.self)?.first?.expression,
 			  let urlString = expression.as(StringLiteralExprSyntax.self)?.segments.first?.trimmedDescription,
-			  let _ = URL(string: urlString) else {
+              let _ = URL(string: VariableDetector.stripVarIndicators(from: urlString)) else {
             throw EndpointMacroError.badOrMissingParameter
 		}
         
+        let finalUrl = VariableDetector.detect(in: urlString)
+        
 		return [
         """
-        let url = \(literal: urlString)
+        let url = "\(raw: finalUrl)"
         """
         ]
 	}
@@ -91,7 +93,7 @@ public struct NetworkRequestMacro: AccessorMacro {
         let segments = expressions.compactMap { $0.expression.as(StringLiteralExprSyntax.self)?.segments }
         let params = segments.compactMap { $0.trimmedDescription }
         
-        guard let url = params[safe: 0], let _ = URL(string: url) else {
+        guard let url = params[safe: 0], let _ = URL(string: VariableDetector.stripVarIndicators(from: url)) else {
             passedMethod = nil
             throw NetworkRequestMacroError.badOrMissingUrlParameter
         }
@@ -111,11 +113,12 @@ public struct NetworkRequestMacro: AccessorMacro {
         }
         
         passedMethod = nil
+        let finalUrl = VariableDetector.detect(in: url)
         
         return [
             """
             get {
-                .init(url: url + \(literal: params[0]), method: "\(raw: method)", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackPublisher: callbackPublisher)
+                .init(url: url + "\(raw: finalUrl)", method: "\(raw: method)", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackPublisher: callbackPublisher)
             }
             """
         ]

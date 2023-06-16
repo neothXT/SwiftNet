@@ -352,6 +352,7 @@ struct TestEndpoint: EndpointModel {
 public class EndpointBuilder<T: Codable & Equatable> {
     extendUrl(with path: String)
     setRequestParams(_ data: EndpointData)
+    setUrlValue(_ value: String, forKey key: String) -> Self
     setAsyncCallback(_ callback: @escaping () async throws -> AccessTokenConvertible)
     mockResponse(with model: T)
     using(provider: CNProvider<BridgingEndpoint<T>>)
@@ -386,6 +387,53 @@ class NetworkManager {
             .assign(to: \.todo, on: self)
             .store(in: &subscriptions)
     }
+}
+```
+
+### Requests with dynamic values in URL
+
+Sometimes we need to inject some variable into the URL of our request. To do so, you can use two patterns: `${variable}$` or `#{variable}#`.
+
+#### `${variable}$` should be used for variables that already exist in your code
+
+```Swift
+@Endpoint(url: "${myUrl}$")
+struct MyStruct: EndpointModel {
+}
+```
+
+After macro expansion will look like
+
+```Swift
+struct MyStruct: EndpointModel {
+    let url = "\(myUrl)"
+} 
+```
+
+#### `#{variable}#` should be used for variables you want to provide yourself when building your request
+
+```Swift
+@Endpoint(url: "www.someurl.com/comments/#{id}#")
+struct MyStruct: EndpointModel {
+}
+```
+
+After macro expansion will look like
+
+```Swift
+struct MyStruct: EndpointModel {
+    let url = "www.someurl.com/comments/#{id}#"
+} 
+```
+
+To then swap it for an actual value, use `.setUrlValue(_ value: String, forKey key: String)` when building your request like
+
+```Swift
+func buildRequest() {
+    endpoint
+        .comments
+        .setUrlValue("1", forKey: "id")
+        .build()
 }
 ```
 
