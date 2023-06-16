@@ -14,7 +14,7 @@ public class EndpointBuilder<T: Codable & Equatable> {
     fileprivate(set) var headers: [String: Any] = [:]
     fileprivate(set) var data: EndpointData = .plain
     fileprivate(set) var mock: Codable?
-    fileprivate(set) var accessTokenStrategy: AccessTokenStrategy = CNConfig.defaultAccessTokenStrategy
+    fileprivate(set) var accessTokenStrategy: AccessTokenStrategy
     fileprivate(set) var callbackTask: (() async throws -> AccessTokenConvertible)? = nil
     fileprivate(set) var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>?
     fileprivate(set) var requiresAccessToken: Bool = false
@@ -125,5 +125,4 @@ public class EndpointBuilder<T: Codable & Equatable> {
                          onSuccess: onSuccess,
                          onFailure: onFailure)
     }
-    
 }
