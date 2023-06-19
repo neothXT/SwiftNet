@@ -44,7 +44,7 @@ open class CNProvider<T: Endpoint> {
         responseType: U.Type,
         decoder: JSONDecoder? = nil,
         ignorePinning: Bool = false,
-        callbackTask: (() async throws -> AccessTokenConvertible)?
+        callbackTask: (() async throws -> AccessTokenConvertible?)?
     ) async throws -> U {
         runOnMain {
             CNDebugInfo.createLogger(for: endpoint)
@@ -61,12 +61,13 @@ open class CNProvider<T: Endpoint> {
         
         let (data, urlResponse) = try await session.data(for: urlRequest)
         
-        if let response = urlResponse as? HTTPURLResponse,
-           response.statusCode == 401 && !didRetry.contains(endpoint.caseIdentifier),
-           let callback = callbackTask {
+        guard let response = urlResponse as? HTTPURLResponse else {
+            throw CNError(type: .failedToMapResponse)
+        }
+        
+        if response.statusCode == 401 && !didRetry.contains(endpoint.caseIdentifier),
+           let callback = callbackTask, let token = try await callback()?.convert() {
             didRetry.append(endpoint.caseIdentifier)
-            
-            let token = try await callback().convert()
             
             CNConfig.setAccessToken(token, for: endpoint)
             
@@ -75,6 +76,15 @@ open class CNProvider<T: Endpoint> {
                                        decoder: decoder,
                                        ignorePinning: ignorePinning,
                                        callbackTask: callbackTask)
+        } else if response.statusCode == 401  {
+            let error = CNError(type: .authenticationFailed,
+                                details: .init(statusCode: response.statusCode,
+                                               localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
+                                               url: response.url,
+                                               mimeType: response.mimeType,
+                                               headers: response.allHeaderFields),
+                                data: nil)
+            throw error
         }
         
         return try (decoder ?? endpoint.jsonDecoder).decode(U.self, from: data)

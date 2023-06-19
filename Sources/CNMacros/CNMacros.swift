@@ -2,39 +2,8 @@ import SwiftCompilerPlugin
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
+import SwiftDiagnostics
 import Foundation
-
-enum EndpointMacroError: CustomStringConvertible, Error {
-    case badType, badInheritance, badOrMissingParameter
-    
-    var description: String {
-        switch self {
-        case .badType:
-            return "@Endpoint(url:) can only be applied to a struct or a class"
-        case .badInheritance:
-            return "@Endpoint(url:) can only be applied to a struct or a class which implements EndpointModel protocol"
-        case .badOrMissingParameter:
-            return "Missing or bad parameter url passed"
-        }
-    }
-}
-
-enum NetworkRequestMacroError: CustomStringConvertible, Error {
-    case badType(macroName: String), badOrMissingUrlParameter, badOrMissingMethodParameter, syntaxError
-    
-    var description: String {
-        switch self {
-        case .badType(let macroName):
-            return "@\(macroName)(url:) can only be applied to an EndpointBuilder"
-        case .badOrMissingUrlParameter:
-            return "Missing or bad parameter url passed"
-        case .badOrMissingMethodParameter:
-            return "Missing or bad parameter method passed"
-        case .syntaxError:
-            return "Unknown syntax error occurred"
-        }
-    }
-}
  
 public struct EndpointMacro: MemberMacro {
 	public static func expansion<Declaration, Context>(
@@ -43,27 +12,30 @@ public struct EndpointMacro: MemberMacro {
 		in context: Context
 	) throws -> [DeclSyntax] where Declaration : DeclGroupSyntax, Context : MacroExpansionContext {
         guard declaration.is(StructDeclSyntax.self) || declaration.is(ClassDeclSyntax.self) else {
-            throw EndpointMacroError.badType
+            context.diagnose(EndpointMacroError.badType.diagnostic(for: declaration))
+            return []
         }
         
         let structInheritedType = declaration.as(StructDeclSyntax.self)?.inheritanceClause?.inheritedTypeCollection.trimmedDescription
         let classInheritedType = declaration.as(ClassDeclSyntax.self)?.inheritanceClause?.inheritedTypeCollection.trimmedDescription
         
         guard structInheritedType == "EndpointModel" || classInheritedType == "EndpointModel" else {
-            throw EndpointMacroError.badInheritance
+            context.diagnose(EndpointMacroError.badInheritance.diagnostic(for: declaration))
+            return []
         }
         
         guard let expression = node.argument?.as(TupleExprElementListSyntax.self)?.first?.expression,
 			  let urlString = expression.as(StringLiteralExprSyntax.self)?.segments.first?.trimmedDescription else {
-            throw EndpointMacroError.badOrMissingParameter
+            context.diagnose(EndpointMacroError.badOrMissingParameter.diagnostic(for: declaration))
+            return []
 		}
         
         let finalUrl = VariableDetector.detect(in: urlString)
         
 		return [
-        """
-        let url = "\(raw: finalUrl)"
-        """
+            """
+            let url = "\(raw: finalUrl)"
+            """
         ]
 	}
 }
@@ -78,15 +50,33 @@ public struct NetworkRequestMacro: AccessorMacro {
     ) throws -> [AccessorDeclSyntax] where Context : MacroExpansionContext, Declaration : DeclSyntaxProtocol {
         let macroName = node.attributeName.trimmedDescription
         
-        guard let typeDescription = declaration.as(VariableDeclSyntax.self)?.bindings.first?.typeAnnotation?.type.trimmedDescription,
-              typeDescription.hasPrefix("EndpointBuilder") else {
+        guard let declarationType = declaration.as(VariableDeclSyntax.self)?.bindings.first?.typeAnnotation?.type else {
+            context.diagnose(NetworkRequestMacroError.typeNotRecognized.diagnostic(for: declaration))
+            return []
+        }
+        
+        guard declarationType.trimmedDescription.hasPrefix("EndpointBuilder") else {
             passedMethod = nil
-            throw NetworkRequestMacroError.badType(macroName: macroName)
+            let expectedType = "EndpointBuilder<\(declarationType.trimmedDescription)>"
+            let typeFixIt = FixIt.Change.replace(
+                oldNode: Syntax(declarationType),
+                newNode: Syntax(
+                    TypeSyntax(stringLiteral: expectedType)
+                )
+            )
+            let fixit = FixIt(
+                message: FixItMsg(fixItID: .init(domain: "network request", id: "typeError"), message: "Did you mean to use '\(expectedType)'?"),
+                changes: [typeFixIt]
+            )
+            
+            context.diagnose(NetworkRequestMacroError.badType(macroName: macroName).diagnostic(for: declaration, fixIts: [fixit]))
+            return []
         }
         
         guard let expressions = node.argument?.as(TupleExprElementListSyntax.self) else {
             passedMethod = nil
-            throw NetworkRequestMacroError.syntaxError
+            context.diagnose(NetworkRequestMacroError.syntaxError.diagnostic(for: declaration))
+            return []
         }
         
         let segments = expressions.compactMap { $0.expression.as(StringLiteralExprSyntax.self)?.segments }
@@ -94,21 +84,24 @@ public struct NetworkRequestMacro: AccessorMacro {
         
         guard let url = params[safe: 0] else {
             passedMethod = nil
-            throw NetworkRequestMacroError.badOrMissingUrlParameter
+            context.diagnose(NetworkRequestMacroError.badOrMissingUrlParameter.diagnostic(for: declaration))
+            return []
         }
         
         let comparissonArray = ["get", "post", "put", "delete", "patch", "connect", "head", "options", "query", "trace"]
         
         guard params.count == 2 || (params.count == 1 && comparissonArray.contains(passedMethod ?? "")) else {
             passedMethod = nil
-            throw NetworkRequestMacroError.badOrMissingMethodParameter
+            context.diagnose(NetworkRequestMacroError.badOrMissingMethodParameter.diagnostic(for: declaration))
+            return []
         }
         
         let method = passedMethod ?? params[safe: 1] ?? ""
         
         guard comparissonArray.contains(method) else {
             passedMethod = nil
-            throw NetworkRequestMacroError.badOrMissingMethodParameter
+            context.diagnose(NetworkRequestMacroError.badOrMissingMethodParameter.diagnostic(for: declaration))
+            return []
         }
         
         passedMethod = nil

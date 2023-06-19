@@ -102,13 +102,18 @@ final class CombineNetworkingMacrosTests: XCTestCase {
     func testGetMacroFailure() throws {
         assertMacroExpansion(
             """
-            @GET(url: "/test") var test: Data
+            @GET(url: "/test") var test: String
             """,
             expandedSource: """
-            var test: Data
+            var test: String
             """,
             diagnostics: [
-                DiagnosticSpec(message: "@GET(url:) can only be applied to an EndpointBuilder", line: 1, column: 1)
+                DiagnosticSpec(
+                    message: "@GET(url:) can only be applied to an EndpointBuilder",
+                    line: 1,
+                    column: 1,
+                    fixIts: [.init(message: "Did you mean to use 'EndpointBuilder<String>'?")]
+                )
             ],
             macros: ["GET": GetMacro.self])
     }
@@ -122,7 +127,12 @@ final class CombineNetworkingMacrosTests: XCTestCase {
             var test: Data?
             """,
             diagnostics: [
-                DiagnosticSpec(message: "@PUT(url:) can only be applied to an EndpointBuilder", line: 1, column: 1)
+                DiagnosticSpec(
+                    message: "@PUT(url:) can only be applied to an EndpointBuilder",
+                    line: 1,
+                    column: 1,
+                    fixIts: [.init(message: "Did you mean to use 'EndpointBuilder<Data?>'?")]
+                )
             ],
             macros: ["PUT": PutMacro.self])
     }

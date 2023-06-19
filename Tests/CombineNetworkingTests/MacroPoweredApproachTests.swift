@@ -41,6 +41,7 @@ final class MacroPoweredApproachTests: XCTestCase {
         
         endpoint
             .todos
+            .setUrlValue("1", forKey: "id")
             .test(storeIn: &subscriptions) { _ in
                 expectation.fulfill()
             } onFailure: { _ in }
@@ -83,6 +84,7 @@ final class MacroPoweredApproachTests: XCTestCase {
         Task {
             let model = try? await endpoint
                 .todos
+                .setUrlValue("1", forKey: "id")
                 .buildAsync()
             
             if model?.id == 1 {
