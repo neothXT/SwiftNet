@@ -22,6 +22,9 @@ Besides basic network requests, CombineNetworking allows you to easily send your
 
 ## Basic Usage
 
+1. [Enum-powered networking](#create-an-endpoint-to-work-with)
+2. [Macro-powered networking](#macro-powered-networking)
+
 ### Create an Endpoint to work with
 ```Swift
 enum TodosEndpoint {
