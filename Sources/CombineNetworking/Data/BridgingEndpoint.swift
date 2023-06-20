@@ -64,4 +64,9 @@ public enum BridgingEndpoint<T: Codable & Equatable>: Endpoint {
         guard case .custom(let request) = self else { return nil }
         return request.mock
     }
+    
+    public var typeIdentifier: String {
+        guard case .custom(let request) = self else { return "\(type(of: self))".replacingOccurrences(of: ".Type", with: "") }
+        return request.identifier
+    }
 }

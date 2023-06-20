@@ -18,6 +18,14 @@ final class AccessTokenManipulationTests: XCTestCase {
 		CNConfig.setAccessToken(sampleToken, for: endpoint)
 		XCTAssert((CNConfig.accessToken(for: endpoint)?.access_token ?? "") == "aaa")
 	}
+    
+    func testStoreModelToken() throws {
+        let token = TestEndpoint()
+        let sampleToken = CNAccessToken(access_token: "aaa", expires_in: nil, refresh_token: nil, scope: nil)
+        
+        CNConfig.setAccessToken(sampleToken, for: token)
+        XCTAssert((CNConfig.accessToken(for: token)?.access_token ?? "") == "aaa")
+    }
 	
 	func testFetchTokenByStrategy() throws {
 		let endpoint: RemoteEndpoint = .todos

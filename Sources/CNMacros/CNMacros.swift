@@ -19,8 +19,16 @@ public struct EndpointMacro: MemberMacro {
         let structInheritedType = declaration.as(StructDeclSyntax.self)?.inheritanceClause?.inheritedTypeCollection.trimmedDescription
         let classInheritedType = declaration.as(ClassDeclSyntax.self)?.inheritanceClause?.inheritedTypeCollection.trimmedDescription
         
+        let structName = declaration.as(StructDeclSyntax.self)?.identifier.trimmedDescription
+        let className = declaration.as(ClassDeclSyntax.self)?.identifier.trimmedDescription
+        
         guard structInheritedType == "EndpointModel" || classInheritedType == "EndpointModel" else {
             context.diagnose(EndpointMacroError.badInheritance.diagnostic(for: declaration))
+            return []
+        }
+        
+        guard let endpointName = structName ?? className else {
+            context.diagnose(EndpointMacroError.badType.diagnostic(for: declaration))
             return []
         }
         
@@ -34,7 +42,7 @@ public struct EndpointMacro: MemberMacro {
         
 		return [
             """
-            let url = "\(raw: finalUrl)"
+            let identifier = "\(raw: endpointName)", url = "\(raw: finalUrl)"
             """
         ]
 	}
@@ -110,7 +118,7 @@ public struct NetworkRequestMacro: AccessorMacro {
         return [
             """
             get {
-                .init(url: url + "\(raw: finalUrl)", method: "\(raw: method)", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackPublisher: callbackPublisher)
+                .init(url: url + "\(raw: finalUrl)", method: "\(raw: method)", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackPublisher: callbackPublisher, identifier: identifier)
             }
             """
         ]

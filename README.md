@@ -161,6 +161,11 @@ Example: `CNConfig.accessToken(for: "sampleCustomLabel")`
 - `globalAccessToken()`
 - `removeGlobalAccessToken()`
 
+#### 5. For EndpointModels:
+- `setAccessToken(_ token: CNAccessToken?, for endpoint: EndpointModel)`
+- `accessToken(for endpoint: EndpointModel)`
+- `removeAccessToken(for endpoint: EndpointModel)`
+
 Example: `CNConfig.globalAccessToken()`
 
 ### Event logging

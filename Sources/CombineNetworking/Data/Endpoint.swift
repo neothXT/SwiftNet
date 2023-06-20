@@ -21,6 +21,10 @@ public protocol Endpoint {
 	var jsonDecoder: JSONDecoder { get }
 	var accessTokenStrategy: AccessTokenStrategy { get }
 	var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { get }
+    
+    var typeIdentifier: String { get }
+    var caseIdentifier: String { get }
+    static var identifier: String { get }
 }
 
 @available(macOS 10.15, *)

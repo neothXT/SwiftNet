@@ -22,6 +22,11 @@ extension CNConfig {
 	public static func setAccessToken<T: Endpoint>(_ token: CNAccessToken?, for endpoint: T.Type) {
 		setAccessToken(token, for: endpoint.identifier)
 	}
+    
+    /// Saves new Access Token for a given EndpointModel
+    public static func setAccessToken<T: EndpointModel>(_ token: CNAccessToken?, for endpointModel: T) {
+        setAccessToken(token, for: endpointModel.identifier)
+    }
 	
 	/// Saves global Access Token
 	public static func setGlobalAccessToken(_ token: CNAccessToken?) {
@@ -38,8 +43,6 @@ extension CNConfig {
 		}
 		
 		guard let data = try? token.toJsonData() else { return }
-		
-//		keychain[data: "accessToken_\(storingLabel)"] = try? token.toJsonData()
 		keychain.add(data, forKey: "accessToken_\(storingLabel)")
 	}
 	
@@ -55,6 +58,11 @@ extension CNConfig {
 	public static func accessToken<T: Endpoint>(for endpoint: T.Type) -> CNAccessToken? {
 		accessToken(for: endpoint.identifier)
 	}
+    
+    /// Returns Access Token stored for a given EndpointModel  identifier if present
+    public static func accessToken<T: EndpointModel>(for endpointModel: T) -> CNAccessToken? {
+        accessToken(for: endpointModel.identifier)
+    }
 	
 	/// Returns global Access Token if present
 	public static func globalAccessToken() -> CNAccessToken? {
@@ -87,6 +95,12 @@ extension CNConfig {
 	public static func removeAccessToken<T: Endpoint>(for endpoint: T.Type) -> Bool {
 		removeAccessToken(for: endpoint.identifier)
 	}
+    
+    /// Removes Access Token stored for a given EndpointModel  identifier if present
+    @discardableResult
+    public static func removeAccessToken<T: EndpointModel>(for endpointModel: T) -> Bool {
+        removeAccessToken(for: endpointModel.identifier)
+    }
 	
 	/// Removes global Access Token if present
 	@discardableResult

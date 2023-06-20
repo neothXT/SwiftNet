@@ -11,13 +11,6 @@ import XCTest
 import Combine
 import CombineNetworkingMacros
 
-@Endpoint(url: "https://jsonplaceholder.typicode.com/")
-struct TestEndpoint: EndpointModel {
-    @GET(url: "todos/#{id}#") var todos: EndpointBuilder<Todo>
-    @GET(url: "comments") var comments: EndpointBuilder<Data>
-    @POST(url: "posts") var post: EndpointBuilder<Data>
-}
-
 final class MacroPoweredApproachTests: XCTestCase {
     let endpoint = TestEndpoint()
     

@@ -31,19 +31,19 @@ let package = Package(
             name: "CNMacros",
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                "CombineNetworking"
             ]
         ),
         .target(
             name: "CombineNetworking",
-            dependencies: ["CombineNetworkingMacros"],
 			exclude: ["../../CombineNetworking.podspec"]),
         .testTarget(
             name: "CombineNetworkingTests",
-            dependencies: ["CombineNetworking"]),
+            dependencies: ["CombineNetworking", "CombineNetworkingMacros", "CNMacros"]),
         .target(
             name: "CombineNetworkingMacros",
-            dependencies: ["CNMacros"]),
+            dependencies: ["CNMacros", "CombineNetworking"]),
         .testTarget(
             name: "CombineNetworkingMacrosTests",
             dependencies: [

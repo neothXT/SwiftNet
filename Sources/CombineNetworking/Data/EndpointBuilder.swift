@@ -21,6 +21,7 @@ public class EndpointBuilder<T: Codable & Equatable> {
     fileprivate(set) var jsonDecoder: JSONDecoder = CNConfig.defaultJSONDecoder
     fileprivate(set) var boundary: Boundary?
     fileprivate(set) var provider: CNProvider<BridgingEndpoint<T>> = .init()
+    fileprivate(set) var identifier: String
 
     public init(
         url: String,
@@ -28,13 +29,15 @@ public class EndpointBuilder<T: Codable & Equatable> {
         headers: [String : Any],
         accessTokenStrategy: AccessTokenStrategy,
         callbackTask: (() -> AccessTokenConvertible)? = nil,
-        callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? = nil) {
+        callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? = nil,
+        identifier: String) {
             self.url = url
             self.method = method
             self.headers = headers
             self.accessTokenStrategy = accessTokenStrategy
             self.callbackTask = callbackTask
             self.callbackPublisher = callbackPublisher
+            self.identifier = identifier
     }
     
     /// Extends request's url with provided path
@@ -52,6 +55,12 @@ public class EndpointBuilder<T: Codable & Equatable> {
     /// Sets value for a given #{variable}# in url string
     public func setUrlValue(_ value: String, forKey key: String) -> Self {
         url = url.replacingOccurrences(of: "#{\(key)}#", with: value)
+        return self
+    }
+    
+    /// Assigns value to requiresAccessToken flag
+    public func setRequiresToken(_ value: Bool) -> Self {
+        requiresAccessToken = value
         return self
     }
     

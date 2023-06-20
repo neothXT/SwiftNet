@@ -1,7 +1,7 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
-@attached(member, names: named(url))
+@attached(member, names: named(url), named(identifier), named(staticIdentifier))
 public macro Endpoint(url: String) = #externalMacro(module: "CNMacros", type: "EndpointMacro")
 
 // MARK: - RequestMethod macros

@@ -9,6 +9,7 @@ import Foundation
 import Combine
 
 public protocol EndpointModel {
+    var identifier: String { get }
     var defaultAccessTokenStrategy: AccessTokenStrategy { get }
     var defaultHeaders: [String: Any] { get }
     var callbackTask: (() async throws -> AccessTokenConvertible?)? { get }
