@@ -361,7 +361,9 @@ public class EndpointBuilder<T: Codable & Equatable> {
     extendUrl(with path: String)
     setRequestParams(_ data: EndpointData)
     setUrlValue(_ value: String, forKey key: String) -> Self
-    setAsyncCallback(_ callback: @escaping () async throws -> AccessTokenConvertible)
+    setRequiresToken(_ value: Bool) -> Self
+    setCallbackTask(_ callback: @escaping () async throws -> AccessTokenConvertible?) -> Self
+    setCallbackPublisher(_ publisher: AnyPublisher<AccessTokenConvertible, Error>?) -> Self
     mockResponse(with model: T)
     using(provider: CNProvider<BridgingEndpoint<T>>)
     build(retries: Int = 0, expectedStatusCodes: [Int] = [200, 201, 204], ignorePinning: Bool = false, receiveOn queue: DispatchQueue = .main) -> AnyPublisher<T, Error>
