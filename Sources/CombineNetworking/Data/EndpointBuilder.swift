@@ -65,8 +65,14 @@ public class EndpointBuilder<T: Codable & Equatable> {
     }
     
     /// Provides callback task for a request
-    public func setCallbackTask(_ callback: @escaping () async throws -> AccessTokenConvertible) -> Self {
+    public func setCallbackTask(_ callback: @escaping () async throws -> AccessTokenConvertible?) -> Self {
         callbackTask = callback
+        return self
+    }
+    
+    /// Provides callback publisher for a request
+    public func setCallbackPublisher(_ publisher: AnyPublisher<AccessTokenConvertible, Error>?) -> Self {
+        callbackPublisher = publisher
         return self
     }
     
