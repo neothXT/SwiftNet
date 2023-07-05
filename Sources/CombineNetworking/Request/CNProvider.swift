@@ -9,42 +9,43 @@ import Foundation
 import Combine
 
 fileprivate func runOnMain(_ completion: @escaping () -> Void) {
-	DispatchQueue.main.async {
-		completion()
-	}
+    DispatchQueue.main.async {
+        completion()
+    }
 }
 
 fileprivate func generateSuccess<T: Endpoint, U: Decodable>(for endpoint: T, data: U) -> AnyPublisher<U, Error> {
-	runOnMain {
-		CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
-	}
-	return Result.success(data).publisher.eraseToAnyPublisher()
+    runOnMain {
+        CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
+    }
+    return Result.success(data).publisher.eraseToAnyPublisher()
 }
 
 fileprivate func generateFailure<T: Endpoint, U: Decodable>(for endpoint: T, error: CNError) -> AnyPublisher<U, Error> {
-	runOnMain {
-		CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
-	}
-	return Fail(error: error).eraseToAnyPublisher()
+    runOnMain {
+        CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
+    }
+    return Fail(error: error).eraseToAnyPublisher()
 }
 
 @available(macOS 10.15, *)
 open class CNProvider<T: Endpoint> {
-	private var didRetry: [String] = []
-	private let endpointURLMapper: EndpointURLMapper
-	
-	public typealias EndpointURLMapper = (Endpoint) -> URL?
-	
-	public init(endpointURLMapper: @escaping EndpointURLMapper = defaultURLMapper) {
-		self.endpointURLMapper = endpointURLMapper
-	}
+    private var didRetry: [String] = []
+    private let endpointURLMapper: EndpointURLMapper
     
+    public typealias EndpointURLMapper = (Endpoint) -> URL?
+    
+    public init(endpointURLMapper: @escaping EndpointURLMapper = defaultURLMapper) {
+        self.endpointURLMapper = endpointURLMapper
+    }
+    
+    /// Executes dataTask and automatically maps the response to desired type
     open func task<U: Decodable>(
         for endpoint: T,
         responseType: U.Type,
+        expectedStatusCodes: [Int] = [200, 201, 204],
         decoder: JSONDecoder? = nil,
-        ignorePinning: Bool = false,
-        callbackTask: (() async throws -> AccessTokenConvertible?)?
+        ignorePinning: Bool = false
     ) async throws -> U {
         runOnMain {
             CNDebugInfo.createLogger(for: endpoint)
@@ -53,147 +54,142 @@ open class CNProvider<T: Endpoint> {
             runOnMain {
                 CNDebugInfo.getLogger(for: endpoint)?.log(CNError(type: .failedToBuildRequest).localizedDescription, mode: .stop)
             }
-            
             throw CNError(type: .failedToBuildRequest)
         }
         
         let session = CNConfig.getSession(ignorePinning: ignorePinning)
+        var data: Data?
+        var urlResponse: URLResponse?
+        do {
+            (data, urlResponse) = try await session.data(for: urlRequest)
+        } catch {
+            let networkErrorCodes = [
+                NSURLErrorNetworkConnectionLost,
+                NSURLErrorNotConnectedToInternet,
+                NSURLErrorCannotLoadFromNetwork
+            ]
+            let error = error as NSError
+            let errorType: CNError.ErrorType = networkErrorCodes.contains(error.code) ? .noInternetConnection : .unexpectedResponse
+            let errorDetails = CNErrorDetails(statusCode: error.code,
+                                              localizedString: error.localizedDescription)
+            let cnError = CNError(type: errorType, details: errorDetails)
+            runOnMain {
+                CNDebugInfo.getLogger(for: endpoint)?.log(cnError.localizedDescription, mode: .stop)
+            }
+            throw cnError
+        }
         
-        let (data, urlResponse) = try await session.data(for: urlRequest)
+        
         
         guard let response = urlResponse as? HTTPURLResponse else {
+            runOnMain {
+                CNDebugInfo.getLogger(for: endpoint)?.log(CNError(type: .failedToMapResponse).localizedDescription, mode: .stop)
+            }
             throw CNError(type: .failedToMapResponse)
         }
         
+        guard expectedStatusCodes.contains(response.statusCode) else {
+            runOnMain {
+                CNDebugInfo.getLogger(for: endpoint)?.log(CNError(type: .unexpectedResponse).localizedDescription, mode: .stop)
+            }
+            throw CNError(
+                type: .unexpectedResponse,
+                details: .init(
+                    statusCode: response.statusCode,
+                    localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
+                    url: response.url,
+                    mimeType: response.mimeType,
+                    headers: response.allHeaderFields),
+                data: data
+            )
+        }
+        
         if response.statusCode == 401 && !didRetry.contains(endpoint.caseIdentifier),
-           let callback = callbackTask, let token = try await callback()?.convert() {
+           let callback = endpoint.callbackTask, let token = try await callback()?.convert() {
             didRetry.append(endpoint.caseIdentifier)
-            
             CNConfig.setAccessToken(token, for: endpoint)
             
             return try await self.task(for: endpoint,
                                        responseType: U.self,
                                        decoder: decoder,
-                                       ignorePinning: ignorePinning,
-                                       callbackTask: callbackTask)
+                                       ignorePinning: ignorePinning)
         } else if response.statusCode == 401  {
-            let error = CNError(type: .authenticationFailed,
-                                details: .init(statusCode: response.statusCode,
-                                               localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
-                                               url: response.url,
-                                               mimeType: response.mimeType,
-                                               headers: response.allHeaderFields),
-                                data: nil)
-            throw error
+            runOnMain {
+                CNDebugInfo.getLogger(for: endpoint)?.log(CNError(type: .authenticationFailed).localizedDescription, mode: .stop)
+            }
+            throw CNError(
+                type: .authenticationFailed,
+                details: .init(
+                    statusCode: response.statusCode,
+                    localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
+                    url: response.url,
+                    mimeType: response.mimeType,
+                    headers: response.allHeaderFields),
+                data: nil
+            )
         }
         
-        return try (decoder ?? endpoint.jsonDecoder).decode(U.self, from: data)
+        if let castedData = data as? U {
+            runOnMain {
+                CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
+            }
+            return castedData
+        }
+        
+        guard let data, let decodedData = try? (decoder ?? endpoint.jsonDecoder).decode(U.self, from: data) else {
+            runOnMain {
+                CNDebugInfo.getLogger(for: endpoint)?.log(CNError(type: .failedToMapResponse).localizedDescription, mode: .stop)
+            }
+            throw CNError(type: .failedToMapResponse)
+        }
+        
+        runOnMain {
+            CNDebugInfo.getLogger(for: endpoint)?.log("Success", mode: .stop)
+        }
+        return decodedData
     }
-	
-	/// Returns publisher which automatically converts the response data into given response type
+    
+    /// Returns publisher which automatically converts the response data into given response type
     open func publisher<U: Decodable>(
         for endpoint: T,
         responseType: U.Type,
         decoder: JSONDecoder? = nil,
-        retries: Int = 0,
         expectedStatusCodes: [Int] = [200, 201, 204],
         ignorePinning: Bool = false,
         receiveOn queue: DispatchQueue = .main
     ) -> AnyPublisher<U, Error> {
-		rawPublisher(for: endpoint,
-					 retries: retries,
-					 expectedStatusCodes: expectedStatusCodes,
-					 ignorePinning: ignorePinning,
-					 receiveOn: queue)
-		.flatMap { data -> AnyPublisher<U, Error> in
-			do {
-				let response = try (decoder ?? endpoint.jsonDecoder).decode(U.self, from: data)
-				return generateSuccess(for: endpoint, data: response)
-			} catch {
-				let error = CNError(type: .failedToMapResponse, data: data)
-				return generateFailure(for: endpoint, error: error)
-			}
-		}
-		.retry(retries)
-		.receive(on: queue)
-		.eraseToAnyPublisher()
-	}
-	
-	/// Returns publisher with raw data in the response
-	open func rawPublisher(
+        let wrapper: PassthroughSubject<U, Error> = .init()
+        
+        Task {
+            do {
+                let data = try await task(
+                    for: endpoint,
+                    responseType: responseType,
+                    expectedStatusCodes: expectedStatusCodes,
+                    decoder: decoder,
+                    ignorePinning: ignorePinning
+                )
+                
+                wrapper.send(data)
+            } catch {
+                wrapper.send(completion: .failure(error))
+            }
+        }
+        
+        return wrapper.eraseToAnyPublisher()
+    }
+    
+    /// Returns publisher with raw data in the response
+    open func rawPublisher(
         for endpoint: T,
         retries: Int = 0,
         expectedStatusCodes: [Int] = [200, 201, 204],
         ignorePinning: Bool = false,
         receiveOn queue: DispatchQueue = .main
     ) -> AnyPublisher<Data, Error> {
-		runOnMain {
-			CNDebugInfo.createLogger(for: endpoint)
-		}
-		return prepPublisher(for: endpoint, ignorePinning: ignorePinning)
-			.flatMap { [weak self] output -> AnyPublisher<Data, Error> in
-				guard let response = output.response as? HTTPURLResponse else {
-					let error = CNError(type: .failedToMapResponse)
-					return generateFailure(for: endpoint, error: error)
-				}
-				
-				if response.statusCode == 401 && !(self?.didRetry.contains(endpoint.caseIdentifier) ?? false), let publisher = endpoint.callbackPublisher {
-					let errorDetails = CNErrorDetails(statusCode: response.statusCode,
-													  localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
-													  url: response.url,
-													  mimeType: response.mimeType,
-													  headers: response.allHeaderFields,
-													  data: output.data)
-					self?.didRetry.append(endpoint.caseIdentifier)
-					return publisher.flatMap { [weak self] response -> AnyPublisher<Data, Error> in
-						let error = CNError(type: .authenticationFailed, details: errorDetails)
-						guard let token = (response as? CNAccessToken) ?? response.convert() else {
-							return generateFailure(for: endpoint, error: error)
-						}
-						CNConfig.setAccessToken(token, for: endpoint)
-						
-						guard let newPublisher = self?.prepPublisher(for: endpoint, ignorePinning: ignorePinning).map(\.data).eraseToAnyPublisher() else {
-							return generateFailure(for: endpoint, error: error)
-						}
-						
-						return newPublisher
-					}.eraseToAnyPublisher()
-				} else if response.statusCode == 401 {
-					self?.didRetry.removeAll { $0 == endpoint.caseIdentifier }
-					let error = CNError(type: .authenticationFailed,
-										details: .init(statusCode: response.statusCode,
-													   localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
-													   url: response.url,
-													   mimeType: response.mimeType,
-													   headers: response.allHeaderFields),
-										data: output.data)
-					return generateFailure(for: endpoint, error: error)
-				}
-				
-				self?.didRetry.removeAll { $0 == endpoint.caseIdentifier }
-				guard expectedStatusCodes.contains(response.statusCode) else {
-					let error = CNError(type: .unexpectedResponse,
-										details: .init(statusCode: response.statusCode,
-													   localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
-													   url: response.url,
-													   mimeType: response.mimeType,
-													   headers: response.allHeaderFields),
-										data: output.data)
-					return generateFailure(for: endpoint, error: error)
-				}
-				
-				guard output.data.count > 0 else {
-					return generateFailure(for: endpoint, error: CNError(type: .emptyResponse))
-				}
-				
-				return Result.success(output.data).publisher.eraseToAnyPublisher()
-			}
-			.retry(retries)
-			.receive(on: queue)
-			.eraseToAnyPublisher()
-	}
-	
-	
+        publisher(for: endpoint, responseType: Data.self, expectedStatusCodes: expectedStatusCodes, ignorePinning: ignorePinning, receiveOn: queue)
+    }
+    
 	/// Returns publisher which gives you updates on upload progress until the task is complete
     open func uploadPublisher<U: Codable>(
         for endpoint: T,
@@ -285,35 +281,6 @@ open class CNProvider<T: Endpoint> {
 	
 	private func prepareBody(endpointData: EndpointData, boundary: Boundary?, request: inout URLRequest) {
 		CNDataEncoder.encode(endpointData, boundary: boundary, request: &request)
-	}
-	
-	private func prepPublisher(for endpoint: T, ignorePinning: Bool) -> AnyPublisher<URLSession.DataTaskPublisher.Output, Error> {
-		guard let urlRequest = prepareRequest(for: endpoint) else {
-			runOnMain {
-				CNDebugInfo.getLogger(for: endpoint)?.log(CNError(type: .failedToBuildRequest).localizedDescription, mode: .stop)
-			}
-			
-			return Fail(error: CNError(type: .failedToBuildRequest)).eraseToAnyPublisher()
-		}
-		
-		return CNConfig.getSession(ignorePinning: ignorePinning).dataTaskPublisher(for: urlRequest)
-			.mapError { urlError -> Error in
-				let networkErrorCodes = [
-					NSURLErrorNetworkConnectionLost,
-					NSURLErrorNotConnectedToInternet,
-					NSURLErrorCannotLoadFromNetwork
-				]
-				let errorType: CNError.ErrorType = networkErrorCodes.contains(urlError.errorCode) ? .noInternetConnection : .unexpectedResponse
-				let errorDetails = CNErrorDetails(statusCode: urlError.errorCode,
-												  localizedString: urlError.localizedDescription)
-				let error = CNError(type: errorType, details: errorDetails)
-				runOnMain {
-					CNDebugInfo.getLogger(for: endpoint)?.log(error.localizedDescription, mode: .stop)
-				}
-				
-				return error
-			}
-			.eraseToAnyPublisher()
 	}
 	
 	private func prepUploadPublisher<U: Codable>(

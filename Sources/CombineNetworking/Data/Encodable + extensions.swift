@@ -67,17 +67,6 @@ extension Encodable {
 		return input
 	}
 	
-	private func valueOrNil(_ value: Any) -> Any? {
-		switch value {
-		case Optional<Any>.none:
-			return nil
-		case Optional<Any>.some(let val):
-			return val
-		default:
-			return value
-		}
-	}
-	
 	fileprivate func collectionCountOrNil(_ value: Any) -> Int? {
 		if let val = value as? Array<Any> {
 			return val.count
@@ -104,4 +93,15 @@ public struct EncodableConversionOptions: OptionSet {
 	
 	/// Keeps empty collections in final output
 	public static let keepEmptyCollections = EncodableConversionOptions(rawValue: 1 << 0)
+}
+
+func valueOrNil(_ value: Any) -> Any? {
+    switch value {
+    case Optional<Any>.none:
+        return nil
+    case Optional<Any>.some(let val):
+        return val
+    default:
+        return value
+    }
 }

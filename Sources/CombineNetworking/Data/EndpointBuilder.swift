@@ -15,7 +15,7 @@ public class EndpointBuilder<T: Codable & Equatable> {
     fileprivate(set) var data: EndpointData = .plain
     fileprivate(set) var mock: Codable?
     fileprivate(set) var accessTokenStrategy: AccessTokenStrategy
-    fileprivate(set) var callbackTask: AccessTokenConvertible? = nil
+    fileprivate(set) var callbackTask: (() async throws -> AccessTokenConvertible?)? = nil
     fileprivate(set) var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>?
     fileprivate(set) var requiresAccessToken: Bool = false
     fileprivate(set) var jsonDecoder: JSONDecoder = CNConfig.defaultJSONDecoder
@@ -28,7 +28,7 @@ public class EndpointBuilder<T: Codable & Equatable> {
         method: String,
         headers: [String : Any],
         accessTokenStrategy: AccessTokenStrategy,
-        callbackTask: AccessTokenConvertible? = nil,
+        callbackTask: (() async throws -> AccessTokenConvertible?)? = nil,
         callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? = nil,
         identifier: String) {
             self.url = url
@@ -65,7 +65,7 @@ public class EndpointBuilder<T: Codable & Equatable> {
     }
     
     /// Provides callback task for a request
-    public func setCallbackTask(_ callback: AccessTokenConvertible?) -> Self {
+    public func setCallbackTask(_ callback: (() async throws -> AccessTokenConvertible?)?) -> Self {
         callbackTask = callback
         return self
     }
@@ -95,36 +95,32 @@ public class EndpointBuilder<T: Codable & Equatable> {
     }
     
     /// Generates AnyPublisher
-    public func build(
-        retries: Int = 0,
+    public func buildPublisher(
         expectedStatusCodes: [Int] = [200, 201, 204],
         ignorePinning: Bool = false,
         receiveOn queue: DispatchQueue = .main
     ) -> AnyPublisher<T, Error> {
         provider.publisher(for: .custom(self),
                            responseType: T.self,
-                           retries: retries,
                            expectedStatusCodes: expectedStatusCodes,
                            ignorePinning: ignorePinning,
                            receiveOn: queue)
     }
     
     /// Generates AnyPublisher for upload request
-    public func buildForUpload(
-        retries: Int = 0,
+    public func buildUploadPublisher(
         ignorePinning: Bool = false,
         receiveOn queue: DispatchQueue = .main
     ) -> AnyPublisher<UploadResponse<T>, Error> {
         provider.uploadPublisher(for: .custom(self),
                                  responseType: T.self,
-                                 retries: retries,
                                  ignorePinning: ignorePinning,
                                  receiveOn: queue)
     }
     
     /// Generates async/await task
     public func buildAsyncTask(ignorePinning: Bool = false) async throws -> T {
-        try await provider.task(for: .custom(self), responseType: T.self, callbackTask: { [weak self] in self?.callbackTask })
+        try await provider.task(for: .custom(self), responseType: T.self)
     }
     
     /// Tests a request and typechecks the response

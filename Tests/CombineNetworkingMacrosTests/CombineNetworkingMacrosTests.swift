@@ -32,7 +32,7 @@ final class CombineNetworkingMacrosTests: XCTestCase {
             struct MyEndpoint {
                 var test: EndpointBuilder<Data> {
                     get {
-                        .init(url: url + "/test", method: "get", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackPublisher: callbackPublisher, identifier: identifier)
+                        .init(url: url + "/test", method: "get", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackTask: callbackTask, callbackPublisher: callbackPublisher, identifier: identifier)
                     }
                 }
             }
@@ -52,7 +52,7 @@ final class CombineNetworkingMacrosTests: XCTestCase {
             struct MyEndpoint {
                 var test: EndpointBuilder<Data> {
                     get {
-                        .init(url: url + "/test", method: "get", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackPublisher: callbackPublisher, identifier: identifier)
+                        .init(url: url + "/test", method: "get", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackTask: callbackTask, callbackPublisher: callbackPublisher, identifier: identifier)
                     }
                 }
             }
@@ -72,7 +72,7 @@ final class CombineNetworkingMacrosTests: XCTestCase {
                 struct MyEndpoint {
                     var test: EndpointBuilder<Data> {
                         get {
-                            .init(url: url + "/test", method: "post", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackPublisher: callbackPublisher, identifier: identifier)
+                            .init(url: url + "/test", method: "post", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackTask: callbackTask, callbackPublisher: callbackPublisher, identifier: identifier)
                         }
                     }
                 }

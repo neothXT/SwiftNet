@@ -78,7 +78,7 @@ final class MacroPoweredApproachTests: XCTestCase {
             let model = try? await endpoint
                 .todos
                 .setUrlValue("1", forKey: "id")
-                .buildAsync()
+                .buildAsyncTask()
             
             if model?.id == 1 {
                 expectation.fulfill()

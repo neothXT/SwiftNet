@@ -71,9 +71,12 @@ class CNDataEncoder {
 		}
 	}
 	
-	private static func mapToArray(dictionary: [String: Any]) -> [String] {
-		dictionary.reduce([]) { $0 + ["\($1.key)=\($1.value)"] }
-	}
+    private static func mapToArray(dictionary: [String: Any]) -> [String] {
+        dictionary.reduce([]) {
+            guard let value = valueOrNil($1.value) else { return $0 }
+            return $0 + ["\($1.key)=\(value)"]
+        }
+    }
 	
 	static func prepareUploadBody(endpointData: EndpointData, boundary: Boundary?) -> Data? {
 		switch endpointData {

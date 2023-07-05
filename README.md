@@ -367,8 +367,8 @@ public class EndpointBuilder<T: Codable & Equatable> {
     setCallbackPublisher(_ publisher: AnyPublisher<AccessTokenConvertible, Error>?) -> Self
     mockResponse(with model: T)
     using(provider: CNProvider<BridgingEndpoint<T>>)
-    build(retries: Int = 0, expectedStatusCodes: [Int] = [200, 201, 204], ignorePinning: Bool = false, receiveOn queue: DispatchQueue = .main) -> AnyPublisher<T, Error>
-    buildForUpload(retries: Int = 0, ignorePinning: Bool = false, receiveOn queue: DispatchQueue = .main) -> AnyPublisher<UploadResponse<T>, Error>
+    buildPublisher(retries: Int = 0, expectedStatusCodes: [Int] = [200, 201, 204], ignorePinning: Bool = false, receiveOn queue: DispatchQueue = .main) -> AnyPublisher<T, Error>
+    buildUploadPublisher(retries: Int = 0, ignorePinning: Bool = false, receiveOn queue: DispatchQueue = .main) -> AnyPublisher<UploadResponse<T>, Error>
     buildAsyncTask(ignorePinning: Bool = false) async throws -> T
     test(failOnFinished: Bool = true, storeIn store: inout Set<AnyCancellable>, onSuccess: @escaping (T?) -> Void, onFailure: @escaping (Error) -> Void)
     testRaw(failOnFinished: Bool = true, storeIn store: inout Set<AnyCancellable>, onSuccess: @escaping () -> Void, onFailure: @escaping (Error) -> Void)

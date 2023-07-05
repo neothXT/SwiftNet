@@ -20,6 +20,7 @@ public protocol Endpoint {
     var data: EndpointData { get }
 	var jsonDecoder: JSONDecoder { get }
 	var accessTokenStrategy: AccessTokenStrategy { get }
+    var callbackTask: (() async throws -> AccessTokenConvertible?)? { get }
 	var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { get }
     
     var typeIdentifier: String { get }
@@ -32,6 +33,7 @@ public extension Endpoint {
 	var requiresAccessToken: Bool { false }
 	var jsonDecoder: JSONDecoder { CNConfig.defaultJSONDecoder }
 	var accessTokenStrategy: AccessTokenStrategy { CNConfig.defaultAccessTokenStrategy }
+    var callbackTask: (() async throws -> AccessTokenConvertible?)? { nil }
 	var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { nil }
 	var boundary: Boundary? { nil }
 	var mockedData: Codable? { nil }
