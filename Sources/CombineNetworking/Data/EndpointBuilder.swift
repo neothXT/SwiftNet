@@ -15,7 +15,7 @@ public class EndpointBuilder<T: Codable & Equatable> {
     fileprivate(set) var data: EndpointData = .plain
     fileprivate(set) var mock: Codable?
     fileprivate(set) var accessTokenStrategy: AccessTokenStrategy
-    fileprivate(set) var callbackTask: (() async throws -> AccessTokenConvertible?)? = nil
+    fileprivate(set) var callbackTask: AccessTokenConvertible? = nil
     fileprivate(set) var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>?
     fileprivate(set) var requiresAccessToken: Bool = false
     fileprivate(set) var jsonDecoder: JSONDecoder = CNConfig.defaultJSONDecoder
@@ -28,7 +28,7 @@ public class EndpointBuilder<T: Codable & Equatable> {
         method: String,
         headers: [String : Any],
         accessTokenStrategy: AccessTokenStrategy,
-        callbackTask: (() -> AccessTokenConvertible)? = nil,
+        callbackTask: AccessTokenConvertible? = nil,
         callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? = nil,
         identifier: String) {
             self.url = url
@@ -65,7 +65,7 @@ public class EndpointBuilder<T: Codable & Equatable> {
     }
     
     /// Provides callback task for a request
-    public func setCallbackTask(_ callback: @escaping () async throws -> AccessTokenConvertible?) -> Self {
+    public func setCallbackTask(_ callback: AccessTokenConvertible?) -> Self {
         callbackTask = callback
         return self
     }
@@ -85,6 +85,12 @@ public class EndpointBuilder<T: Codable & Equatable> {
     /// Sets CNProvider for a request
     public func using(provider: CNProvider<BridgingEndpoint<T>>) -> Self {
         self.provider = provider
+        return self
+    }
+    
+    /// Sets boundary for a request
+    public func setBoundary(_ boundary: Boundary) -> Self {
+        self.boundary = boundary
         return self
     }
     
@@ -116,9 +122,9 @@ public class EndpointBuilder<T: Codable & Equatable> {
                                  receiveOn: queue)
     }
     
-    /// Generates async task
-    public func buildAsync(ignorePinning: Bool = false) async throws -> T {
-        try await provider.task(for: .custom(self), responseType: T.self, callbackTask: callbackTask)
+    /// Generates async/await task
+    public func buildAsyncTask(ignorePinning: Bool = false) async throws -> T {
+        try await provider.task(for: .custom(self), responseType: T.self, callbackTask: { [weak self] in self?.callbackTask })
     }
     
     /// Tests a request and typechecks the response
