@@ -5,7 +5,7 @@ Meet CombineNetworking. Super lightweight and crazy easy to use framework to hel
 Besides basic network requests, CombineNetworking allows you to easily send your requests securely with a simple SSL and Certificate pinning mechanisms. But that's not all. With CombineNetworking you can also effortlessly handle authorization tokens with built-in automatic authorization mechanism.
 
 # Macro-powered CombineNetworking 2.0.0 beta version is now available!
-check it out [here!](https://github.com/neothXT/CombineNetworking/tree/rc/2.0.0-beta#macro-powered-networking)
+check what's new [here!](https://github.com/neothXT/CombineNetworking/tree/rc/2.0.0-beta#macro-powered-networking)
 
 ## Installation (using CocoaPods)
 
