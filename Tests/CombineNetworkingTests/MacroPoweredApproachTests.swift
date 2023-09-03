@@ -42,6 +42,19 @@ final class MacroPoweredApproachTests: XCTestCase {
         wait(for: [expectation], timeout: 10)
     }
     
+    func testInlineParams() throws {
+        let expectation = expectation(description: #"Test "test()"#)
+        var subscriptions: Set<AnyCancellable> = []
+        
+        endpoint
+            .todosV2
+            .test(storeIn: &subscriptions) { _ in
+                expectation.fulfill()
+            } onFailure: { _ in }
+        
+        wait(for: [expectation], timeout: 10)
+    }
+    
     func testQueryParams() throws {
         let expectation = expectation(description: "Test query params")
         var subscriptions: Set<AnyCancellable> = []
