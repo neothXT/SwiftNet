@@ -15,7 +15,7 @@ public struct EndpointDescriptor {
     public var data: EndpointData?
     public var mock: Codable?
     public var accessTokenStrategy: AccessTokenStrategy?
-    public var callbackTask: (() async throws -> AccessTokenConvertible?)?
+    public var callbackTask: (() async throws -> AccessTokenConvertible)?
     public var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>?
     public var requiresAccessToken: Bool?
     public var jsonDecoder: JSONDecoder?
@@ -27,7 +27,7 @@ public struct EndpointDescriptor {
                 data: EndpointData? = nil,
                 mock: Codable? = nil,
                 accessTokenStrategy: AccessTokenStrategy? = nil,
-                callbackTask: (() async throws -> AccessTokenConvertible?)? = nil,
+                callbackTask: (() async throws -> AccessTokenConvertible)? = nil,
                 callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? = nil,
                 requiresAccessToken: Bool? = nil,
                 jsonDecoder: JSONDecoder? = nil,

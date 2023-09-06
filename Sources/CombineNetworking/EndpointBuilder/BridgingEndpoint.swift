@@ -50,9 +50,26 @@ public enum BridgingEndpoint<T: Codable & Equatable>: Endpoint {
         return request.accessTokenStrategy
     }
     
-    public var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? {
+    public var callbackTask: (() async throws -> AccessTokenConvertible)? {
         guard case .custom(let request) = self else { return nil }
-        return request.callbackPublisher
+        return request.callbackTask
+    }
+    
+    public var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? {
+        guard case .custom(let request) = self, let task = request.callbackTask else { return nil }
+        
+        let publisher: PassthroughSubject<AccessTokenConvertible, Error> = .init()
+        
+        Task {
+            do {
+                let token = try await task()
+                publisher.send(token)
+            } catch {
+                publisher.send(completion: .failure(error))
+            }
+        }
+        
+        return publisher.eraseToAnyPublisher()
     }
     
     public var boundary: Boundary? {

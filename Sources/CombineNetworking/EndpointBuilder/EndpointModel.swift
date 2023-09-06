@@ -12,9 +12,7 @@ public protocol EndpointModel {
     var identifier: String { get }
     var defaultAccessTokenStrategy: AccessTokenStrategy { get }
     var defaultHeaders: [String: Any] { get }
-    var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { get }
-    
-    func callbackTask() async throws -> AccessTokenConvertible?
+    var callbackTask: (() async throws -> AccessTokenConvertible)? { get }
 }
 
 public extension EndpointModel {
@@ -25,9 +23,5 @@ public extension EndpointModel {
         return CNConfig.defaultAccessTokenStrategy
     }
     var defaultHeaders: [String: Any] { [:] }
-    var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { nil }
-    
-    func callbackTask() async throws -> AccessTokenConvertible? {
-        nil
-    }
+    var callbackTask: (() async throws -> AccessTokenConvertible)? { nil }
 }

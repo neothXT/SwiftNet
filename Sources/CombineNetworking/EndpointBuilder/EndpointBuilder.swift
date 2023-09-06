@@ -15,8 +15,7 @@ public class EndpointBuilder<T: Codable & Equatable> {
     fileprivate(set) var data: EndpointData = .plain
     fileprivate(set) var mock: Codable?
     fileprivate(set) var accessTokenStrategy: AccessTokenStrategy
-    fileprivate(set) var callbackTask: (() async throws -> AccessTokenConvertible?)? = nil
-    fileprivate(set) var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? = nil
+    fileprivate(set) var callbackTask: (() async throws -> AccessTokenConvertible)?
     fileprivate(set) var requiresAccessToken: Bool = false
     fileprivate(set) var jsonDecoder: JSONDecoder = CNConfig.defaultJSONDecoder
     fileprivate(set) var boundary: Boundary?
@@ -28,15 +27,13 @@ public class EndpointBuilder<T: Codable & Equatable> {
         method: String,
         headers: [String : Any],
         accessTokenStrategy: AccessTokenStrategy,
-        callbackTask: (() async throws -> AccessTokenConvertible?)? = nil,
-        callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? = nil,
+        callbackTask: (() async throws -> AccessTokenConvertible)? = nil,
         identifier: String) {
             self.url = url
             self.method = method
             self.headers = headers
             self.accessTokenStrategy = accessTokenStrategy
             self.callbackTask = callbackTask
-            self.callbackPublisher = callbackPublisher
             self.identifier = identifier
     }
     
@@ -49,7 +46,6 @@ public class EndpointBuilder<T: Codable & Equatable> {
         mock = descriptor.mock ?? mock
         accessTokenStrategy = descriptor.accessTokenStrategy ?? accessTokenStrategy
         callbackTask = descriptor.callbackTask ?? callbackTask
-        callbackPublisher = descriptor.callbackPublisher ?? callbackPublisher
         requiresAccessToken = descriptor.requiresAccessToken ?? requiresAccessToken
         jsonDecoder = descriptor.jsonDecoder ?? jsonDecoder
         boundary = descriptor.boundary ?? boundary
@@ -81,14 +77,8 @@ public class EndpointBuilder<T: Codable & Equatable> {
     }
     
     /// Provides callback task for a request
-    public func setCallbackTask(_ callback: (() async throws -> AccessTokenConvertible?)?) -> Self {
+    public func setCallbackTask(_ callback: (() async throws -> AccessTokenConvertible)?) -> Self {
         callbackTask = callback
-        return self
-    }
-    
-    /// Provides callback publisher for a request
-    public func setCallbackPublisher(_ publisher: AnyPublisher<AccessTokenConvertible, Error>?) -> Self {
-        callbackPublisher = publisher
         return self
     }
     

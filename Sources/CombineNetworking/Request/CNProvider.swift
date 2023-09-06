@@ -104,29 +104,36 @@ open class CNProvider<T: Endpoint> {
             )
         }
         
-        if response.statusCode == 401 && !didRetry.contains(endpoint.caseIdentifier),
-           let callback = endpoint.callbackTask, let token = try await callback()?.convert() {
-            didRetry.append(endpoint.caseIdentifier)
-            CNConfig.setAccessToken(token, for: endpoint)
+        if response.statusCode == 401 {
+            var convertibleToken: AccessTokenConvertible? = try await endpoint.callbackTask?()
             
-            return try await self.task(for: endpoint,
-                                       responseType: U.self,
-                                       decoder: decoder,
-                                       ignorePinning: ignorePinning)
-        } else if response.statusCode == 401  {
-            runOnMain {
-                CNDebugInfo.getLogger(for: endpoint)?.log(CNError(type: .authenticationFailed).localizedDescription, mode: .stop)
+            if convertibleToken == nil {
+                convertibleToken = try await endpoint.callbackPublisher?.toAsyncAwait()
             }
-            throw CNError(
-                type: .authenticationFailed,
-                details: .init(
-                    statusCode: response.statusCode,
-                    localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
-                    url: response.url,
-                    mimeType: response.mimeType,
-                    headers: response.allHeaderFields),
-                data: nil
-            )
+            
+            if !didRetry.contains(endpoint.caseIdentifier), let token = convertibleToken?.convert() {
+                 didRetry.append(endpoint.caseIdentifier)
+                 CNConfig.setAccessToken(token, for: endpoint)
+                 
+                 return try await self.task(for: endpoint,
+                                            responseType: U.self,
+                                            decoder: decoder,
+                                            ignorePinning: ignorePinning)
+            } else {
+                runOnMain {
+                    CNDebugInfo.getLogger(for: endpoint)?.log(CNError(type: .authenticationFailed).localizedDescription, mode: .stop)
+                }
+                throw CNError(
+                    type: .authenticationFailed,
+                    details: .init(
+                        statusCode: response.statusCode,
+                        localizedString: HTTPURLResponse.localizedString(forStatusCode: response.statusCode),
+                        url: response.url,
+                        mimeType: response.mimeType,
+                        headers: response.allHeaderFields),
+                    data: nil
+                )
+            }
         }
         
         if let castedData = data as? U {

@@ -82,7 +82,7 @@ public struct NetworkRequestMacro: AccessorMacro {
         return [
             """
             get {
-                .init(url: url + "\(raw: finalUrl)", method: "\(raw: method)", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackTask: callbackTask, callbackPublisher: callbackPublisher, identifier: identifier)
+                .init(url: url + "\(raw: finalUrl)", method: "\(raw: method)", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackTask: callbackTask, identifier: identifier)
             }
             """
         ]
