@@ -358,6 +358,7 @@ struct TestEndpoint: EndpointModel {
 
 ```Swift
 public class EndpointBuilder<T: Codable & Equatable> {
+    setup(with descriptor: EndpointDescriptor)
     extendUrl(with path: String)
     setRequestParams(_ data: EndpointData)
     setUrlValue(_ value: String, forKey key: String) -> Self
