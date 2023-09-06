@@ -100,4 +100,34 @@ final class MacroPoweredApproachTests: XCTestCase {
         
         wait(for: [expectation], timeout: 5)
     }
+    
+    func testDescriptor() throws {
+        let expectation = expectation(description: "Task test should fetch one todo with async/await configured by EndpointDescriptor")
+        Task {
+            let model = try? await endpoint
+                .todos
+                .setup(with: .init(urlValues: [.init(key: "id", value: "1")]))
+                .buildAsyncTask()
+            
+            if model?.id == 1 {
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 5)
+    }
+    
+    func testQueryParamsWithDescriptor() throws {
+        let expectation = expectation(description: "Test query params configured by EndpointDescriptor")
+        var subscriptions: Set<AnyCancellable> = []
+        
+        endpoint
+            .comments
+            .setup(with: .init(data: .queryParams(["postId": 1])))
+            .testRaw(storeIn: &subscriptions) {
+                expectation.fulfill()
+            } onFailure: { _ in }
+        
+        wait(for: [expectation], timeout: 10)
+    }
 }

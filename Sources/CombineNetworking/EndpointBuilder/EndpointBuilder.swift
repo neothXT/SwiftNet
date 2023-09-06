@@ -16,7 +16,7 @@ public class EndpointBuilder<T: Codable & Equatable> {
     fileprivate(set) var mock: Codable?
     fileprivate(set) var accessTokenStrategy: AccessTokenStrategy
     fileprivate(set) var callbackTask: (() async throws -> AccessTokenConvertible?)? = nil
-    fileprivate(set) var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>?
+    fileprivate(set) var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? = nil
     fileprivate(set) var requiresAccessToken: Bool = false
     fileprivate(set) var jsonDecoder: JSONDecoder = CNConfig.defaultJSONDecoder
     fileprivate(set) var boundary: Boundary?
@@ -38,6 +38,22 @@ public class EndpointBuilder<T: Codable & Equatable> {
             self.callbackTask = callbackTask
             self.callbackPublisher = callbackPublisher
             self.identifier = identifier
+    }
+    
+    /// Configures endpoint according to data provided by descriptor
+    public func setup(with descriptor: EndpointDescriptor) -> Self {
+        descriptor.urlValues.forEach { self.url = self.url.replacingOccurrences(of: "#{\($0.key)}#", with: $0.value) }
+        method = descriptor.method?.rawValue ?? method
+        headers = descriptor.headers ?? headers
+        data = descriptor.data ?? data
+        mock = descriptor.mock ?? mock
+        accessTokenStrategy = descriptor.accessTokenStrategy ?? accessTokenStrategy
+        callbackTask = descriptor.callbackTask ?? callbackTask
+        callbackPublisher = descriptor.callbackPublisher ?? callbackPublisher
+        requiresAccessToken = descriptor.requiresAccessToken ?? requiresAccessToken
+        jsonDecoder = descriptor.jsonDecoder ?? jsonDecoder
+        boundary = descriptor.boundary ?? boundary
+        return self
     }
     
     /// Extends request's url with provided path

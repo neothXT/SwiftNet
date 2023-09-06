@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  CNConfig.swift
 //  
 //
 //  Created by Maciej Burdzicki on 13/03/2022.
