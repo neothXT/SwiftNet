@@ -34,7 +34,7 @@ public extension Endpoint {
 	var jsonDecoder: JSONDecoder { CNConfig.defaultJSONDecoder }
 	var accessTokenStrategy: AccessTokenStrategy { CNConfig.defaultAccessTokenStrategy }
     var callbackTask: (() async throws -> AccessTokenConvertible)? { nil }
-	var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { nil } // wywalić to i zastąpić samym taskiem
+	var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { nil }
 	var boundary: Boundary? { nil }
 	var mockedData: Codable? { nil }
 	

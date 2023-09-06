@@ -365,7 +365,6 @@ public class EndpointBuilder<T: Codable & Equatable> {
     setRequiresToken(_ value: Bool) -> Self
     setBoundary(_ boundary: Boundary) -> Self
     setCallbackTask(_ callback: @escaping () async throws -> AccessTokenConvertible?) -> Self
-    setCallbackPublisher(_ publisher: AnyPublisher<AccessTokenConvertible, Error>?) -> Self
     mockResponse(with model: T)
     using(provider: CNProvider<BridgingEndpoint<T>>)
     buildPublisher(retries: Int = 0, expectedStatusCodes: [Int] = [200, 201, 204], ignorePinning: Bool = false, receiveOn queue: DispatchQueue = .main) -> AnyPublisher<T, Error>
@@ -441,11 +440,11 @@ struct MyStruct: EndpointModel {
 To then swap it for an actual value, use `.setUrlValue(_ value: String, forKey key: String)` when building your request like
 
 ```Swift
-func buildRequest() {
+func buildRequest() async throws -> [Comment] {
     endpoint
         .comments
         .setUrlValue("1", forKey: "id")
-        .build()
+        .buildAsyncTask()
 }
 ```
 

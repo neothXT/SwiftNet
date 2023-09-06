@@ -108,7 +108,7 @@ open class CNProvider<T: Endpoint> {
             var convertibleToken: AccessTokenConvertible? = try await endpoint.callbackTask?()
             
             if convertibleToken == nil {
-                convertibleToken = try await endpoint.callbackPublisher?.toAsyncAwait()
+                convertibleToken = try await endpoint.callbackPublisher?.toAsync()
             }
             
             if !didRetry.contains(endpoint.caseIdentifier), let token = convertibleToken?.convert() {
