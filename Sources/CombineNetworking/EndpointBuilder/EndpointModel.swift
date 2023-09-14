@@ -16,12 +16,7 @@ public protocol EndpointModel {
 }
 
 public extension EndpointModel {
-    var defaultAccessTokenStrategy: AccessTokenStrategy {
-        if CNConfig.defaultAccessTokenStrategy == .default {
-            return .custom("\(type(of: self))".replacingOccurrences(of: ".Type", with: ""))
-        }
-        return CNConfig.defaultAccessTokenStrategy
-    }
+    var defaultAccessTokenStrategy: AccessTokenStrategy { CNConfig.defaultAccessTokenStrategy }
     var defaultHeaders: [String: Any] { [:] }
     var callbackTask: (() async throws -> AccessTokenConvertible)? { nil }
 }

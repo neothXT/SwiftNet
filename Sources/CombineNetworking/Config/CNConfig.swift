@@ -12,8 +12,9 @@ public class CNConfig {
 	public static var pinningModes: PinningMode = PinningMode(rawValue: 0)
 	public static var sitesExcludedFromPinning: [String] = []
 	public static var defaultJSONDecoder: JSONDecoder = .init()
-	public static var defaultAccessTokenStrategy: AccessTokenStrategy = .default
+	public static var defaultAccessTokenStrategy: AccessTokenStrategy = .global
 	public static var keychainInstance: Keychain?
+    public static var accessTokenStorage: AccessTokenStorage = CNStorage()
 	
 	private init() {}
 	

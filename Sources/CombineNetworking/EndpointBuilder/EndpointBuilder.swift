@@ -100,6 +100,12 @@ public class EndpointBuilder<T: Codable & Equatable> {
         return self
     }
     
+    /// Sets JSON decoder
+    public func setDecoder(_ decoder: JSONDecoder) -> Self {
+        self.jsonDecoder = decoder
+        return self
+    }
+    
     /// Generates AnyPublisher
     public func buildPublisher(
         expectedStatusCodes: [Int] = [200, 201, 204],
@@ -108,6 +114,7 @@ public class EndpointBuilder<T: Codable & Equatable> {
     ) -> AnyPublisher<T, Error> {
         provider.publisher(for: .custom(self),
                            responseType: T.self,
+                           decoder: jsonDecoder,
                            expectedStatusCodes: expectedStatusCodes,
                            ignorePinning: ignorePinning,
                            receiveOn: queue)
@@ -120,13 +127,14 @@ public class EndpointBuilder<T: Codable & Equatable> {
     ) -> AnyPublisher<UploadResponse<T>, Error> {
         provider.uploadPublisher(for: .custom(self),
                                  responseType: T.self,
+                                 decoder: jsonDecoder,
                                  ignorePinning: ignorePinning,
                                  receiveOn: queue)
     }
     
     /// Generates async/await task
     public func buildAsyncTask(ignorePinning: Bool = false) async throws -> T {
-        try await provider.task(for: .custom(self), responseType: T.self)
+        try await provider.task(for: .custom(self), responseType: T.self, decoder: jsonDecoder)
     }
     
     /// Tests a request and typechecks the response

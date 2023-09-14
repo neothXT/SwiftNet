@@ -20,26 +20,25 @@ final class AccessTokenManipulationTests: XCTestCase {
 	}
     
     func testStoreModelToken() throws {
-        let token = TestEndpoint()
+        let endpoint = TestEndpoint()
         let sampleToken = CNAccessToken(access_token: "aaa", expires_in: nil, refresh_token: nil, scope: nil)
         
-        CNConfig.setAccessToken(sampleToken, for: token)
-        XCTAssert((CNConfig.accessToken(for: token)?.access_token ?? "") == "aaa")
+        CNConfig.setAccessToken(sampleToken, for: endpoint)
+        XCTAssert((CNConfig.accessToken(for: endpoint)?.access_token ?? "") == "aaa")
+    }
+    
+    func testStoreBuilderToken() throws {
+        let builder = TestEndpoint().comments
+        let sampleToken = CNAccessToken(access_token: "aaa", expires_in: nil, refresh_token: nil, scope: nil)
+        
+        CNConfig.setAccessToken(sampleToken, for: builder)
+        XCTAssert((CNConfig.accessToken(for: builder)?.access_token ?? "") == "aaa")
     }
 	
-	func testFetchTokenByStrategy() throws {
-		let endpoint: RemoteEndpoint = .todos
-		let sampleToken = CNAccessToken(access_token: "aaa", expires_in: nil, refresh_token: nil, scope: nil)
-		
-		CNConfig.setAccessToken(sampleToken, for: endpoint)
-		XCTAssert((CNConfig.accessToken(for: RemoteEndpoint.self)?.access_token ?? "") == "aaa")
-	}
-	
 	func testFetchTokenByStoringLabel() throws {
-		let endpoint: RemoteEndpoint = .posts
 		let sampleToken = CNAccessToken(access_token: "aaa", expires_in: nil, refresh_token: nil, scope: nil)
 		
-		CNConfig.setAccessToken(sampleToken, for: endpoint)
+		CNConfig.setAccessToken(sampleToken, for: "someLabel")
 		XCTAssert((CNConfig.accessToken(for: "someLabel")?.access_token ?? "") == "aaa")
 	}
 	

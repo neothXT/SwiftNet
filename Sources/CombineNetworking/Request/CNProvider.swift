@@ -111,8 +111,10 @@ open class CNProvider<T: Endpoint> {
                 convertibleToken = try await endpoint.callbackPublisher?.toAsync()
             }
             
-            if !didRetry.contains(endpoint.caseIdentifier), let token = convertibleToken?.convert() {
-                 didRetry.append(endpoint.caseIdentifier)
+            let identifier = endpointURLMapper(endpoint)?.absoluteString ?? endpoint.path
+            
+            if !didRetry.contains(identifier), let token = convertibleToken?.convert() {
+                 didRetry.append(identifier)
                  CNConfig.setAccessToken(token, for: endpoint)
                  
                  return try await self.task(for: endpoint,
@@ -212,11 +214,12 @@ open class CNProvider<T: Endpoint> {
 		return prepUploadPublisher(for: endpoint, responseType: responseType,
 								   decoder: decoder, ignorePinning: ignorePinning)
 		.flatMap { [weak self] response -> AnyPublisher<UploadResponse, Error> in
-			if response == .authError && !(self?.didRetry.contains(endpoint.caseIdentifier) ?? false), let publisher = endpoint.callbackPublisher {
+            let identifier = self?.endpointURLMapper(endpoint)?.absoluteString ?? endpoint.path
+			if response == .authError && !(self?.didRetry.contains(identifier) ?? false), let publisher = endpoint.callbackPublisher {
 				let errorDetails = CNErrorDetails(statusCode: 401,
 												  localizedString: HTTPURLResponse.localizedString(forStatusCode: 401))
 				let error = CNError(type: .authenticationFailed, details: errorDetails)
-				self?.didRetry.append(endpoint.caseIdentifier)
+				self?.didRetry.append(identifier)
 				
 				return publisher.flatMap { [weak self] response -> AnyPublisher<UploadResponse, Error> in
 					guard let token = (response as? CNAccessToken) ?? response.convert() else {
@@ -231,7 +234,7 @@ open class CNProvider<T: Endpoint> {
 					return self?.prepUploadPublisher(for: endpoint, responseType: responseType, decoder: decoder, ignorePinning: ignorePinning) ?? Fail(error: error).eraseToAnyPublisher()
 				}.eraseToAnyPublisher()
 			} else if response == .authError {
-				self?.didRetry.removeAll { $0 == endpoint.caseIdentifier }
+				self?.didRetry.removeAll { $0 == identifier }
 				let errorDetails = CNErrorDetails(statusCode: 401,
 												  localizedString: HTTPURLResponse.localizedString(forStatusCode: 401))
 				let error = CNError(type: .authenticationFailed, details: errorDetails)
@@ -251,7 +254,7 @@ open class CNProvider<T: Endpoint> {
 				return Fail(error: error).eraseToAnyPublisher()
 			}
 			
-			self?.didRetry.removeAll { $0 == endpoint.caseIdentifier }
+			self?.didRetry.removeAll { $0 == identifier }
 			
 			return Result.success(response).publisher.eraseToAnyPublisher()
 		}

@@ -24,8 +24,6 @@ public protocol Endpoint {
 	var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { get }
     
     var typeIdentifier: String { get }
-    var caseIdentifier: String { get }
-    static var identifier: String { get }
 }
 
 @available(macOS 10.15, *)
@@ -38,7 +36,5 @@ public extension Endpoint {
 	var boundary: Boundary? { nil }
 	var mockedData: Codable? { nil }
 	
-	var typeIdentifier: String { Self.identifier }
-	var caseIdentifier: String { String(String(reflecting: self).split(separator: "(").first ?? "\(self)") }
-	static var identifier: String { "\(type(of: self))".replacingOccurrences(of: ".Type", with: "") }
+	var typeIdentifier: String { "\(type(of: self))".replacingOccurrences(of: ".Type", with: "") }
 }

@@ -120,15 +120,15 @@ See? Easy peasy! Keep in mind that your token model has to conform to `AccessTok
 - `pinningModes` - turns on/off SSL and Certificate pinning. Available options are `.ssl`, `.certificate` or both.
 - `sitesExcludedFromPinning` - list of website addresses excluded from SSL/Certificate pinning check 
 - `defaultJSONDecoder` - use this property to set globally your custom JSONDecoder
-- `defaultAccessTokenStrategy` - global strategy for storing access tokens. Available options are `.global`, `.default` and `.custom(String)`.
+- `defaultAccessTokenStrategy` - global strategy for storing access tokens. Available options are `.global` and `.custom(String)`.
 - `keychainInstance` - keychain instance used by CombineNetworking to store/fetch access tokens from Apple's Keychain. If not provided, safe storage will be turned off (more info below)
+- `accessTokenStorage` - an instance of an object implementing AccessTokenStorage protocol. It's used to manipulate access token. By default it uses built-in `CNStorage`. To use different storage, provide your own instance.
 
 ### Access Token Strategies
 
 CombineNetworking allows you to specify access token strategies globally as well as individually for each endpoint. You can specify your strategy by setting it for `CNConfig.defaultAccessTokenStrategy` or inside your `Endpoint` by setting value for field `accessTokenStrategy`.
 Available options are:
 - `.global` - uses global label to store access token
-- `.default` - uses endpoint identifiers as labels to store access tokens
 - `.custom(String)` - with this option you can specify your own label to store access token and use it among as many endpoints as you wish
 
 Thanks to access token strategy being set both globally (via `CNConfig`) and individually (inside `Endpoint`), you can mix different strategies in your app!
@@ -136,40 +136,16 @@ Thanks to access token strategy being set both globally (via `CNConfig`) and ind
 ### Access Token manipulations
 
 If you want, you can manipulate access tokens yourself.
-There are 4 approaches how to store, fetch and remove access tokens using `CNConfig`.
 
-#### 1. For specific endpoint:
-- `setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint)`
-- `accessToken(for endpoint: Endpoint)`
-- `removeAccessToken(for endpoint: Endpoint)`
+Available methods are:
 
-Example: `CNConfig.accessToken(for: .sampleEndpointCase)`
+- `setAccessToken(_ token:, for:)`
+- `accessToken(for:)`
+- `removeAccessToken(for:)`
 
-#### 2. For specific endpoint's default storing label:
-- `setAccessToken<T: Endpoint>(_ token: CNAccessToken?, for endpoint: T.Type)`
-- `accessToken<T: Endpoint>(for endpoint: T.Type)`
-- `removeAccessToken<T: Endpoint>(for endpoint: T.Type)`
-
-Example: `CNConfig.accessToken(for: SampleEndpoint.self)`
-
-#### 3. For specific custom storing label:
-- `setAccessToken(for storingLabel: String)`
-- `accessToken(for storingLabel: String)`
-- `removeAccessToken(for storingLabel: String)`
-
-Example: `CNConfig.accessToken(for: "sampleCustomLabel")`
-
-#### 4. For global tokens:
-- `setGlobalAccessToken()`
+- `setGlobalAccessToken(_ token:)`
 - `globalAccessToken()`
 - `removeGlobalAccessToken()`
-
-#### 5. For EndpointModels:
-- `setAccessToken(_ token: CNAccessToken?, for endpoint: EndpointModel)`
-- `accessToken(for endpoint: EndpointModel)`
-- `removeAccessToken(for endpoint: EndpointModel)`
-
-Example: `CNConfig.globalAccessToken()`
 
 ### Event logging
 
@@ -352,29 +328,6 @@ struct TestEndpoint: EndpointModel {
 }
 ```
 
-### Endpoint builder
-
-`EndpointBuilder` got the following methods to prepare and build your request:
-
-```Swift
-public class EndpointBuilder<T: Codable & Equatable> {
-    setup(with descriptor: EndpointDescriptor)
-    extendUrl(with path: String)
-    setRequestParams(_ data: EndpointData)
-    setUrlValue(_ value: String, forKey key: String) -> Self
-    setRequiresToken(_ value: Bool) -> Self
-    setBoundary(_ boundary: Boundary) -> Self
-    setCallbackTask(_ callback: @escaping () async throws -> AccessTokenConvertible?) -> Self
-    mockResponse(with model: T)
-    using(provider: CNProvider<BridgingEndpoint<T>>)
-    buildPublisher(retries: Int = 0, expectedStatusCodes: [Int] = [200, 201, 204], ignorePinning: Bool = false, receiveOn queue: DispatchQueue = .main) -> AnyPublisher<T, Error>
-    buildUploadPublisher(retries: Int = 0, ignorePinning: Bool = false, receiveOn queue: DispatchQueue = .main) -> AnyPublisher<UploadResponse<T>, Error>
-    buildAsyncTask(ignorePinning: Bool = false) async throws -> T
-    test(failOnFinished: Bool = true, storeIn store: inout Set<AnyCancellable>, onSuccess: @escaping (T?) -> Void, onFailure: @escaping (Error) -> Void)
-    testRaw(failOnFinished: Bool = true, storeIn store: inout Set<AnyCancellable>, onSuccess: @escaping () -> Void, onFailure: @escaping (Error) -> Void)
-}
-```
-
 ### Build a request
 
 Now that your endpoint is ready, time to build a request. 
@@ -390,7 +343,7 @@ class NetworkManager {
         endpoint
             .comments
             .setRequestParams(.queryParams(["postId": 1]))
-            .build()
+            .buildPublisher()
             .catch { (error) -> Just<Todo?> in
                 print(error)
                 return Just(nil)

@@ -8,77 +8,60 @@
 import Foundation
 
 extension CNConfig {
-	private static var accessTokens: [String: CNAccessToken] = [:]
+//	private static var accessTokens: [String: CNAccessToken] = [:]
 	
 	//MARK: set access token methods
 	
 	/// Saves new Access Token for a given endpoint
 	public static func setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint) {
-		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.typeIdentifier
-		setAccessToken(token, for: key)
-	}
-	
-	/// Saves new Access Token for a given endpoint type identifier
-	public static func setAccessToken<T: Endpoint>(_ token: CNAccessToken?, for endpoint: T.Type) {
-		setAccessToken(token, for: endpoint.identifier)
+        setAccessToken(token, for: endpoint.accessTokenStrategy.storingLabel)
 	}
     
-    /// Saves new Access Token for a given EndpointModel
+    /// Saves Access Token stored for a given EndpointModel if present
     public static func setAccessToken<T: EndpointModel>(_ token: CNAccessToken?, for endpointModel: T) {
-        setAccessToken(token, for: endpointModel.identifier)
+        setAccessToken(token, for: endpointModel.defaultAccessTokenStrategy.storingLabel)
+    }
+    
+    /// Saves new Access Token for a given EndpointBuilder if present
+    public static func setAccessToken<D: Decodable, T: EndpointBuilder<D>>(_ token: CNAccessToken?, for endpointBuilder: T) {
+        setAccessToken(token, for: endpointBuilder.accessTokenStrategy.storingLabel)
     }
 	
 	/// Saves global Access Token
 	public static func setGlobalAccessToken(_ token: CNAccessToken?) {
-		guard let key = AccessTokenStrategy.global.storingLabel else { return }
-		setAccessToken(token, for: key)
+		setAccessToken(token, for: AccessTokenStrategy.global.storingLabel)
 	}
 	
 	/// Saves new Access Token for specific storing label
 	public static func setAccessToken(_ token: CNAccessToken?, for storingLabel: String) {
-		guard let token = token else { return }
-		guard let keychain = CNConfig.keychainInstance else {
-			accessTokens[storingLabel] = token
-			return
-		}
-		
-		guard let data = try? token.toJsonData() else { return }
-		keychain.add(data, forKey: "accessToken_\(storingLabel)")
+        CNConfig.accessTokenStorage.store(token, for: storingLabel)
 	}
 	
 	//MARK: fetch access token methods
-	
+    
 	/// Returns Access Token stored for a given endpoint if present
 	public static func accessToken(for endpoint: Endpoint) -> CNAccessToken? {
-		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.typeIdentifier
-		return accessToken(for: key)
-	}
-	
-	/// Returns Access Token stored for a given endpoint type identifier if present
-	public static func accessToken<T: Endpoint>(for endpoint: T.Type) -> CNAccessToken? {
-		accessToken(for: endpoint.identifier)
+		accessToken(for: endpoint.accessTokenStrategy.storingLabel)
 	}
     
-    /// Returns Access Token stored for a given EndpointModel  identifier if present
+    /// Returns Access Token stored for a given EndpointModel if present
     public static func accessToken<T: EndpointModel>(for endpointModel: T) -> CNAccessToken? {
-        accessToken(for: endpointModel.identifier)
+        accessToken(for: endpointModel.defaultAccessTokenStrategy.storingLabel)
+    }
+	
+    /// Returns Access Token stored for a given EndpointBuilder if present
+    public static func accessToken<D: Decodable, T: EndpointBuilder<D>>(for endpointBuilder: T) -> CNAccessToken? {
+        accessToken(for: endpointBuilder.accessTokenStrategy.storingLabel)
     }
 	
 	/// Returns global Access Token if present
 	public static func globalAccessToken() -> CNAccessToken? {
-		guard let key = AccessTokenStrategy.global.storingLabel else { return nil }
-		return accessToken(for: key)
+		accessToken(for: AccessTokenStrategy.global.storingLabel)
 	}
 	
 	/// Returns Access Token for specific storing label if present
 	public static func accessToken(for storingLabel: String) -> CNAccessToken? {
-		guard let keychain = CNConfig.keychainInstance else {
-			return accessTokens[storingLabel]
-		}
-		
-		guard let data = keychain.fetch(key: "accessToken_\(storingLabel)") else { return nil }
-//		guard let data = keychain[data: "accessToken_\(storingLabel)"] else { return nil }
-		return try? JSONDecoder().decode(CNAccessToken.self, from: data)
+        CNConfig.accessTokenStorage.fetch(for: storingLabel)
 	}
 	
 	//MARK: remove access token methods
@@ -86,41 +69,30 @@ extension CNConfig {
 	/// Removes stored Access Token for a given endpoint if present
 	@discardableResult
 	public static func removeAccessToken(for endpoint: Endpoint) -> Bool {
-		let key = endpoint.accessTokenStrategy.storingLabel ?? endpoint.typeIdentifier
-		return removeAccessToken(for: key)
-	}
-	
-	/// Removes Access Token stored for a given endpoint type identifier if present
-	@discardableResult
-	public static func removeAccessToken<T: Endpoint>(for endpoint: T.Type) -> Bool {
-		removeAccessToken(for: endpoint.identifier)
+		removeAccessToken(for: endpoint.accessTokenStrategy.storingLabel)
 	}
     
-    /// Removes Access Token stored for a given EndpointModel  identifier if present
+    /// Removes Access Token stored for a given EndpointModel if present
     @discardableResult
     public static func removeAccessToken<T: EndpointModel>(for endpointModel: T) -> Bool {
-        removeAccessToken(for: endpointModel.identifier)
+        removeAccessToken(for: endpointModel.defaultAccessTokenStrategy.storingLabel)
+    }
+    
+    /// Removes Access Token stored for a given EndpointBuilder if present
+    @discardableResult
+    public static func removeAccessToken<D: Decodable, T: EndpointBuilder<D>>(for endpointBuilder: T) -> Bool {
+        removeAccessToken(for: endpointBuilder.accessTokenStrategy.storingLabel)
     }
 	
 	/// Removes global Access Token if present
 	@discardableResult
 	public static func removeGlobalAccessToken() -> Bool {
-		guard let key = AccessTokenStrategy.global.storingLabel else { return false }
-		return removeAccessToken(for: key)
+		removeAccessToken(for: AccessTokenStrategy.global.storingLabel)
 	}
 	
 	/// Removes Access Token for specific storing label if present
 	@discardableResult
 	public static func removeAccessToken(for storingLabel: String) -> Bool {
-		guard let keychain = CNConfig.keychainInstance else {
-			guard Array(accessTokens.keys).contains(storingLabel) else { return false }
-			accessTokens.removeValue(forKey: storingLabel)
-			return true
-		}
-		
-		let key = "accessToken_\(storingLabel)"
-		guard keychain.contains(key: key) else { return false }
-		keychain.delete(forKey: key)
-		return true
+        CNConfig.accessTokenStorage.delete(for: storingLabel)
 	}
 }
