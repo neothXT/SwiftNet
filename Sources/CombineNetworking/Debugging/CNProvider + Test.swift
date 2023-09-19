@@ -101,7 +101,7 @@ public extension CNProvider where T: Endpoint {
 	
 	private func testPublisher<U: Decodable>(for endpoint: T, responseType: U.Type, usingMocks: Bool) -> AnyPublisher<U, Error> {
 		let optionalRawPublisher = rawPublisher(for: endpoint) as? AnyPublisher<U, Error>
-		return usingMocks ? mockPublisher(for: endpoint, responseType: U.self) : (optionalRawPublisher ?? publisher(for: endpoint, responseType: U.self))
+        return usingMocks ? mockPublisher(for: endpoint, responseType: U.self) : (optionalRawPublisher ?? publisher(for: endpoint, responseType: U.self, decoder: endpoint.jsonDecoder))
 	}
 }
 

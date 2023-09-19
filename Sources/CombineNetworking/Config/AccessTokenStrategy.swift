@@ -5,19 +5,15 @@
 //  Created by Maciej Burdzicki on 11/03/2022.
 //
 
-import Foundation
-
 public enum AccessTokenStrategy {
-	case global, `default`, custom(String)
+	case global, custom(String)
 	
-	var storingLabel: String? {
+	var storingLabel: String {
 		switch self {
 		case .global:
-			return "CombineNetworking"
+			return "accessToken_CombineNetworking"
 		case .custom(let label):
-			return label
-		default:
-			return nil
+			return "accessToken_\(label)"
 		}
 	}
 }
@@ -25,7 +21,7 @@ public enum AccessTokenStrategy {
 extension AccessTokenStrategy: Equatable {
 	public static func == (lhs: Self, rhs: Self) -> Bool {
 		switch (lhs, rhs) {
-		case (.global, .global), (.default, .default):
+		case (.global, .global):
 			return true
 			
 		case (.custom(let lCustom), .custom(let rCustom)):

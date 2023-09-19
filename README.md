@@ -25,6 +25,9 @@ check what's new [here!](https://github.com/neothXT/CombineNetworking/tree/rc/2.
 
 ## Basic Usage
 
+1. [Enum-powered networking](#create-an-endpoint-to-work-with)
+2. [Macro-powered networking](#macro-powered-networking)
+
 ### Create an Endpoint to work with
 ```Swift
 enum TodosEndpoint {
@@ -120,15 +123,15 @@ See? Easy peasy! Keep in mind that your token model has to conform to `AccessTok
 - `pinningModes` - turns on/off SSL and Certificate pinning. Available options are `.ssl`, `.certificate` or both.
 - `sitesExcludedFromPinning` - list of website addresses excluded from SSL/Certificate pinning check 
 - `defaultJSONDecoder` - use this property to set globally your custom JSONDecoder
-- `defaultAccessTokenStrategy` - global strategy for storing access tokens. Available options are `.global`, `.default` and `.custom(String)`.
+- `defaultAccessTokenStrategy` - global strategy for storing access tokens. Available options are `.global` and `.custom(String)`.
 - `keychainInstance` - keychain instance used by CombineNetworking to store/fetch access tokens from Apple's Keychain. If not provided, safe storage will be turned off (more info below)
+- `accessTokenStorage` - an instance of an object implementing AccessTokenStorage protocol. It's used to manipulate access token. By default it uses built-in `CNStorage`. To use different storage, provide your own instance.
 
 ### Access Token Strategies
 
 CombineNetworking allows you to specify access token strategies globally as well as individually for each endpoint. You can specify your strategy by setting it for `CNConfig.defaultAccessTokenStrategy` or inside your `Endpoint` by setting value for field `accessTokenStrategy`.
 Available options are:
 - `.global` - uses global label to store access token
-- `.default` - uses endpoint identifiers as labels to store access tokens
 - `.custom(String)` - with this option you can specify your own label to store access token and use it among as many endpoints as you wish
 
 Thanks to access token strategy being set both globally (via `CNConfig`) and individually (inside `Endpoint`), you can mix different strategies in your app!
@@ -136,35 +139,16 @@ Thanks to access token strategy being set both globally (via `CNConfig`) and ind
 ### Access Token manipulations
 
 If you want, you can manipulate access tokens yourself.
-There are 4 approaches how to store, fetch and remove access tokens using `CNConfig`.
 
-#### 1. For specific endpoint:
-- `setAccessToken(_ token: CNAccessToken?, for endpoint: Endpoint)`
-- `accessToken(for endpoint: Endpoint)`
-- `removeAccessToken(for endpoint: Endpoint)`
+Available methods are:
 
-Example: `CNConfig.accessToken(for: .sampleEndpointCase)`
+- `setAccessToken(_ token:, for:)`
+- `accessToken(for:)`
+- `removeAccessToken(for:)`
 
-#### 2. For specific endpoint's default storing label:
-- `setAccessToken<T: Endpoint>(_ token: CNAccessToken?, for endpoint: T.Type)`
-- `accessToken<T: Endpoint>(for endpoint: T.Type)`
-- `removeAccessToken<T: Endpoint>(for endpoint: T.Type)`
-
-Example: `CNConfig.accessToken(for: SampleEndpoint.self)`
-
-#### 3. For specific custom storing label:
-- `setAccessToken(for storingLabel: String)`
-- `accessToken(for storingLabel: String)`
-- `removeAccessToken(for storingLabel: String)`
-
-Example: `CNConfig.accessToken(for: "sampleCustomLabel")`
-
-#### 4. For global tokens:
-- `setGlobalAccessToken()`
+- `setGlobalAccessToken(_ token:)`
 - `globalAccessToken()`
 - `removeGlobalAccessToken()`
-
-Example: `CNConfig.globalAccessToken()`
 
 ### Event logging
 
@@ -316,5 +300,108 @@ webSocket.send(.string("Test message")) {
 ```
 
 If you want to close connection, just call `webSocket.disconnect()`.
+
+## Macro-powered networking
+
+From release 2.0.0 CombineNetworking introduces new way of building and executing network requests.
+
+### Endpoint creation
+
+Start by creating struct or class implementing `EndpointModel` protocol.
+
+```Swift
+public protocol EndpointModel {
+    var defaultAccessTokenStrategy: AccessTokenStrategy { get }
+    var defaultHeaders: [String: Any] { get }
+    var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { get }
+}
+```
+
+Once done, you're ready to create your endpoint. Each endpoint request should be of type `EndpointBuilder<T: Codable & Equatable>`.
+
+- Use `@Endpoint(url:)` macro to setup baseURL of your endpoint
+- Determine method and path of your endpoint requests with `@GET(url:)`, `@POST(url:)`, `@PUT(url:)`, `@DELETE(url:)`, `@PATCH(url:)`, `@CONNECT(url:)`, `@HEAD(url:)`, `@OPTIONS(url:)`, `@QUERY(url:)` or `@TRACE(url:)`
+
+```Swift
+@Endpoint(url: "https://jsonplaceholder.typicode.com/")
+struct TestEndpoint: EndpointModel {
+    @GET(url: "todos/1") var todos: EndpointBuilder<Todo>
+    @GET(url: "comments") var comments: EndpointBuilder<Data>
+    @POST(url: "posts") var post: EndpointBuilder<Data>
+}
+```
+
+### Build a request
+
+Now that your endpoint is ready, time to build a request. 
+
+```Swift
+class NetworkManager {
+    private var subscriptions: Set<AnyCancellable> = []
+    private let endpoint = TestEndpoint()
+    
+    var todo: Todo?
+
+    func callRequest() {
+        endpoint
+            .comments
+            .setRequestParams(.queryParams(["postId": 1]))
+            .buildPublisher()
+            .catch { (error) -> Just<Todo?> in
+                print(error)
+                return Just(nil)
+            }
+            .assign(to: \.todo, on: self)
+            .store(in: &subscriptions)
+    }
+}
+```
+
+### Requests with dynamic values in URL
+
+Sometimes we need to inject some variable into the URL of our request. To do so, you can use two patterns: `${variable}$` or `#{variable}#`.
+
+#### `${variable}$` should be used for variables that already exist in your code
+
+```Swift
+@Endpoint(url: "${myUrl}$")
+struct MyStruct: EndpointModel {
+}
+```
+
+After macro expansion will look like
+
+```Swift
+struct MyStruct: EndpointModel {
+    let url = "\(myUrl)"
+} 
+```
+
+#### `#{variable}#` should be used for variables you want to provide yourself when building your request
+
+```Swift
+@Endpoint(url: "www.someurl.com/comments/#{id}#")
+struct MyStruct: EndpointModel {
+}
+```
+
+After macro expansion will look like
+
+```Swift
+struct MyStruct: EndpointModel {
+    let url = "www.someurl.com/comments/#{id}#"
+} 
+```
+
+To then swap it for an actual value, use `.setUrlValue(_ value: String, forKey key: String)` when building your request like
+
+```Swift
+func buildRequest() async throws -> [Comment] {
+    endpoint
+        .comments
+        .setUrlValue("1", forKey: "id")
+        .buildAsyncTask()
+}
+```
 
 And that's it. Enjoy :)

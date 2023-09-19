@@ -102,10 +102,8 @@ extension RemoteEndpoint: Endpoint {
 		switch self {
 		case .posts:
 			return .custom("someLabel")
-		case .stringGet:
-			return .global
 		default:
-			return .default
+			return .global
 		}
 	}
 }

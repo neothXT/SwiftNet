@@ -20,7 +20,10 @@ public protocol Endpoint {
     var data: EndpointData { get }
 	var jsonDecoder: JSONDecoder { get }
 	var accessTokenStrategy: AccessTokenStrategy { get }
+    var callbackTask: (() async throws -> AccessTokenConvertible)? { get }
 	var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { get }
+    
+    var typeIdentifier: String { get }
 }
 
 @available(macOS 10.15, *)
@@ -28,11 +31,10 @@ public extension Endpoint {
 	var requiresAccessToken: Bool { false }
 	var jsonDecoder: JSONDecoder { CNConfig.defaultJSONDecoder }
 	var accessTokenStrategy: AccessTokenStrategy { CNConfig.defaultAccessTokenStrategy }
+    var callbackTask: (() async throws -> AccessTokenConvertible)? { nil }
 	var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? { nil }
 	var boundary: Boundary? { nil }
 	var mockedData: Codable? { nil }
 	
-	var typeIdentifier: String { Self.identifier }
-	var caseIdentifier: String { String(String(reflecting: self).split(separator: "(").first ?? "\(self)") }
-	static var identifier: String { "\(type(of: self))".replacingOccurrences(of: ".Type", with: "") }
+	var typeIdentifier: String { "\(type(of: self))".replacingOccurrences(of: ".Type", with: "") }
 }

@@ -9,6 +9,7 @@ import Foundation
 
 public extension CNProvider {
 	final class func defaultURLMapper(for endpoint: Endpoint) -> URL? {
-		endpoint.baseURL?.appendingPathComponent(endpoint.path)
+        guard endpoint.path != "" else { return endpoint.baseURL }
+		return endpoint.baseURL?.appendingPathComponent(endpoint.path)
 	}
 }
