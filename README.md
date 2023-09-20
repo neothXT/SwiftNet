@@ -10,7 +10,7 @@ Besides basic network requests, CombineNetworking allows you to easily send your
 
 ##### Note that in order to use CombineNetworking, your iOS Deployment Target has to be 13.0 or newer. If you code for macOS, your Deployment Target has to be 10.15 or newer.
 
-### Due to the cocoapods bug, CombineNetworking 2.0.0 pod will be available once cocoapods 1.13.0 is available
+### Due to the cocoapods bug, CombineNetworking 2.0.0 pod will be available later
 
 #### CombineNetworking is also available via SPM (Swift Package Manager)
 
