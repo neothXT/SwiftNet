@@ -11,9 +11,10 @@ final class CombineNetworkingMacrosTests: XCTestCase {
             struct MyEndpoint: EndpointModel {
             }
             """,
-            expandedSource: """
-            
+            expandedSource: 
+            """
             struct MyEndpoint: EndpointModel {
+            
                 let identifier = "MyEndpoint", url = "https://apple.com"
             }
             """,

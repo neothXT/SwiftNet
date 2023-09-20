@@ -45,7 +45,7 @@ public struct NetworkRequestMacro: AccessorMacro {
             return []
         }
         
-        guard let expressions = node.argument?.as(TupleExprElementListSyntax.self) else {
+        guard let expressions = node.arguments?.as(LabeledExprListSyntax.self) else {
             passedMethod = nil
             context.diagnose(NetworkRequestMacroError.syntaxError.diagnostic(for: declaration))
             return []

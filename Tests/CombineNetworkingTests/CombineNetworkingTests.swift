@@ -5,6 +5,7 @@ import Combine
 final class CombineNetworkingTests: XCTestCase {
 	private let provider = CNProvider<RemoteEndpoint>()
 	
+    // This test should be executed with internet connection turned off
 	func testBadResponseFetchNoInternetConnection() throws {
 		let expectation = expectation(description: "Test should fail due to no internet connection")
 		var subscriptions: Set<AnyCancellable> = []

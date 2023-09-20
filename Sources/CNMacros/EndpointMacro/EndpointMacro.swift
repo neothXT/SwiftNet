@@ -23,11 +23,11 @@ public struct EndpointMacro: MemberMacro {
             return []
         }
         
-        let structInheritedType = declaration.as(StructDeclSyntax.self)?.inheritanceClause?.inheritedTypeCollection.trimmedDescription
-        let classInheritedType = declaration.as(ClassDeclSyntax.self)?.inheritanceClause?.inheritedTypeCollection.trimmedDescription
+        let structInheritedType = declaration.as(StructDeclSyntax.self)?.inheritanceClause?.inheritedTypes.trimmedDescription
+        let classInheritedType = declaration.as(ClassDeclSyntax.self)?.inheritanceClause?.inheritedTypes.trimmedDescription
         
-        let structName = declaration.as(StructDeclSyntax.self)?.identifier.trimmedDescription
-        let className = declaration.as(ClassDeclSyntax.self)?.identifier.trimmedDescription
+        let structName = declaration.as(StructDeclSyntax.self)?.name.trimmedDescription
+        let className = declaration.as(ClassDeclSyntax.self)?.name.trimmedDescription
         
         guard structInheritedType == "EndpointModel" || classInheritedType == "EndpointModel" else {
             context.diagnose(EndpointMacroError.badInheritance.diagnostic(for: declaration))
@@ -39,7 +39,7 @@ public struct EndpointMacro: MemberMacro {
             return []
         }
         
-        guard let expression = node.argument?.as(TupleExprElementListSyntax.self)?.first?.expression,
+        guard let expression = node.arguments?.as(LabeledExprListSyntax.self)?.first?.expression,
               let urlString = expression.as(StringLiteralExprSyntax.self)?.segments.first?.trimmedDescription else {
             context.diagnose(EndpointMacroError.badOrMissingParameter.diagnostic(for: declaration))
             return []

@@ -8,19 +8,53 @@
 import Foundation
 import Combine
 
-public class EndpointBuilder<T: Codable & Equatable> {
-    fileprivate(set) var url: String
-    fileprivate(set) var method: String = "get"
-    fileprivate(set) var headers: [String: Any] = [:]
-    fileprivate(set) var data: EndpointData = .plain
-    fileprivate(set) var mock: Codable?
-    fileprivate(set) var accessTokenStrategy: AccessTokenStrategy
-    fileprivate(set) var callbackTask: (() async throws -> AccessTokenConvertible)?
-    fileprivate(set) var requiresAccessToken: Bool = false
-    fileprivate(set) var jsonDecoder: JSONDecoder = CNConfig.defaultJSONDecoder
-    fileprivate(set) var boundary: Boundary?
-    fileprivate(set) var provider: CNProvider<BridgingEndpoint<T>> = .init()
-    fileprivate(set) var identifier: String
+public protocol EndpointBuilderAbstract {
+    associatedtype T: Codable & Equatable
+    
+    var url: String { get }
+    var method: String { get }
+    var headers: [String: Any] { get }
+    var data: EndpointData { get }
+    var mock: Codable? { get }
+    var accessTokenStrategy: AccessTokenStrategy { get }
+    var callbackTask: (() async throws -> AccessTokenConvertible)? { get }
+    var requiresAccessToken: Bool { get }
+    var jsonDecoder: JSONDecoder { get }
+    var boundary: Boundary? { get }
+    var provider: CNProvider<BridgingEndpoint<T>> { get }
+    var identifier: String { get }
+    
+    func setup(with descriptor: EndpointDescriptor) -> Self
+    func extendUrl(with path: String) -> Self
+    func setRequestParams(_ data: EndpointData) -> Self
+    func setUrlValue(_ value: String, forKey key: String) -> Self
+    func setRequiresToken(_ value: Bool) -> Self
+    func setCallbackTask(_ callback: @escaping () async throws -> AccessTokenConvertible) -> Self
+    func mockResponse(with model: Codable) -> Self
+    func using(provider: CNProvider<BridgingEndpoint<T>>) -> Self
+    func setBoundary(_ boundary: Boundary) -> Self
+    func setDecoder(_ decoder: JSONDecoder) -> Self
+    
+    func buildPublisher(expectedStatusCodes: [Int], ignorePinning: Bool, receiveOn queue: DispatchQueue) -> AnyPublisher<T, Error>
+    func buildUploadPublisher(ignorePinning: Bool, receiveOn queue: DispatchQueue) -> AnyPublisher<UploadResponse<T>, Error>
+    func buildAsyncTask(ignorePinning: Bool) async throws -> T
+    func test(failOnFinished: Bool, storeIn store: inout Set<AnyCancellable>, onSuccess: @escaping (T?) -> Void, onFailure: @escaping (Error) -> Void)
+    func testRaw(failOnFinished: Bool, storeIn store: inout Set<AnyCancellable>, onSuccess: @escaping () -> Void, onFailure: @escaping (Error) -> Void)
+}
+
+public class EndpointBuilder<T: Codable & Equatable>: EndpointBuilderAbstract {
+    public fileprivate(set) var url: String
+    public fileprivate(set) var method: String = "get"
+    public fileprivate(set) var headers: [String: Any] = [:]
+    public fileprivate(set) var data: EndpointData = .plain
+    public fileprivate(set) var mock: Codable?
+    public fileprivate(set) var accessTokenStrategy: AccessTokenStrategy
+    public fileprivate(set) var callbackTask: (() async throws -> AccessTokenConvertible)?
+    public fileprivate(set) var requiresAccessToken: Bool = false
+    public fileprivate(set) var jsonDecoder: JSONDecoder = CNConfig.defaultJSONDecoder
+    public fileprivate(set) var boundary: Boundary?
+    public fileprivate(set) var provider: CNProvider<BridgingEndpoint<T>> = .init()
+    public fileprivate(set) var identifier: String
 
     public init(
         url: String,
