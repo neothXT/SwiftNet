@@ -4,14 +4,13 @@
 Meet CombineNetworking. Super lightweight and crazy easy to use framework to help you create and handle your network requests in a convenient way.
 Besides basic network requests, CombineNetworking allows you to easily send your requests securely with a simple SSL and Certificate pinning mechanisms. But that's not all. With CombineNetworking you can also effortlessly handle authorization tokens with built-in automatic authorization mechanism.
 
-# Macro-powered CombineNetworking 2.0.0 beta version is now available!
-check what's new [here!](https://github.com/neothXT/CombineNetworking/tree/rc/2.0.0-beta#macro-powered-networking)
-
 ## Installation (using CocoaPods)
 
 `pod 'CombineNetworking'`
 
 ##### Note that in order to use CombineNetworking, your iOS Deployment Target has to be 13.0 or newer. If you code for macOS, your Deployment Target has to be 10.15 or newer.
+
+### Due to the cocoapods bug, CombineNetworking 2.0.0 pod will be available once cocoapods 1.13.0 is available
 
 #### CombineNetworking is also available via SPM (Swift Package Manager)
 
