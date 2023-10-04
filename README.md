@@ -1,4 +1,4 @@
-![alt [version]](https://img.shields.io/github/v/release/neothXT/CombineNetworking) ![alt cocoapods available](https://img.shields.io/badge/Cocoapods-available-green) ![alt spm available](https://img.shields.io/badge/SPM-available-green) ![alt carthage unavailable](https://img.shields.io/badge/Carthage-unavailable-red)
+![alt [version]](https://img.shields.io/github/v/release/neothXT/CombineNetworking) ![alt cocoapods available](https://img.shields.io/badge/CocoaPods-1.11.0-blue) ![alt spm available](https://img.shields.io/badge/SPM-available-green) ![alt carthage unavailable](https://img.shields.io/badge/Carthage-unavailable-red)
 
 # CombineNetworking
 Meet CombineNetworking. Super lightweight and crazy easy to use framework to help you create and handle your network requests in a convenient way.
@@ -10,7 +10,7 @@ Besides basic network requests, CombineNetworking allows you to easily send your
 
 ##### Note that in order to use CombineNetworking, your iOS Deployment Target has to be 13.0 or newer. If you code for macOS, your Deployment Target has to be 10.15 or newer.
 
-### Due to the cocoapods bug, CombineNetworking 2.0.0 pod will be available later
+### CombineNetworking 2.0.0 won't be available on CocoaPods unless SwiftSyntax package (which is required to enable Swift Macros) becomes available on CocoaPods.
 
 #### CombineNetworking is also available via SPM (Swift Package Manager)
 
