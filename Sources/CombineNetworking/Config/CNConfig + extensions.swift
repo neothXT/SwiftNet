@@ -19,7 +19,7 @@ extension CNConfig {
     
     /// Saves Access Token stored for a given EndpointModel if present
     public static func setAccessToken<T: EndpointModel>(_ token: CNAccessToken?, for endpointModel: T) {
-        setAccessToken(token, for: endpointModel.defaultAccessTokenStrategy.storingLabel)
+        setAccessToken(token, for: T.defaultAccessTokenStrategy.storingLabel)
     }
     
     /// Saves new Access Token for a given EndpointBuilder if present
@@ -46,7 +46,7 @@ extension CNConfig {
     
     /// Returns Access Token stored for a given EndpointModel if present
     public static func accessToken<T: EndpointModel>(for endpointModel: T) -> CNAccessToken? {
-        accessToken(for: endpointModel.defaultAccessTokenStrategy.storingLabel)
+        accessToken(for: T.defaultAccessTokenStrategy.storingLabel)
     }
 	
     /// Returns Access Token stored for a given EndpointBuilder if present
@@ -75,7 +75,7 @@ extension CNConfig {
     /// Removes Access Token stored for a given EndpointModel if present
     @discardableResult
     public static func removeAccessToken<T: EndpointModel>(for endpointModel: T) -> Bool {
-        removeAccessToken(for: endpointModel.defaultAccessTokenStrategy.storingLabel)
+        removeAccessToken(for: T.defaultAccessTokenStrategy.storingLabel)
     }
     
     /// Removes Access Token stored for a given EndpointBuilder if present

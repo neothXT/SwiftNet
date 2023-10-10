@@ -10,7 +10,6 @@ import Combine
 
 public struct EndpointDescriptor {
     public var urlValues: [URLValue]
-    public var method: RequestMethod?
     public var headers: [String: Any]?
     public var data: EndpointData?
     public var mock: Codable?
@@ -22,7 +21,6 @@ public struct EndpointDescriptor {
     public var boundary: Boundary?
     
     public init(urlValues: [URLValue] = [],
-                method: RequestMethod? = nil,
                 headers: [String : Any]? = nil,
                 data: EndpointData? = nil,
                 mock: Codable? = nil,
@@ -33,7 +31,6 @@ public struct EndpointDescriptor {
                 jsonDecoder: JSONDecoder? = nil,
                 boundary: Boundary? = nil) {
         self.urlValues = urlValues
-        self.method = method
         self.headers = headers
         self.data = data
         self.mock = mock

@@ -33,7 +33,37 @@ final class CombineNetworkingMacrosTests: XCTestCase {
             struct MyEndpoint {
                 var test: EndpointBuilder<Data> {
                     get {
-                        .init(url: url + "/test", method: "get", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackTask: callbackTask, identifier: identifier)
+                        .init(
+                            url: url + "/test",
+                            method: "get",
+                            descriptor: .init(),
+                            identifier: identifier
+                        )
+                    }
+                }
+            }
+            """,
+            macros: ["GET": GetMacro.self]
+        )
+    }
+    
+    func testGetMacroAlt() throws {
+        assertMacroExpansion(
+            """
+            struct MyEndpoint {
+                @GET(url: "/test", descriptor: descriptor) var test: EndpointBuilder<Data>
+            }
+            """,
+            expandedSource: """
+            struct MyEndpoint {
+                var test: EndpointBuilder<Data> {
+                    get {
+                        .init(
+                            url: url + "/test",
+                            method: "get",
+                            descriptor: descriptor,
+                            identifier: identifier
+                        )
                     }
                 }
             }
@@ -53,7 +83,37 @@ final class CombineNetworkingMacrosTests: XCTestCase {
             struct MyEndpoint {
                 var test: EndpointBuilder<Data> {
                     get {
-                        .init(url: url + "/test", method: "get", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackTask: callbackTask, identifier: identifier)
+                        .init(
+                            url: url + "/test",
+                            method: "get",
+                            descriptor: .init(),
+                            identifier: identifier
+                        )
+                    }
+                }
+            }
+            """,
+            macros: ["NetworkRequest": NetworkRequestMacro.self]
+        )
+    }
+    
+    func testNetworkRequestMacroAlt() throws {
+        assertMacroExpansion(
+            """
+            struct MyEndpoint {
+                @NetworkRequest(url: "/test", method: "get", descriptor: .init(data: .plain)) var test: EndpointBuilder<Data>
+            }
+            """,
+            expandedSource: """
+            struct MyEndpoint {
+                var test: EndpointBuilder<Data> {
+                    get {
+                        .init(
+                            url: url + "/test",
+                            method: "get",
+                            descriptor: .init(data: .plain),
+                            identifier: identifier
+                        )
                     }
                 }
             }
@@ -66,14 +126,44 @@ final class CombineNetworkingMacrosTests: XCTestCase {
         assertMacroExpansion(
                 """
                 struct MyEndpoint {
-                    @POST(url: "/test") var test: EndpointBuilder<Data>
+                    @POST(url: "/test", descriptor: .init(requiresAccessToken: true)) var test: EndpointBuilder<Data>
                 }
                 """,
                 expandedSource: """
                 struct MyEndpoint {
                     var test: EndpointBuilder<Data> {
                         get {
-                            .init(url: url + "/test", method: "post", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackTask: callbackTask, identifier: identifier)
+                            .init(
+                                url: url + "/test",
+                                method: "post",
+                                descriptor: .init(requiresAccessToken: true),
+                                identifier: identifier
+                            )
+                        }
+                    }
+                }
+                """,
+                macros: ["POST": PostMacro.self]
+        )
+    }
+    
+    func testPostMacroAlt() throws {
+        assertMacroExpansion(
+                """
+                struct MyEndpoint {
+                    @POST(url: "/test", descriptor: EndpointDescriptor()) var test: EndpointBuilder<Data>
+                }
+                """,
+                expandedSource: """
+                struct MyEndpoint {
+                    var test: EndpointBuilder<Data> {
+                        get {
+                            .init(
+                                url: url + "/test",
+                                method: "post",
+                                descriptor: EndpointDescriptor(),
+                                identifier: identifier
+                            )
                         }
                     }
                 }

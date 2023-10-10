@@ -10,13 +10,13 @@ import Combine
 
 public protocol EndpointModel {
     var identifier: String { get }
-    var defaultAccessTokenStrategy: AccessTokenStrategy { get }
-    var defaultHeaders: [String: Any] { get }
+    static var defaultAccessTokenStrategy: AccessTokenStrategy { get }
+    static var defaultHeaders: [String: Any] { get }
     var callbackTask: (() async throws -> AccessTokenConvertible)? { get }
 }
 
 public extension EndpointModel {
-    var defaultAccessTokenStrategy: AccessTokenStrategy { CNConfig.defaultAccessTokenStrategy }
-    var defaultHeaders: [String: Any] { [:] }
+    static var defaultAccessTokenStrategy: AccessTokenStrategy { CNConfig.defaultAccessTokenStrategy }
+    static var defaultHeaders: [String: Any] { [:] }
     var callbackTask: (() async throws -> AccessTokenConvertible)? { nil }
 }

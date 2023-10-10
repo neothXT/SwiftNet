@@ -39,9 +39,9 @@ enum NetworkRequestMacroError: CNDiagnostics, CustomStringConvertible, Error {
         case .badType(let macroName):
             return "@\(macroName)(url:) can only be applied to an EndpointBuilder"
         case .badOrMissingUrlParameter:
-            return "Missing or bad parameter url passed"
+            return "Bad or missing url parameter passed"
         case .badOrMissingMethodParameter:
-            return "Missing or bad parameter method passed"
+            return "Bad or missing method parameter passed"
         case .syntaxError:
             return "Unknown syntax error occurred"
         }

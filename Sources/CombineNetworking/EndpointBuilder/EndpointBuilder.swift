@@ -48,7 +48,7 @@ public class EndpointBuilder<T: Codable & Equatable>: EndpointBuilderAbstract {
     public fileprivate(set) var headers: [String: Any] = [:]
     public fileprivate(set) var data: EndpointData = .plain
     public fileprivate(set) var mock: Codable?
-    public fileprivate(set) var accessTokenStrategy: AccessTokenStrategy
+    public fileprivate(set) var accessTokenStrategy: AccessTokenStrategy = CNConfig.defaultAccessTokenStrategy
     public fileprivate(set) var callbackTask: (() async throws -> AccessTokenConvertible)?
     public fileprivate(set) var requiresAccessToken: Bool = false
     public fileprivate(set) var jsonDecoder: JSONDecoder = CNConfig.defaultJSONDecoder
@@ -71,10 +71,16 @@ public class EndpointBuilder<T: Codable & Equatable>: EndpointBuilderAbstract {
             self.identifier = identifier
     }
     
+    public init(url: String, method: String, descriptor: EndpointDescriptor, identifier: String) {
+        self.url = url
+        self.method = method
+        self.identifier = identifier
+        setup(with: descriptor)
+    }
+    
     /// Configures endpoint according to data provided by descriptor
-    public func setup(with descriptor: EndpointDescriptor) -> Self {
+    @discardableResult public func setup(with descriptor: EndpointDescriptor) -> Self {
         descriptor.urlValues.forEach { self.url = self.url.replacingOccurrences(of: "#{\($0.key)}#", with: $0.value) }
-        method = descriptor.method?.rawValue ?? method
         headers = descriptor.headers ?? headers
         data = descriptor.data ?? data
         mock = descriptor.mock ?? mock

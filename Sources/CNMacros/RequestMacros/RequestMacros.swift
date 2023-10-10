@@ -62,18 +62,18 @@ public struct NetworkRequestMacro: AccessorMacro {
         
         let comparissonArray = ["get", "post", "put", "delete", "patch", "connect", "head", "options", "query", "trace"]
         
-        guard params.count == 2 || (params.count == 1 && comparissonArray.contains(passedMethod ?? "")) else {
+        guard let method = params[safe: 1] ?? passedMethod, comparissonArray.contains(method) else {
             passedMethod = nil
             context.diagnose(NetworkRequestMacroError.badOrMissingMethodParameter.diagnostic(for: declaration))
             return []
         }
         
-        let method = passedMethod ?? params[safe: 1] ?? ""
+        let descriptorExpression = expressions.first { $0.label?.text == "descriptor" }
+        var descriptor = descriptorExpression?.expression.description ?? params[safe: 2] ?? params[safe: 1] ?? ".init()"
         
-        guard comparissonArray.contains(method) else {
-            passedMethod = nil
-            context.diagnose(NetworkRequestMacroError.badOrMissingMethodParameter.diagnostic(for: declaration))
-            return []
+        // In case if method was mistaken for descriptor, correct it with default descriptor
+        if comparissonArray.contains(descriptor) {
+            descriptor = ".init()"
         }
         
         passedMethod = nil
@@ -82,7 +82,12 @@ public struct NetworkRequestMacro: AccessorMacro {
         return [
             """
             get {
-                .init(url: url + "\(raw: finalUrl)", method: "\(raw: method)", headers: defaultHeaders, accessTokenStrategy: defaultAccessTokenStrategy, callbackTask: callbackTask, identifier: identifier)
+                .init(
+                    url: url + "\(raw: finalUrl)",
+                    method: "\(raw: method)", 
+                    descriptor: \(raw: descriptor),
+                    identifier: identifier
+                )
             }
             """
         ]
