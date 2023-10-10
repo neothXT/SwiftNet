@@ -401,4 +401,34 @@ func buildRequest() async throws -> [Comment] {
 }
 ```
 
+### Alternative "build a request" flow
+
+From version 2.0.1 CombineNetworking allows you to speed things up even more by generating EndpointBuilders with descriptors. Thanks to descriptors, you can extract endpoint setup to reduce number of lines required to build working endpoint.
+
+```Swift
+
+final class EndpointDescriptorFactory {
+    private init() {}
+    
+    static func singleTodoDescriptor() -> EndpointDescriptor {
+        .init(urlValues: [.init(key: "id", value: "1")])
+    }
+} 
+
+@Endpoint(url: "https://jsonplaceholder.typicode.com/")
+struct TestEndpoint: EndpointModel {
+    @GET(url: "todos/#{id}#", descriptor: EndpointDescriptorFactory.singleTodoDescriptor()) var singleTodo: EndpointBuilder<Todo>
+}
+```
+
+Now you can just build your request and it'll already know how to translate `#{id}#`.
+
+```Swift
+func buildRequest() async throws -> Todo {
+    endpoint
+        .singleTodo
+        .buildAsyncTask()
+}
+```
+
 And that's it. Enjoy :)

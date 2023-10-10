@@ -29,7 +29,7 @@ final class MacroPoweredApproachTests: XCTestCase {
     }
     
     func testModel() throws {
-        let expectation = expectation(description: #"Test "test()"#)
+        let expectation = expectation(description: #"Test "test()""#)
         var subscriptions: Set<AnyCancellable> = []
         
         endpoint
@@ -43,11 +43,24 @@ final class MacroPoweredApproachTests: XCTestCase {
     }
     
     func testInlineParams() throws {
-        let expectation = expectation(description: #"Test "test()"#)
+        let expectation = expectation(description: #"Test "test()" with already existing params"#)
         var subscriptions: Set<AnyCancellable> = []
         
         endpoint
             .todosV2
+            .test(storeIn: &subscriptions) { _ in
+                expectation.fulfill()
+            } onFailure: { _ in }
+        
+        wait(for: [expectation], timeout: 10)
+    }
+    
+    func testDescriptorParams() throws {
+        let expectation = expectation(description: #"Test "test()" with descriptor"#)
+        var subscriptions: Set<AnyCancellable> = []
+        
+        endpoint
+            .todosV3
             .test(storeIn: &subscriptions) { _ in
                 expectation.fulfill()
             } onFailure: { _ in }
