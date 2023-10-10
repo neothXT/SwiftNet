@@ -317,7 +317,8 @@ public protocol EndpointModel {
 Once done, you're ready to create your endpoint. Each endpoint request should be of type `EndpointBuilder<T: Codable & Equatable>`.
 
 - Use `@Endpoint(url:)` macro to setup baseURL of your endpoint
-- Determine method and path of your endpoint requests with `@GET(url:)`, `@POST(url:)`, `@PUT(url:)`, `@DELETE(url:)`, `@PATCH(url:)`, `@CONNECT(url:)`, `@HEAD(url:)`, `@OPTIONS(url:)`, `@QUERY(url:)` or `@TRACE(url:)`
+- Determine method and path of your endpoint requests with `@GET(url:descriptor:)`, `@POST(url:descriptor:)`, `@PUT(url:descriptor:)`, `@DELETE(url:descriptor:)`, `@PATCH(url:descriptor:)`, `@CONNECT(url:descriptor:)`, `@HEAD(url:descriptor:)`, `@OPTIONS(url:descriptor:)`, `@QUERY(url:descriptor:)` or `@TRACE(url:descriptor:)`
+- `descriptor` param is optional
 
 ```Swift
 @Endpoint(url: "https://jsonplaceholder.typicode.com/")
