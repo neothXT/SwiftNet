@@ -8,7 +8,9 @@
 import Combine
 
 public extension AnyPublisher {
-    func toAsync() async throws -> Output {
+    
+    /// Converts publisher to async/await task
+    func toAsyncTask() async throws -> Output {
         try await withCheckedThrowingContinuation { continuation in
             var cancellable: AnyCancellable?
             var finishedWithoutValue = true

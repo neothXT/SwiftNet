@@ -43,18 +43,18 @@ public protocol EndpointBuilderAbstract {
 }
 
 public class EndpointBuilder<T: Codable & Equatable>: EndpointBuilderAbstract {
-    public fileprivate(set) var url: String
-    public fileprivate(set) var method: String = "get"
-    public fileprivate(set) var headers: [String: Any] = [:]
-    public fileprivate(set) var data: EndpointData = .plain
-    public fileprivate(set) var mock: Codable?
-    public fileprivate(set) var accessTokenStrategy: AccessTokenStrategy = CNConfig.defaultAccessTokenStrategy
-    public fileprivate(set) var callbackTask: (() async throws -> AccessTokenConvertible)?
-    public fileprivate(set) var requiresAccessToken: Bool = false
-    public fileprivate(set) var jsonDecoder: JSONDecoder = CNConfig.defaultJSONDecoder
-    public fileprivate(set) var boundary: Boundary?
-    public fileprivate(set) var provider: CNProvider<BridgingEndpoint<T>> = .init()
-    public fileprivate(set) var identifier: String
+    public private(set) var url: String
+    public private(set) var method: String = "get"
+    public private(set) var headers: [String: Any] = [:]
+    public private(set) var data: EndpointData = .plain
+    public private(set) var mock: Codable?
+    public private(set) var accessTokenStrategy: AccessTokenStrategy = CNConfig.defaultAccessTokenStrategy
+    public private(set) var callbackTask: (() async throws -> AccessTokenConvertible)?
+    public private(set) var requiresAccessToken: Bool = false
+    public private(set) var jsonDecoder: JSONDecoder = CNConfig.defaultJSONDecoder
+    public private(set) var boundary: Boundary?
+    public private(set) var provider: CNProvider<BridgingEndpoint<T>> = .init()
+    public private(set) var identifier: String
 
     public init(
         url: String,

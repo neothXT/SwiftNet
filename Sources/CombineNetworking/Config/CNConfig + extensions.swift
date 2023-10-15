@@ -8,8 +8,6 @@
 import Foundation
 
 extension CNConfig {
-//	private static var accessTokens: [String: CNAccessToken] = [:]
-	
 	//MARK: set access token methods
 	
 	/// Saves new Access Token for a given endpoint

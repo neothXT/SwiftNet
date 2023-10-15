@@ -180,4 +180,17 @@ final class CombineNetworkingTests: XCTestCase {
 		
 		wait(for: [expectation], timeout: 5)
 	}
+    
+    func testToAsyncTask() throws {
+        let expectation = expectation(description: "Callback publisher should be convertible to async/await task")
+        
+        Task {
+            let token = try? await RemoteEndpoint.posts.callbackPublisher?.toAsyncTask()
+            if token?.convert()?.access_token == "testAsyncTask" {
+                expectation.fulfill()
+            }
+        }
+        
+        wait(for: [expectation], timeout: 5)
+    }
 }

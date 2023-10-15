@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Combine
+@_exported import Combine
 
 fileprivate func runOnMain(_ completion: @escaping () -> Void) {
     DispatchQueue.main.async {
@@ -108,7 +108,7 @@ open class CNProvider<T: Endpoint> {
             var convertibleToken: AccessTokenConvertible? = try await endpoint.callbackTask?()
             
             if convertibleToken == nil {
-                convertibleToken = try await endpoint.callbackPublisher?.toAsync()
+                convertibleToken = try await endpoint.callbackPublisher?.toAsyncTask()
             }
             
             let identifier = endpointURLMapper(endpoint)?.absoluteString ?? endpoint.path

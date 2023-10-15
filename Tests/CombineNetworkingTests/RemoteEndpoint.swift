@@ -106,4 +106,9 @@ extension RemoteEndpoint: Endpoint {
 			return .global
 		}
 	}
+    
+    var callbackPublisher: AnyPublisher<AccessTokenConvertible, Error>? {
+        CurrentValueSubject<AccessTokenConvertible, Error>(CNAccessToken(access_token: "testAsyncTask"))
+            .eraseToAnyPublisher()
+    }
 }
