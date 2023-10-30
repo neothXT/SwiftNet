@@ -1,7 +1,7 @@
 ![alt [version]](https://img.shields.io/github/v/release/neothXT/SwiftNet) ![alt cocoapods available](https://img.shields.io/badge/CocoaPods-v1.11.0-blue) ![alt spm available](https://img.shields.io/badge/SPM-available-green) ![alt carthage unavailable](https://img.shields.io/badge/Carthage-unavailable-red)
 
 # SwiftNet
-Meet SwiftNet. Super lightweight and crazy easy to use framework to help you create and handle your network requests in a convenient way.
+After adding support for Swift Concurrency, CombineNetworking becomes SwiftNet! A super lightweight and crazy easy to use framework to help you create and handle your network requests in a convenient way.
 Besides basic network requests, SwiftNet allows you to easily send your requests securely with a simple SSL and Certificate pinning mechanisms. But that's not all. With SwiftNet you can also effortlessly handle authorization tokens with built-in automatic authorization mechanism.
 
 ## Installation (using CocoaPods)
