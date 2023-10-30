@@ -5,7 +5,7 @@ import PackageDescription
 import CompilerPluginSupport
 
 let package = Package(
-    name: "CombineNetworking",
+    name: "SwiftNet",
 	platforms: [
 		.macOS(.v10_15),
 		.iOS(.v13)
@@ -13,11 +13,11 @@ let package = Package(
 	products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
-            name: "CombineNetworking",
-            targets: ["CombineNetworking"]),
+            name: "SwiftNet",
+            targets: ["SwiftNet"]),
         .library(
-            name: "CombineNetworkingMacros",
-            targets: ["CombineNetworkingMacros"])
+            name: "SwiftNetMacros",
+            targets: ["SwiftNetMacros"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -28,26 +28,26 @@ let package = Package(
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .macro(
-            name: "CNMacros",
+            name: "SNMacros",
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-                "CombineNetworking"
+                "SwiftNet"
             ]
         ),
         .target(
-            name: "CombineNetworking",
+            name: "SwiftNet",
 			exclude: ["../../CombineNetworking.podspec"]),
         .testTarget(
-            name: "CombineNetworkingTests",
-            dependencies: ["CombineNetworking", "CombineNetworkingMacros", "CNMacros"]),
+            name: "SwiftNetTests",
+            dependencies: ["SwiftNet", "SwiftNetMacros", "SNMacros"]),
         .target(
-            name: "CombineNetworkingMacros",
-            dependencies: ["CNMacros", "CombineNetworking"]),
+            name: "SwiftNetMacros",
+            dependencies: ["SNMacros", "SwiftNet"]),
         .testTarget(
-            name: "CombineNetworkingMacrosTests",
+            name: "SwiftNetMacrosTests",
             dependencies: [
-                "CombineNetworkingMacros",
+                "SwiftNetMacros",
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")
             ]
         )
