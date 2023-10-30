@@ -1,21 +1,21 @@
-![alt [version]](https://img.shields.io/github/v/release/neothXT/CombineNetworking) ![alt cocoapods available](https://img.shields.io/badge/CocoaPods-v1.11.0-blue) ![alt spm available](https://img.shields.io/badge/SPM-available-green) ![alt carthage unavailable](https://img.shields.io/badge/Carthage-unavailable-red)
+![alt [version]](https://img.shields.io/github/v/release/neothXT/SwiftNet) ![alt cocoapods available](https://img.shields.io/badge/CocoaPods-v1.11.0-blue) ![alt spm available](https://img.shields.io/badge/SPM-available-green) ![alt carthage unavailable](https://img.shields.io/badge/Carthage-unavailable-red)
 
-# CombineNetworking
-Meet CombineNetworking. Super lightweight and crazy easy to use framework to help you create and handle your network requests in a convenient way.
-Besides basic network requests, CombineNetworking allows you to easily send your requests securely with a simple SSL and Certificate pinning mechanisms. But that's not all. With CombineNetworking you can also effortlessly handle authorization tokens with built-in automatic authorization mechanism.
+# SwiftNet
+Meet SwiftNet. Super lightweight and crazy easy to use framework to help you create and handle your network requests in a convenient way.
+Besides basic network requests, SwiftNet allows you to easily send your requests securely with a simple SSL and Certificate pinning mechanisms. But that's not all. With SwiftNet you can also effortlessly handle authorization tokens with built-in automatic authorization mechanism.
 
 ## Installation (using CocoaPods)
 
 `pod 'CombineNetworking'`
 
-##### Note that in order to use CombineNetworking, your iOS Deployment Target has to be 13.0 or newer. If you code for macOS, your Deployment Target has to be 10.15 or newer.
+##### Note that in order to use SwiftNet, your iOS Deployment Target has to be 13.0 or newer. If you code for macOS, your Deployment Target has to be 10.15 or newer.
 
-#### CombineNetworking 2.0.0 and above won't be available on CocoaPods unless SwiftSyntax package (which is required to enable Swift Macros) becomes available on CocoaPods. To fetch the latest versions, please use SPM (Swift Package Manager).
+#### SwiftNet 2.0.0 and above won't be available on CocoaPods unless SwiftSyntax package (which is required to enable Swift Macros) becomes available on CocoaPods. To fetch the latest versions, please use SPM (Swift Package Manager).
 
 ## Key functionalities
 - Sending requests easily using `Endpoint` models
 - SSL and Certificate pinning with just 2 lines of code
-- WebSocket connection support with `CNWebSocket`
+- WebSocket connection support with `SNWebSocket`
 - Secure access token storage with Keychain
 - Access token storing strategy - configure `global`, `endpoint specific` (`default`) or `custom` strategy for all or just some endpoints
 - Automated refresh token/callback requests
@@ -76,14 +76,14 @@ extension TodosEndpoint: Endpoint {
 To turn SSL and/or Certificate pinning in your app just add:
 
 ```Swift
-CNConfig.pinningModes = [.ssl, .certificate]
+SNConfig.pinningModes = [.ssl, .certificate]
 ```
 
-Please remember that SSL/Certificate pinning requires certificate file to be attached in your project. Certificates and SSL keys are autmatically loaded by CombineNetworking.
+Please remember that SSL/Certificate pinning requires certificate file to be attached in your project. Certificates and SSL keys are autmatically loaded by SwiftNet.
 
 ### Automatic authorization mechanism
 
-Handling authorization callbacks with CombineNetworking is ridiculously easy. To use it with your `Endpoint` all you have to do is to add `requiresAccessToken` and `callbackPublisher` fields as presented below:
+Handling authorization callbacks with SwiftNet is ridiculously easy. To use it with your `Endpoint` all you have to do is to add `requiresAccessToken` and `callbackPublisher` fields as presented below:
 
 ```Swift
 
@@ -108,31 +108,31 @@ extension TodosEndpoint: Endpoint {
 	
     //... and prepare callbackPublisher to handle authorization callbacks
     var callbackPublisher: AnyPublisher<AccessTokenConvertible?, Error>? {
-        try? CNProvider<TodosEndpoint>().publisher(for: .token, responseType: CNAccessToken?.self).asAccessTokenConvertible()
+        try? SNProvider<TodosEndpoint>().publisher(for: .token, responseType: SNAccessToken?.self).asAccessTokenConvertible()
     }
 }
 ```
 
 See? Easy peasy! Keep in mind that your token model has to conform to `AccessTokenConvertible`.
 
-### CNConfig properties and methods
+### SNConfig properties and methods
 
 - `pinningModes` - turns on/off SSL and Certificate pinning. Available options are `.ssl`, `.certificate` or both.
 - `sitesExcludedFromPinning` - list of website addresses excluded from SSL/Certificate pinning check 
 - `defaultJSONDecoder` - use this property to set globally your custom JSONDecoder
 - `defaultAccessTokenStrategy` - global strategy for storing access tokens. Available options are `.global` and `.custom(String)`.
-- `keychainInstance` - keychain instance used by CombineNetworking to store/fetch access tokens from Apple's Keychain. If not provided, safe storage will be turned off (more info below)
-- `accessTokenStorage` - an instance of an object implementing AccessTokenStorage protocol. It's used to manipulate access token. By default it uses built-in `CNStorage`. To use different storage, provide your own instance.
+- `keychainInstance` - keychain instance used by SwiftNet to store/fetch access tokens from Apple's Keychain. If not provided, safe storage will be turned off (more info below)
+- `accessTokenStorage` - an instance of an object implementing AccessTokenStorage protocol. It's used to manipulate access token. By default it uses built-in `SNStorage`. To use different storage, provide your own instance.
 - `accessTokenErrorCodes` - array containing error codes that should trigger access token refresh action. Default: [401].
 
 ### Access Token Strategies
 
-CombineNetworking allows you to specify access token strategies globally as well as individually for each endpoint. You can specify your strategy by setting it for `CNConfig.defaultAccessTokenStrategy` or inside your `Endpoint` by setting value for field `accessTokenStrategy`.
+    SwiftNet allows you to specify access token strategies globally as well as individually for each endpoint. You can specify your strategy by setting it for `SNConfig.defaultAccessTokenStrategy` or inside your `Endpoint` by setting value for field `accessTokenStrategy`.
 Available options are:
 - `.global` - uses global label to store access token
 - `.custom(String)` - with this option you can specify your own label to store access token and use it among as many endpoints as you wish
 
-Thanks to access token strategy being set both globally (via `CNConfig`) and individually (inside `Endpoint`), you can mix different strategies in your app!
+Thanks to access token strategy being set both globally (via `SNConfig`) and individually (inside `Endpoint`), you can mix different strategies in your app!
 
 ### Access Token manipulations
 
@@ -150,7 +150,7 @@ Available methods are:
 
 ### Event logging
 
-CombineNetworking's CNProvider uses iOS built-in Logger (if running on iOS 14 or newer) and custom debug-mode-only logger by default for each and every request.
+SwiftNet's SNProvider uses iOS built-in Logger (if running on iOS 14 or newer) and custom debug-mode-only logger by default for each and every request.
 
 ### Network connection monitor
 
@@ -161,7 +161,7 @@ If you want to subscribe to a network connection monitor's publisher, you can do
 private var subscriptions: Set<AnyCancellable> = []
 
 func subscribeForNetworkChanges() {
-    CNNetworkMonitor.publisher()
+    SNNetworkMonitor.publisher()
         .sink { status in
             switch status {
             case .wifi:
@@ -178,9 +178,9 @@ func subscribeForNetworkChanges() {
 
 ### Safe storage using Keychain
 
-CombineNetworking allows you to store your access tokens in keychain. Using keychain to store your access tokens requires you to provide keychain instance by setting value of `CNConfig.keychainInstance`.
+SwiftNet allows you to store your access tokens in keychain. Using keychain to store your access tokens requires you to provide keychain instance by setting value of `SNConfig.keychainInstance`.
 
-Please remember Apple's Keychain doesn't automatically remove entries created by an app upon its deletion. Do not worry, however. Only your app can access those entries, nevertheless, it's up to you to make sure those are removed from keychain if not needed anymore. CombineNetworking provides method `CNConfig.removeAccessToken(...)` to help you do it.
+Please remember Apple's Keychain doesn't automatically remove entries created by an app upon its deletion. Do not worry, however. Only your app can access those entries, nevertheless, it's up to you to make sure those are removed from keychain if not needed anymore. SwiftNet provides method `SNConfig.removeAccessToken(...)` to help you do it.
 ### Subscribe to a publisher
 
 ```Swift
@@ -188,7 +188,7 @@ private var subscriptions: Set<AnyCancellable> = []
 var todo: Todo?
 
 func subscribeForTodos() {
-    CNProvider<TodosEndpoint>().publisher(for: .todos(1), responseType: Todo?.self)
+    SNProvider<TodosEndpoint>().publisher(for: .todos(1), responseType: Todo?.self)
         .catch { (error) -> Just<Todo?> in
             print(error)
             return Just(nil)
@@ -202,22 +202,22 @@ If you want to subscribe to a publisher but doesn't want to immediately decode t
 
 ### Error handling
 
-In case of request failure, CombineNetworking returns stuct of type `CNError` reflected as `Error`.
+In case of request failure, SwiftNet returns stuct of type `SNError` reflected as `Error`.
 
 ```Swift
-public struct CNError: Error {
+public struct SNError: Error {
     let type: ErrorType
-    let details: CNErrorDetails?
+    let details: SNErrorDetails?
     let data: Data?
 }
 ```
 
 Available error types are: `failedToBuildRequest`, `failedToMapResponse`, `unexpectedResponse`, `authenticationFailed`, `notConnected`, `emptyResponse`, `noInternetConnection` and `conversionFailed`.
 
-`CNErrorDetails` looks like following:
+`SNErrorDetails` looks like following:
 
 ```Swift
-public struct CNErrorDetails {
+public struct SNErrorDetails {
     public let statusCode: Int
     public let localizedString: String
     public let url: URL?
@@ -232,8 +232,8 @@ public struct CNErrorDetails {
 If you want to run simple tests on your request, just to confirm the status code of the response met the expectations set for a given endpoint you can just run `testRaw()` method like this:
 
 ```Swift
-final class CombineNetworkingTests: XCTestCase {
-    private let provider = CNProvider<RemoteEndpoint>()
+final class SwiftNetTests: XCTestCase {
+    private let provider = SNProvider<RemoteEndpoint>()
 	
     func testTodoFetch() throws {
         let expectation = expectation(description: "Test todo fetching request")
@@ -251,8 +251,8 @@ final class CombineNetworkingTests: XCTestCase {
 ... and if you want to test your request by confirming both the status code and the response model, use `test()` method like this:
 
 ```Swift
-final class CombineNetworkingTests: XCTestCase {
-    private let provider = CNProvider<RemoteEndpoint>()
+final class SwiftNetTests: XCTestCase {
+    private let provider = SNProvider<RemoteEndpoint>()
 	
     func testTodoFetchWithModel() throws {
         let expectation = expectation(description: "Test todo fetching request together with its response model")
@@ -271,10 +271,10 @@ You can also use mocked data in your tests. To do so, just add `mockedData` to y
 
 ### WebSockets
 
-CombineNetworking also allows you to connect with WebSockets effortlessly. Simply use `CNWebSocket` like this:
+SwiftNet also allows you to connect with WebSockets effortlessly. Simply use `SNWebSocket` like this:
 
 ```Swift
-let webSocket = CNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
+let webSocket = SNWebSocket(url: URL(string: "wss://socketsbay.com/wss/v2/2/demo/")!)
 webSocket.connect()
 webSocket.listen { result in
     switch result {
@@ -301,7 +301,7 @@ If you want to close connection, just call `webSocket.disconnect()`.
 
 ## Macro-powered networking
 
-From release 2.0.0 CombineNetworking introduces new way of building and executing network requests.
+From release 2.0.0 SwiftNet introduces new way of building and executing network requests.
 
 ### Endpoint creation
 
@@ -405,7 +405,7 @@ func buildRequest() async throws -> [Comment] {
 
 ### Alternative "build a request" flow
 
-From version 2.0.1 CombineNetworking allows you to speed things up even more by generating EndpointBuilders with descriptors. Thanks to descriptors, you can extract endpoint setup to reduce number of lines required to build working endpoint.
+From version 2.0.1 SwiftNet allows you to speed things up even more by generating EndpointBuilders with descriptors. Thanks to descriptors, you can extract endpoint setup to reduce number of lines required to build working endpoint.
 
 ```Swift
 
