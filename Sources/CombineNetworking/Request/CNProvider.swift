@@ -104,7 +104,7 @@ open class CNProvider<T: Endpoint> {
             )
         }
         
-        if response.statusCode == 401 {
+        if CNConfig.accessTokenErrorCodes.contains(response.statusCode) {
             var convertibleToken: AccessTokenConvertible? = try await endpoint.callbackTask?()
             
             if convertibleToken == nil {

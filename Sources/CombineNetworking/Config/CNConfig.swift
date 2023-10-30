@@ -15,6 +15,7 @@ public class CNConfig {
 	public static var defaultAccessTokenStrategy: AccessTokenStrategy = .global
 	public static var keychainInstance: Keychain?
     public static var accessTokenStorage: AccessTokenStorage = CNStorage()
+    public static var accessTokenErrorCodes: [Int] = [401]
 	
 	private init() {}
 	

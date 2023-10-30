@@ -123,6 +123,7 @@ See? Easy peasy! Keep in mind that your token model has to conform to `AccessTok
 - `defaultAccessTokenStrategy` - global strategy for storing access tokens. Available options are `.global` and `.custom(String)`.
 - `keychainInstance` - keychain instance used by CombineNetworking to store/fetch access tokens from Apple's Keychain. If not provided, safe storage will be turned off (more info below)
 - `accessTokenStorage` - an instance of an object implementing AccessTokenStorage protocol. It's used to manipulate access token. By default it uses built-in `CNStorage`. To use different storage, provide your own instance.
+- `accessTokenErrorCodes` - array containing error codes that should trigger access token refresh action. Default: [401].
 
 ### Access Token Strategies
 
