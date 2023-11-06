@@ -302,6 +302,11 @@ If you want to close connection, just call `webSocket.disconnect()`.
 ## Macro-powered networking
 
 From release 2.0.0 SwiftNet introduces new way of building and executing network requests.
+To enable SwiftNet's macros, add to your file:
+
+```Swift
+import SwiftNetMacros
+```
 
 ### Endpoint creation
 

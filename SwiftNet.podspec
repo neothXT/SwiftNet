@@ -15,9 +15,9 @@ Pod::Spec.new do |spec|
   #  summary should be tweet-length, and the description more in depth.
   #
 
-  spec.name         = "CombineNetworking"
-  spec.version      = "2.0.0"
-  spec.summary      = "Easy approach on Networking using Combine"
+  spec.name         = "SwiftNet"
+  spec.version      = "2.0.5"
+  spec.summary      = "Easy approach on Networking using Combine and Swift Concurrency"
 
   # This description is used to generate tags and improve search results.
   #   * Think: What does it do? Why did you write it? What is the focus?
@@ -25,7 +25,7 @@ Pod::Spec.new do |spec|
   #   * Write the description between the DESC delimiters below.
   #   * Finally, don't worry about the indent, CocoaPods strips it!
 
-  spec.homepage = "https://github.com/neothXT/CombineNetworking"
+  spec.homepage = "https://github.com/neothXT/SwiftNet"
   # spec.screenshots  = "www.example.com/screenshots_1.gif", "www.example.com/screenshots_2.gif"
 
 
@@ -78,7 +78,7 @@ Pod::Spec.new do |spec|
   #  Supports git, hg, bzr, svn and HTTP.
   #
 
-  spec.source       = { :git => "https://github.com/neothXT/CombineNetworking.git", :branch => "main", :tag => "#{spec.version}" }
+  spec.source       = { :git => "https://github.com/neothXT/SwiftNet.git", :branch => "main", :tag => "#{spec.version}" }
 
 
   # ――― Source Code ―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――― #
@@ -89,7 +89,7 @@ Pod::Spec.new do |spec|
   #  Not including the public_header_files will make all headers public.
   #
 
-  spec.source_files = 'Sources/**/*.swift'
+  spec.source_files = 'Sources/SwiftNet/*.swift'
   spec.exclude_files = 'Tests/CombineNetworkingTests/*'
   # spec.public_header_files = "Classes/**/*.h"
 
