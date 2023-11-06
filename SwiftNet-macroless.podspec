@@ -90,7 +90,7 @@ Pod::Spec.new do |spec|
   #
 
   spec.source_files = 'Sources/SwiftNet/**/*.swift'
-  spec.exclude_files = 'Tests/CombineNetworkingTests/*'
+  spec.exclude_files = 'Tests/SwiftNetTests/*'
   # spec.public_header_files = "Classes/**/*.h"
 
 
