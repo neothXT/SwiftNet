@@ -6,11 +6,11 @@ Besides basic network requests, SwiftNet allows you to easily send your requests
 
 ## Installation (using CocoaPods)
 
-`pod 'CombineNetworking'`
+`pod 'SwiftNet-macroless'`
 
 ##### Note that in order to use SwiftNet, your iOS Deployment Target has to be 13.0 or newer. If you code for macOS, your Deployment Target has to be 10.15 or newer.
 
-#### SwiftNet 2.0.0 and above won't be available on CocoaPods unless SwiftSyntax package (which is required to enable Swift Macros) becomes available on CocoaPods. To fetch the latest versions, please use SPM (Swift Package Manager).
+#### CocoaPods version of SwiftNet does not contain SwiftNetMacros, therefore you cannot use them.
 
 ## Key functionalities
 - Sending requests easily using `Endpoint` models
