@@ -14,10 +14,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "SwiftNet",
-            targets: ["SwiftNet"]),
-        .library(
-            name: "SwiftNetMacros",
-            targets: ["SwiftNetMacros"])
+            targets: ["SwiftNet", "SwiftNetMacros"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -37,7 +34,7 @@ let package = Package(
         ),
         .target(
             name: "SwiftNet",
-			exclude: ["../../CombineNetworking.podspec"]),
+			exclude: ["../../SwiftNet.podspec"]),
         .testTarget(
             name: "SwiftNetTests",
             dependencies: ["SwiftNet", "SwiftNetMacros", "SNMacros"]),
