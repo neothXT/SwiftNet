@@ -15,7 +15,7 @@ Pod::Spec.new do |spec|
   #  summary should be tweet-length, and the description more in depth.
   #
 
-  spec.name         = "SwiftNet"
+  spec.name         = "SwiftNet-macroless"
   spec.version      = "2.0.5"
   spec.summary      = "Easy approach on Networking using Combine and Swift Concurrency"
 
