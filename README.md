@@ -1,4 +1,4 @@
-![alt [version]](https://img.shields.io/github/v/release/neothXT/SwiftNet) ![alt cocoapods available](https://img.shields.io/badge/CocoaPods-v1.11.0-blue) ![alt spm available](https://img.shields.io/badge/SPM-available-green) ![alt carthage unavailable](https://img.shields.io/badge/Carthage-unavailable-red)
+![alt [version]](https://img.shields.io/github/v/release/neothXT/SwiftNet) ![alt cocoapods available](https://img.shields.io/badge/CocoaPods-v2.0.5-blue) ![alt spm available](https://img.shields.io/badge/SPM-available-green) ![alt carthage unavailable](https://img.shields.io/badge/Carthage-unavailable-red)
 
 # SwiftNet
 After adding support for Swift Concurrency, CombineNetworking becomes SwiftNet! A super lightweight and crazy easy to use framework to help you create and handle your network requests in a convenient way.
