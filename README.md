@@ -22,8 +22,24 @@ Besides basic network requests, SwiftNet allows you to easily send your requests
 
 ## Basic Usage
 
-1. [Enum-powered networking](#create-an-endpoint-to-work-with)
-2. [Macro-powered networking](#macro-powered-networking)
+- [Enum based endpoint creation](#create-an-endpoint-to-work-with)
+  - [Subscribe to a publisher](#subscribe-to-a-publisher)
+- [Macro based endpoint creation](#macro-powered-networking)
+  - [Endpoint creation](#endpoint-creation)
+  - [Build a request](#build-a-request)
+  - [Requests with dynamic values in URL](#requests-with-dynamic-values-in-url)
+  - [Alternative "build a request" flow](#alternative-build-a-request-flow)
+- [SSL and Certificate pinning](#enable-ssl-andor-certificate-pinning-optional)
+- [Automatic authorization mechanism](#automatic-authorization-mechanism)
+- [SNConfig properties and methods](#snconfig-properties-and-methods)
+- [Access Token Strategies](#access-token-strategies)
+- [Access Token manipulations](#access-token-manipulations)
+- [Event logging](#event-logging)
+- [Network connection monitor](#network-connection-monitor)
+- [Safe storage using Keychain](#safe-storage-using-keychain)
+- [Simplified testing](#simplified-testing)
+- [WebSockets](#websockets)
+- [Error handling](#error-handling)
 
 ### Create an Endpoint to work with
 ```Swift
@@ -127,7 +143,7 @@ See? Easy peasy! Keep in mind that your token model has to conform to `AccessTok
 
 ### Access Token Strategies
 
-    SwiftNet allows you to specify access token strategies globally as well as individually for each endpoint. You can specify your strategy by setting it for `SNConfig.defaultAccessTokenStrategy` or inside your `Endpoint` by setting value for field `accessTokenStrategy`.
+SwiftNet allows you to specify access token strategies globally as well as individually for each endpoint. You can specify your strategy by setting it for `SNConfig.defaultAccessTokenStrategy` or inside your `Endpoint` by setting value for field `accessTokenStrategy`.
 Available options are:
 - `.global` - uses global label to store access token
 - `.custom(String)` - with this option you can specify your own label to store access token and use it among as many endpoints as you wish
