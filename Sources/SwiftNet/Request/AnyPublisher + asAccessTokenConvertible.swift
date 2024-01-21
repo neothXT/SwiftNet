@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+
 extension AnyPublisher {
 	/// Converts publisher to return object responding to AccessTokenConvertible in case of success
 	public func asAccessTokenConvertible() throws -> AnyPublisher<AccessTokenConvertible, Error> {

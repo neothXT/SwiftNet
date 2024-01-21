@@ -7,6 +7,7 @@
 
 import Foundation
 
+
 extension SNConfig {
     fileprivate static var accessTokens: [String: SNAccessToken] = [:]
 }

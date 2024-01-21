@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+
 public protocol EndpointBuilderAbstract {
     associatedtype T: Codable & Equatable
     
