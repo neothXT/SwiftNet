@@ -1,7 +1,7 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
-import SwiftNet
+import SNUtilities
 
 @attached(member, names: named(url), named(identifier), named(staticIdentifier))
 public macro Endpoint(url: String) = #externalMacro(module: "SNMacros", type: "EndpointMacro")

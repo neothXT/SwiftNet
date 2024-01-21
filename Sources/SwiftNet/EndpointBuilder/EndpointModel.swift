@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+
 public protocol EndpointModel {
     var identifier: String { get }
     static var defaultAccessTokenStrategy: AccessTokenStrategy { get }

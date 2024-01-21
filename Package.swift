@@ -14,7 +14,7 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "SwiftNet",
-            targets: ["SwiftNet", "SwiftNetMacros"])
+            targets: ["SwiftNet", "SNUtilities", "SwiftNetMacros"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -29,18 +29,20 @@ let package = Package(
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-                "SwiftNet"
+                "SNUtilities"
             ]
         ),
         .target(
             name: "SwiftNet",
-			exclude: ["../../SwiftNet.podspec"]),
+            dependencies: ["SNUtilities", "SwiftNetMacros"],
+			exclude: ["../../SwiftNet-macroless.podspec"]),
+        .target(name: "SNUtilities"),
+        .target(
+            name: "SwiftNetMacros",
+            dependencies: ["SNMacros", "SNUtilities"]),
         .testTarget(
             name: "SwiftNetTests",
             dependencies: ["SwiftNet", "SwiftNetMacros", "SNMacros"]),
-        .target(
-            name: "SwiftNetMacros",
-            dependencies: ["SNMacros", "SwiftNet"]),
         .testTarget(
             name: "SwiftNetMacrosTests",
             dependencies: [

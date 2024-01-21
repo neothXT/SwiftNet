@@ -8,7 +8,7 @@
 public enum AccessTokenStrategy {
 	case global, custom(String)
 	
-	var storingLabel: String {
+	public var storingLabel: String {
 		switch self {
 		case .global:
 			return "accessToken_SwiftNet"

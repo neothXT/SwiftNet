@@ -7,6 +7,8 @@
 
 import Foundation
 @_exported import Combine
+@_exported import SNUtilities
+@_exported import SwiftNetMacros
 
 fileprivate func runOnMain(_ completion: @escaping () -> Void) {
     DispatchQueue.main.async {
