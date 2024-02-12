@@ -4,7 +4,7 @@
 After adding support for Swift Concurrency, CombineNetworking becomes SwiftNet! A super lightweight and crazy easy to use framework to help you create and handle your network requests in a convenient way.
 Besides basic network requests, SwiftNet allows you to easily send your requests securely with a simple SSL and Certificate pinning mechanisms. But that's not all. With SwiftNet you can also effortlessly handle authorization tokens with built-in automatic authorization mechanism.
 
-If you're looking for clean, retrofit-like Swift Macros powered experience, check out [Netty](https://github.com/neothXT/Netty).
+If you're looking for clean, retrofit-like Swift Macros powered experience, check out [Snowdrop](https://github.com/neothXT/Snowdrop).
 
 ## Installation (using CocoaPods)
 
